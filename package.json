@@ -1,0 +1,14 @@
+{
+  "name": "dsa-interview-prep",
+  "private": true,
+  "description": "TypeScript DSA interview prep — patterns, templates, and worked problems",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "tsx": "tsx"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}
