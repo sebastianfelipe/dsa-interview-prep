@@ -1,0 +1,10 @@
+{
+  "title": "Merge k Sorted Lists",
+  "slug": "merge-k-sorted-lists",
+  "leetcodeId": 23,
+  "difficulty": "Hard",
+  "tags": [
+    "heap",
+    "linked-list"
+  ]
+}
