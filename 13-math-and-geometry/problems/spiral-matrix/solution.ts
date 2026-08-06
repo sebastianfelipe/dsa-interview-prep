@@ -1,13 +1,4 @@
-# Spiral Matrix
-
-## Problem
-
-Return matrix elements in spiral order.
-
-## Code (TypeScript)
-
-```ts
-function spiralOrder(matrix: number[][]): number[] {
+export function spiralOrder(matrix: number[][]): number[] {
   const result: number[] = [];
   let top = 0;
   let bottom = matrix.length - 1;
@@ -30,8 +21,3 @@ function spiralOrder(matrix: number[][]): number[] {
   }
   return result;
 }
-```
-
-## Key Extract
-
-Shrink four bounds; guard single row/col so you don't double-count.

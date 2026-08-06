@@ -1,0 +1,11 @@
+{
+  "title": "Roman to Integer",
+  "slug": "roman-to-integer",
+  "leetcodeId": 13,
+  "difficulty": "Easy",
+  "tags": [
+    "math",
+    "string",
+    "hash-table"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Add Binary",
+  "slug": "add-binary",
+  "leetcodeId": 67,
+  "difficulty": "Easy",
+  "tags": [
+    "math",
+    "string",
+    "bit-manipulation"
+  ]
+}

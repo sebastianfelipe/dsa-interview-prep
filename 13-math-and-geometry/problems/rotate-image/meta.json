@@ -1,0 +1,9 @@
+{
+  "title": "Rotate Image",
+  "slug": "rotate-image",
+  "leetcodeId": 48,
+  "difficulty": "Medium",
+  "tags": [
+    "matrix"
+  ]
+}
