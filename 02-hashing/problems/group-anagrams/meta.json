@@ -1,0 +1,10 @@
+{
+  "title": "Group Anagrams",
+  "slug": "group-anagrams",
+  "leetcodeId": 49,
+  "difficulty": "Medium",
+  "tags": [
+    "hashing",
+    "string"
+  ]
+}

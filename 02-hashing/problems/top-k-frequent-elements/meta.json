@@ -1,0 +1,10 @@
+{
+  "title": "Top K Frequent Elements",
+  "slug": "top-k-frequent-elements",
+  "leetcodeId": 347,
+  "difficulty": "Medium",
+  "tags": [
+    "hashing",
+    "heap"
+  ]
+}

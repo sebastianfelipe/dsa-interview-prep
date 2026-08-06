@@ -1,0 +1,10 @@
+{
+  "title": "Two Sum",
+  "slug": "two-sum",
+  "leetcodeId": 1,
+  "difficulty": "Easy",
+  "tags": [
+    "hashing",
+    "array"
+  ]
+}
