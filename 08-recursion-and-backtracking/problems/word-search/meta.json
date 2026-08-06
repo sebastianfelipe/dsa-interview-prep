@@ -1,0 +1,9 @@
+{
+  "title": "Word Search",
+  "slug": "word-search",
+  "leetcodeId": 79,
+  "difficulty": "Medium",
+  "tags": [
+    "backtracking"
+  ]
+}

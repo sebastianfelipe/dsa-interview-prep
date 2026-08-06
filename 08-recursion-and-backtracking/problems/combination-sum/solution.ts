@@ -1,17 +1,4 @@
-# Combination Sum
-
-## Problem
-
-Find all unique combinations in `candidates` that sum to `target`. Unlimited reuse of each number.
-
-## Recognition
-
-Combinations with reuse → backtracking with same index on recurse.
-
-## Code (TypeScript)
-
-```ts
-function combinationSum(candidates: number[], target: number): number[][] {
+export function combinationSum(candidates: number[], target: number): number[][] {
   const result: number[][] = [];
   const path: number[] = [];
 
@@ -33,8 +20,3 @@ function combinationSum(candidates: number[], target: number): number[][] {
   dfs(0, target);
   return result;
 }
-```
-
-## Key Extract
-
-Reuse → recurse `i`; no reuse → `i+1`. Prune when candidate > remain. Sort enables early break.

@@ -1,0 +1,9 @@
+{
+  "title": "Permutations",
+  "slug": "permutations",
+  "leetcodeId": 46,
+  "difficulty": "Medium",
+  "tags": [
+    "backtracking"
+  ]
+}

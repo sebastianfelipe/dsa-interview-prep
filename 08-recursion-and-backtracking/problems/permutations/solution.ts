@@ -1,13 +1,4 @@
-# Permutations
-
-## Problem
-
-Return all permutations of distinct `nums`.
-
-## Code (TypeScript)
-
-```ts
-function permute(nums: number[]): number[][] {
+export function permute(nums: number[]): number[][] {
   const result: number[][] = [];
   const used = new Array<boolean>(nums.length).fill(false);
   const path: number[] = [];
@@ -30,8 +21,3 @@ function permute(nums: number[]): number[][] {
   dfs();
   return result;
 }
-```
-
-## Key Extract
-
-`used[]` tracks choices. For duplicates (Permutations II), sort + skip `nums[i]===nums[i-1] && !used[i-1]`.
