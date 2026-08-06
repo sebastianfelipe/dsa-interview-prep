@@ -58,23 +58,33 @@ export function ListsPage() {
           </div>
 
           <div>
-            {selected.problems.map((p) => (
-              <div key={p.slug} className="list-item">
-                <div>
-                  <strong>
-                    {p.leetcodeId}. {p.title}
-                  </strong>
-                  <div className="muted">{p.difficulty}</div>
-                </div>
-                {p.covered && p.topic ? (
-                  <Link className="status-dot ok" to={`/problems/${p.topic}/${p.slug}`}>
-                    Covered →
-                  </Link>
-                ) : (
+            {selected.problems.map((p) =>
+              p.covered && p.topic ? (
+                <Link
+                  key={p.slug}
+                  className="list-item list-item-link"
+                  to={`/problems/${p.topic}/${p.slug}`}
+                >
+                  <div>
+                    <strong>
+                      {p.leetcodeId}. {p.title}
+                    </strong>
+                    <div className="muted">{p.difficulty}</div>
+                  </div>
+                  <span className="status-dot ok">Covered →</span>
+                </Link>
+              ) : (
+                <div key={p.slug} className="list-item">
+                  <div>
+                    <strong>
+                      {p.leetcodeId}. {p.title}
+                    </strong>
+                    <div className="muted">{p.difficulty}</div>
+                  </div>
                   <span className="status-dot missing">Missing</span>
-                )}
-              </div>
-            ))}
+                </div>
+              ),
+            )}
           </div>
         </div>
       )}
