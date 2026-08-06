@@ -1,0 +1,9 @@
+{
+  "title": "House Robber",
+  "slug": "house-robber",
+  "leetcodeId": 198,
+  "difficulty": "Medium",
+  "tags": [
+    "dp"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Shopping Offers",
+  "slug": "shopping-offers",
+  "leetcodeId": 638,
+  "difficulty": "Medium",
+  "tags": [
+    "dynamic-programming",
+    "backtracking",
+    "bit-manipulation"
+  ]
+}

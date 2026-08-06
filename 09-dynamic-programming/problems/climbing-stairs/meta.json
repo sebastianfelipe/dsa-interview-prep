@@ -1,0 +1,9 @@
+{
+  "title": "Climbing Stairs",
+  "slug": "climbing-stairs",
+  "leetcodeId": 70,
+  "difficulty": "Easy",
+  "tags": [
+    "dp"
+  ]
+}

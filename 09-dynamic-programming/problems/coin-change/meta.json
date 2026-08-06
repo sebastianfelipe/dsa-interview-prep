@@ -1,0 +1,9 @@
+{
+  "title": "Coin Change",
+  "slug": "coin-change",
+  "leetcodeId": 322,
+  "difficulty": "Medium",
+  "tags": [
+    "dp"
+  ]
+}

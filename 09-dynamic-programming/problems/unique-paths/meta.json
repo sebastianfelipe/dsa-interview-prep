@@ -1,0 +1,9 @@
+{
+  "title": "Unique Paths",
+  "slug": "unique-paths",
+  "leetcodeId": 62,
+  "difficulty": "Medium",
+  "tags": [
+    "dp"
+  ]
+}
