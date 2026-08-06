@@ -21,7 +21,7 @@ Use when you repeatedly need the current min or max.
 
 JS has no built-in heap. In interviews:
 
-1. Use the `MinHeap` in [`templates/heap.ts`](../templates/heap.ts), or
+1. Use the `MinHeap` in [`templates/heap.ts`](../../resources/templates/heap.ts), or
 2. Say "I'll assume a PriorityQueue" and write `push`/`pop` calls, or
 3. Sort when constraints allow O(n log n)
 
