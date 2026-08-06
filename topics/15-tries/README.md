@@ -14,7 +14,7 @@ Efficient prefix operations on strings.
 |---------|------|
 | Implement Trie | [problems/implement-trie.md](./problems/implement-trie.md) |
 
-Template: [`templates/trie.ts`](../templates/trie.ts)
+Template: [`templates/trie.ts`](../../resources/templates/trie.ts)
 
 ## Key Extract
 
