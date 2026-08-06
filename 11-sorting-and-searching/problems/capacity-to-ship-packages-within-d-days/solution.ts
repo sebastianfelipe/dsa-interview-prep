@@ -1,17 +1,4 @@
-# Capacity To Ship Packages Within D Days
-
-## Problem
-
-Packages in order; ship with capacity. Min capacity to finish in `days` days.
-
-## Recognition
-
-Binary search on answer + greedy feasible check.
-
-## Code (TypeScript)
-
-```ts
-function shipWithinDays(weights: number[], days: number): number {
+export function shipWithinDays(weights: number[], days: number): number {
   let lo = Math.max(...weights);
   let hi = weights.reduce((a, b) => a + b, 0);
 
@@ -35,8 +22,3 @@ function shipWithinDays(weights: number[], days: number): number {
   }
   return lo;
 }
-```
-
-## Key Extract
-
-`lo = max package`, `hi = sum`. Feasible = simulate days needed. Same pattern as Split Array Largest Sum / Koko.

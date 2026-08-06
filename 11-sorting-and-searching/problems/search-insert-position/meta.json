@@ -1,0 +1,10 @@
+{
+  "title": "Search Insert Position",
+  "slug": "search-insert-position",
+  "leetcodeId": 35,
+  "difficulty": "Easy",
+  "tags": [
+    "array",
+    "binary-search"
+  ]
+}

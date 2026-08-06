@@ -1,0 +1,10 @@
+{
+  "title": "Sqrt(x)",
+  "slug": "sqrtx",
+  "leetcodeId": 69,
+  "difficulty": "Easy",
+  "tags": [
+    "math",
+    "binary-search"
+  ]
+}

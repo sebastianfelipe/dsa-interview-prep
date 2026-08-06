@@ -1,0 +1,9 @@
+{
+  "title": "Search in Rotated Sorted Array",
+  "slug": "search-in-rotated-sorted-array",
+  "leetcodeId": 33,
+  "difficulty": "Medium",
+  "tags": [
+    "binary-search"
+  ]
+}

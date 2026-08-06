@@ -1,0 +1,9 @@
+{
+  "title": "Capacity To Ship Packages Within D Days",
+  "slug": "capacity-to-ship-packages-within-d-days",
+  "leetcodeId": 1011,
+  "difficulty": "Medium",
+  "tags": [
+    "binary-search"
+  ]
+}

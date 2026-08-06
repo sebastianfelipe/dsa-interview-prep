@@ -1,13 +1,4 @@
-# Search in Rotated Sorted Array
-
-## Problem
-
-Search `target` in rotated sorted array of distinct ints. O(log n).
-
-## Code (TypeScript)
-
-```ts
-function search(nums: number[], target: number): number {
+export function search(nums: number[], target: number): number {
   let lo = 0;
   let hi = nums.length - 1;
 
@@ -27,8 +18,3 @@ function search(nums: number[], target: number): number {
   }
   return -1;
 }
-```
-
-## Key Extract
-
-Each step: which half is sorted? Is target in that half? Discard accordingly.
