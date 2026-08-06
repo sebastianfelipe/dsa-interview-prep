@@ -104,7 +104,7 @@ export function BrowsePage() {
                   <Link
                     key={p.slug}
                     className="problem-row"
-                    to={`/reference/${activeTopic.id}/patterns/${p.slug}`}
+                    to={`/reference/topics/${activeTopic.id}/patterns/${p.slug}`}
                   >
                     <span className="badge Easy">Pattern</span>
                     <span>

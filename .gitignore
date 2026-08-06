@@ -2,7 +2,7 @@ node_modules/
 dist/
 *.js.map
 .DS_Store
-web/dist/
+ui/dist/
 api/dist/
 *.tsbuildinfo
 .vite/

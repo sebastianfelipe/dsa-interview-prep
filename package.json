@@ -3,15 +3,15 @@
   "private": true,
   "description": "TypeScript DSA interview prep — patterns, templates, study UI",
   "workspaces": [
-    "web",
+    "ui",
     "api"
   ],
   "scripts": {
-    "dev": "concurrently -n api,web -c teal,cyan \"npm run dev -w api\" \"npm run dev -w web\"",
-    "build": "npm run build -w api && npm run build -w web",
+    "dev": "concurrently -n api,ui -c teal,cyan \"npm run dev -w api\" \"npm run dev -w ui\"",
+    "build": "npm run build -w api && npm run build -w ui",
     "test:solutions": "vitest run --config vitest.solutions.config.ts",
     "migrate:problems": "tsx scripts/migrate-problems.ts",
-    "check": "tsc --noEmit -p api && tsc --noEmit -p web"
+    "check": "tsc --noEmit -p api && tsc --noEmit -p ui"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
