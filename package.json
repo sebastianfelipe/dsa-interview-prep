@@ -3,12 +3,12 @@
   "private": true,
   "description": "TypeScript DSA interview prep — patterns, templates, study UI",
   "workspaces": [
-    "ui",
-    "api"
+    "api",
+    "ui"
   ],
   "scripts": {
-    "dev": "concurrently -n api,ui -c teal,cyan \"npm run dev -w api\" \"npm run dev -w ui\"",
-    "build": "npm run build -w api && npm run build -w ui",
+    "dev": "concurrently -n api,ui -c teal,cyan \"yarn workspace api dev\" \"yarn workspace ui dev\"",
+    "build": "yarn workspace api build && yarn workspace ui build",
     "test:solutions": "vitest run --config vitest.solutions.config.ts",
     "migrate:problems": "tsx scripts/migrate-problems.ts",
     "check": "tsc --noEmit -p api && tsc --noEmit -p ui"
@@ -19,5 +19,6 @@
     "tsx": "^4.0.0",
     "typescript": "^5.0.0",
     "vitest": "^3.0.0"
-  }
+  },
+  "packageManager": "yarn@1.22.22"
 }
