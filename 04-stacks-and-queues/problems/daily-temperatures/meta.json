@@ -1,0 +1,10 @@
+{
+  "title": "Daily Temperatures",
+  "slug": "daily-temperatures",
+  "leetcodeId": 739,
+  "difficulty": "Medium",
+  "tags": [
+    "stack",
+    "monotonic"
+  ]
+}

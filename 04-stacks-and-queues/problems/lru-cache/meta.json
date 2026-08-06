@@ -1,0 +1,11 @@
+{
+  "title": "LRU Cache",
+  "slug": "lru-cache",
+  "leetcodeId": 146,
+  "difficulty": "Medium",
+  "tags": [
+    "hash-table",
+    "linked-list",
+    "design"
+  ]
+}

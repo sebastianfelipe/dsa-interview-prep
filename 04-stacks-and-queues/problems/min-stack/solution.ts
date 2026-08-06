@@ -1,17 +1,4 @@
-# Min Stack
-
-## Problem
-
-Design a stack that supports push, pop, top, and **getMin** in O(1).
-
-## Recognition
-
-Auxiliary stack tracking minima (or store pairs `[value, minSoFar]`).
-
-## Code (TypeScript)
-
-```ts
-class MinStack {
+export class MinStack {
   private stack: number[] = [];
   private mins: number[] = [];
 
@@ -34,8 +21,3 @@ class MinStack {
     return this.mins[this.mins.length - 1]!;
   }
 }
-```
-
-## Key Extract
-
-Each push records the min **including** that value. Pop both stacks together. Pattern: augment stack with derived state.
