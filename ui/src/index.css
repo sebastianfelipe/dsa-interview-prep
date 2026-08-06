@@ -109,14 +109,21 @@ pre {
   animation: rise 420ms ease both;
 }
 
+.page-split {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 4.25rem);
+  padding-top: 1.25rem;
+  padding-bottom: 0;
+  overflow: hidden;
+}
+
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -187,17 +194,96 @@ pre {
   display: grid;
   grid-template-columns: 240px 1fr;
   gap: 1.5rem;
+  align-items: start;
+}
+
+.layout-split-fixed {
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+  overflow: hidden;
+  padding-bottom: 1.25rem;
+}
+
+.layout-split > section,
+.layout-split > .panel,
+.layout-split > .content-pane {
+  min-width: 0;
+}
+
+.layout-split-fixed > .content-pane,
+.layout-split-fixed > .panel {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 0.25rem;
 }
 
 @media (max-width: 860px) {
   .layout-split {
     grid-template-columns: 1fr;
   }
+
+  .page-split {
+    height: auto;
+    overflow: visible;
+    padding-bottom: 4rem;
+  }
+
+  .layout-split-fixed {
+    overflow: visible;
+    height: auto;
+  }
+
+  .layout-split-fixed > .content-pane,
+  .layout-split-fixed > .panel {
+    height: auto;
+    overflow: visible;
+  }
 }
 
 .sidebar {
   border-right: 1px solid var(--line);
   padding-right: 1rem;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.layout-split-fixed > .sidebar {
+  height: 100%;
+  max-height: none;
+  overflow: hidden;
+  position: relative;
+  top: auto;
+}
+
+.sidebar-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 0.15rem;
+}
+
+@media (max-width: 860px) {
+  .sidebar,
+  .layout-split-fixed > .sidebar {
+    position: static;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding-right: 0;
+    padding-bottom: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .sidebar-scroll {
+    overflow: visible;
+  }
 }
 
 .sidebar h2 {
@@ -206,6 +292,7 @@ pre {
   letter-spacing: 0.08em;
   color: var(--ink-soft);
   margin: 0 0 0.75rem;
+  flex-shrink: 0;
 }
 
 .sidebar a,
@@ -233,7 +320,12 @@ pre {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-bottom: 1.25rem;
+  flex-shrink: 0;
+  z-index: 6;
+  margin: 0 0 1rem;
+  padding: 0.35rem 0 0.75rem;
+  background: rgba(243, 246, 244, 0.92);
+  backdrop-filter: blur(10px);
 }
 
 .chip {
@@ -431,13 +523,29 @@ pre {
 .list-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 1rem;
-  padding: 0.65rem 0;
+  padding: 0.75rem 0.55rem;
+  margin: 0 -0.55rem;
   border-bottom: 1px solid var(--line);
+  border-radius: 10px;
 }
 
 .list-item:last-child {
   border-bottom: 0;
+}
+
+.list-item-link {
+  cursor: pointer;
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.list-item-link:hover {
+  background: rgba(13, 148, 136, 0.08);
+}
+
+.list-item-link:hover .status-dot.ok {
+  color: var(--accent-hot);
 }
 
 .status-dot {

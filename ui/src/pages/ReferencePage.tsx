@@ -34,8 +34,8 @@ export function ReferencePage() {
   if (!index) return <main className="page">Loading…</main>;
 
   return (
-    <main className="page">
-      <div className="layout-split">
+    <main className="page page-split">
+      <div className="layout-split layout-split-fixed">
         <aside className="sidebar">
           {index.map((section) => (
             <div key={section.id} style={{ marginBottom: '1.25rem' }}>
@@ -52,7 +52,7 @@ export function ReferencePage() {
             </div>
           ))}
         </aside>
-        <section className="panel">
+        <section className="panel content-pane">
           {doc ? (
             <Markdown source={doc.markdown} />
           ) : (

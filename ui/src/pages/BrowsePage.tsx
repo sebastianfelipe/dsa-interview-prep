@@ -44,7 +44,7 @@ export function BrowsePage() {
   if (!catalog || !activeTopic) return <main className="page">Loading…</main>;
 
   return (
-    <main className="page">
+    <main className="page page-split">
       <div className="filters">
         {([ALL, 'Easy', 'Medium', 'Hard'] as const).map((d) => (
           <button
@@ -58,22 +58,24 @@ export function BrowsePage() {
         ))}
       </div>
 
-      <div className="layout-split">
+      <div className="layout-split layout-split-fixed">
         <aside className="sidebar">
           <h2>Topics</h2>
-          {topics.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className={`linkish ${activeTopic.id === t.id ? 'active' : ''}`}
-              onClick={() => setTopic(t.id)}
-            >
-              {t.title}
-            </button>
-          ))}
+          <div className="sidebar-scroll">
+            {topics.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className={`linkish ${activeTopic.id === t.id ? 'active' : ''}`}
+                onClick={() => setTopic(t.id)}
+              >
+                {t.title}
+              </button>
+            ))}
+          </div>
         </aside>
 
-        <section>
+        <section className="content-pane">
           <h1 className="topic-title">{activeTopic.title}</h1>
           <p className="muted">
             {problems.length} problem{problems.length === 1 ? '' : 's'}
