@@ -12,7 +12,7 @@
 - `find(x)` — root with path compression
 - `union(a,b)` — merge by rank/size; return false if already connected
 
-Template: [`templates/union-find.ts`](../../templates/union-find.ts)
+Template: [`templates/union-find.ts`](../../../resources/templates/union-find.ts)
 
 ## Example: number of provinces
 
