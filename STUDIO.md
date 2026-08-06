@@ -5,17 +5,18 @@ Study UI for this repo: browse topics by difficulty, read pattern-first writeups
 ## Quick start
 
 ```bash
-npm install
-npm run dev
+yarn
+yarn dev
 ```
 
 - UI: http://localhost:5173
 - API: http://localhost:3001/api/catalog
+- Swagger: http://localhost:3001/api/swagger
 
 ## Repo layout
 
 ```text
-api/           NestJS content + test-runner API
+api/           NestJS backend (Swagger at /api/swagger)
 ui/            Vite React study app
 topics/        Numbered curriculum (00–16)
 resources/     patterns, cheat-sheets, study-plans, templates
@@ -37,9 +38,10 @@ topics/NN-topic/problems/<slug>/
 
 | Script | Purpose |
 |--------|---------|
-| `npm run dev` | NestJS API + Vite React UI |
-| `npm run test:solutions` | Run all problem tests |
-| `npm run build` | Build API and UI |
+| `yarn dev` | NestJS API + Vite React UI |
+| `yarn test:solutions` | Run all problem tests |
+| `yarn build` | Build API and UI |
+| `yarn workspace api dev` | API only (watch) |
 
 ## Prep lists
 

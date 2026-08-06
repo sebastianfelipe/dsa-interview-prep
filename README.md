@@ -5,11 +5,11 @@ A structured, pattern-first guide for LeetCode-style coding interviews. Every to
 ## Study UI (DSA Studio)
 
 ```bash
-npm install
-npm run dev
+yarn
+yarn dev
 ```
 
-Open **http://localhost:5173** — browse by Easy / Medium / Hard, reveal TypeScript solutions, run tests, and track your [Easy](https://leetcode.com/problem-list/2z168m6d/) / [Medium](https://leetcode.com/problem-list/vylst5u7/) prep lists. Details in [`STUDIO.md`](./STUDIO.md).
+Open **http://localhost:5173** — browse by Easy / Medium / Hard, reveal TypeScript solutions, run tests, and track your [Easy](https://leetcode.com/problem-list/2z168m6d/) / [Medium](https://leetcode.com/problem-list/vylst5u7/) prep lists. API Swagger lives at **http://localhost:3001/api/swagger**. Details in [`STUDIO.md`](./STUDIO.md).
 
 ## Repo layout
 
