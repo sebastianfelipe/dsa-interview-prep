@@ -1,0 +1,11 @@
+{
+  "title": "Keys and Rooms",
+  "slug": "keys-and-rooms",
+  "leetcodeId": 841,
+  "difficulty": "Medium",
+  "tags": [
+    "graph",
+    "dfs",
+    "bfs"
+  ]
+}

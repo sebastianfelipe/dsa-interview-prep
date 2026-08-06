@@ -1,0 +1,11 @@
+{
+  "title": "Snakes and Ladders",
+  "slug": "snakes-and-ladders",
+  "leetcodeId": 909,
+  "difficulty": "Medium",
+  "tags": [
+    "graph",
+    "bfs",
+    "matrix"
+  ]
+}

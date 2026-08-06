@@ -1,0 +1,10 @@
+{
+  "title": "Course Schedule",
+  "slug": "course-schedule",
+  "leetcodeId": 207,
+  "difficulty": "Medium",
+  "tags": [
+    "graph",
+    "topo"
+  ]
+}

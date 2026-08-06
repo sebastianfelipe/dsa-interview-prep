@@ -1,17 +1,4 @@
-# Course Schedule
-
-## Problem
-
-`numCourses` courses, prerequisites `[a,b]` means b → a. Return true if you can finish (no cycle).
-
-## Recognition
-
-Directed graph cycle detection / **topological sort**.
-
-## Code (TypeScript) — Kahn's BFS
-
-```ts
-function canFinish(numCourses: number, prerequisites: number[][]): boolean {
+export function canFinish(numCourses: number, prerequisites: number[][]): boolean {
   const indegree = new Array<number>(numCourses).fill(0);
   const graph: number[][] = Array.from({ length: numCourses }, () => []);
 
@@ -35,8 +22,3 @@ function canFinish(numCourses: number, prerequisites: number[][]): boolean {
   }
   return taken === numCourses;
 }
-```
-
-## Key Extract
-
-Build graph + indegrees; repeatedly take zero-indegree nodes. If you cannot take all → cycle. See also `16-advanced-topics/topological-sort/`.

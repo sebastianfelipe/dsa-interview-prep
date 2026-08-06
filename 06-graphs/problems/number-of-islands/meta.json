@@ -1,0 +1,10 @@
+{
+  "title": "Number of Islands",
+  "slug": "number-of-islands",
+  "leetcodeId": 200,
+  "difficulty": "Medium",
+  "tags": [
+    "graph",
+    "dfs"
+  ]
+}
