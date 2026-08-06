@@ -1,0 +1,12 @@
+{
+  "title": "My Calendar I",
+  "slug": "my-calendar-i",
+  "leetcodeId": 729,
+  "difficulty": "Medium",
+  "tags": [
+    "array",
+    "binary-search",
+    "design",
+    "intervals"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Merge Intervals",
+  "slug": "merge-intervals",
+  "leetcodeId": 56,
+  "difficulty": "Medium",
+  "tags": [
+    "intervals"
+  ]
+}
