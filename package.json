@@ -1,14 +1,23 @@
 {
   "name": "dsa-interview-prep",
   "private": true,
-  "description": "TypeScript DSA interview prep — patterns, templates, and worked problems",
+  "description": "TypeScript DSA interview prep — patterns, templates, study UI",
+  "workspaces": [
+    "web",
+    "api"
+  ],
   "scripts": {
-    "check": "tsc --noEmit",
-    "tsx": "tsx"
+    "dev": "concurrently -n api,web -c teal,cyan \"npm run dev -w api\" \"npm run dev -w web\"",
+    "build": "npm run build -w api && npm run build -w web",
+    "test:solutions": "vitest run --config vitest.solutions.config.ts",
+    "migrate:problems": "tsx scripts/migrate-problems.ts",
+    "check": "tsc --noEmit -p api && tsc --noEmit -p web"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "concurrently": "^9.0.0",
     "tsx": "^4.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^3.0.0"
   }
 }
