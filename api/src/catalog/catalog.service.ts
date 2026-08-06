@@ -32,10 +32,14 @@ const ROOT = path.resolve(__dirname, '../../..');
 @Injectable()
 export class CatalogService {
   readonly root = ROOT;
+  readonly topicsRoot = path.join(ROOT, 'topics');
+  readonly resourcesRoot = path.join(ROOT, 'resources');
+  readonly listsRoot = path.join(ROOT, 'lists');
 
   private topicDirs(): string[] {
+    if (!fs.existsSync(this.topicsRoot)) return [];
     return fs
-      .readdirSync(this.root, { withFileTypes: true })
+      .readdirSync(this.topicsRoot, { withFileTypes: true })
       .filter((d) => d.isDirectory() && /^\d{2}-/.test(d.name))
       .map((d) => d.name)
       .sort();
@@ -52,7 +56,7 @@ export class CatalogService {
     const topics: TopicSummary[] = [];
 
     for (const topicId of this.topicDirs()) {
-      const topicPath = path.join(this.root, topicId);
+      const topicPath = path.join(this.topicsRoot, topicId);
       const problemsDir = path.join(topicPath, 'problems');
       const patternsDir = path.join(topicPath, 'patterns');
       const problems: ProblemSummary[] = [];
@@ -112,6 +116,6 @@ export class CatalogService {
   }
 
   problemDir(topic: string, slug: string): string {
-    return path.join(this.root, topic, 'problems', slug);
+    return path.join(this.topicsRoot, topic, 'problems', slug);
   }
 }

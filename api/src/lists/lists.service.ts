@@ -8,7 +8,7 @@ export class ListsService {
   constructor(@Inject(CatalogService) private readonly catalog: CatalogService) {}
 
   private listsDir() {
-    return path.join(this.catalog.root, 'lists');
+    return this.catalog.listsRoot;
   }
 
   listAll() {
