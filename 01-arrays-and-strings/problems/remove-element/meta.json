@@ -1,0 +1,10 @@
+{
+  "title": "Remove Element",
+  "slug": "remove-element",
+  "leetcodeId": 27,
+  "difficulty": "Easy",
+  "tags": [
+    "array",
+    "two-pointers"
+  ]
+}

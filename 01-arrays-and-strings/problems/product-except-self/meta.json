@@ -1,0 +1,10 @@
+{
+  "title": "Product of Array Except Self",
+  "slug": "product-except-self",
+  "leetcodeId": 238,
+  "difficulty": "Medium",
+  "tags": [
+    "array",
+    "prefix"
+  ]
+}

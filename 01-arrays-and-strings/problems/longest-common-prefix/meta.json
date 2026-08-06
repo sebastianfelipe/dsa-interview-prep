@@ -1,0 +1,10 @@
+{
+  "title": "Longest Common Prefix",
+  "slug": "longest-common-prefix",
+  "leetcodeId": 14,
+  "difficulty": "Easy",
+  "tags": [
+    "string",
+    "array"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "title": "Two Sum II — Input Array Is Sorted",
+  "slug": "two-sum-ii",
+  "leetcodeId": 167,
+  "difficulty": "Medium",
+  "tags": [
+    "two-pointers",
+    "array"
+  ]
+}

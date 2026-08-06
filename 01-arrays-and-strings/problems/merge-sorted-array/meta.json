@@ -1,0 +1,11 @@
+{
+  "title": "Merge Sorted Array",
+  "slug": "merge-sorted-array",
+  "leetcodeId": 88,
+  "difficulty": "Easy",
+  "tags": [
+    "array",
+    "two-pointers",
+    "sorting"
+  ]
+}

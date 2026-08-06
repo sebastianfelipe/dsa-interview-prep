@@ -1,0 +1,10 @@
+{
+  "title": "Remove Duplicates from Sorted Array",
+  "slug": "remove-duplicates-from-sorted-array",
+  "leetcodeId": 26,
+  "difficulty": "Easy",
+  "tags": [
+    "array",
+    "two-pointers"
+  ]
+}

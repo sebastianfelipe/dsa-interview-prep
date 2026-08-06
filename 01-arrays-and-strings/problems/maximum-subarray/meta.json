@@ -1,0 +1,10 @@
+{
+  "title": "Maximum Subarray",
+  "slug": "maximum-subarray",
+  "leetcodeId": 53,
+  "difficulty": "Medium",
+  "tags": [
+    "kadane",
+    "array"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "title": "Longest Substring Without Repeating Characters",
+  "slug": "longest-substring-without-repeating-characters",
+  "leetcodeId": 3,
+  "difficulty": "Medium",
+  "tags": [
+    "sliding-window",
+    "string"
+  ]
+}

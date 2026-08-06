@@ -1,0 +1,10 @@
+{
+  "title": "Subarray Sum Equals K",
+  "slug": "subarray-sum-equals-k",
+  "leetcodeId": 560,
+  "difficulty": "Medium",
+  "tags": [
+    "prefix-sum",
+    "hashing"
+  ]
+}
