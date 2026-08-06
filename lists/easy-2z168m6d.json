@@ -1,0 +1,29 @@
+{
+  "id": "easy-2z168m6d",
+  "title": "Easy Prep List",
+  "leetcodeSlug": "2z168m6d",
+  "url": "https://leetcode.com/problem-list/2z168m6d/",
+  "difficulty": "Easy",
+  "problems": [
+    { "leetcodeId": 1, "slug": "two-sum", "title": "Two Sum" },
+    { "leetcodeId": 9, "slug": "palindrome-number", "title": "Palindrome Number" },
+    { "leetcodeId": 13, "slug": "roman-to-integer", "title": "Roman to Integer" },
+    { "leetcodeId": 14, "slug": "longest-common-prefix", "title": "Longest Common Prefix" },
+    { "leetcodeId": 20, "slug": "valid-parentheses", "title": "Valid Parentheses" },
+    { "leetcodeId": 21, "slug": "merge-two-sorted-lists", "title": "Merge Two Sorted Lists" },
+    { "leetcodeId": 26, "slug": "remove-duplicates-from-sorted-array", "title": "Remove Duplicates from Sorted Array" },
+    { "leetcodeId": 27, "slug": "remove-element", "title": "Remove Element" },
+    { "leetcodeId": 28, "slug": "find-the-index-of-the-first-occurrence-in-a-string", "title": "Find the Index of the First Occurrence in a String" },
+    { "leetcodeId": 35, "slug": "search-insert-position", "title": "Search Insert Position" },
+    { "leetcodeId": 58, "slug": "length-of-last-word", "title": "Length of Last Word" },
+    { "leetcodeId": 66, "slug": "plus-one", "title": "Plus One" },
+    { "leetcodeId": 67, "slug": "add-binary", "title": "Add Binary" },
+    { "leetcodeId": 69, "slug": "sqrtx", "title": "Sqrt(x)" },
+    { "leetcodeId": 70, "slug": "climbing-stairs", "title": "Climbing Stairs" },
+    { "leetcodeId": 83, "slug": "remove-duplicates-from-sorted-list", "title": "Remove Duplicates from Sorted List" },
+    { "leetcodeId": 88, "slug": "merge-sorted-array", "title": "Merge Sorted Array" },
+    { "leetcodeId": 94, "slug": "binary-tree-inorder-traversal", "title": "Binary Tree Inorder Traversal" },
+    { "leetcodeId": 100, "slug": "same-tree", "title": "Same Tree" },
+    { "leetcodeId": 101, "slug": "symmetric-tree", "title": "Symmetric Tree" }
+  ]
+}

@@ -2,16 +2,25 @@
 
 A structured, pattern-first guide for LeetCode-style coding interviews. Every topic includes **concepts**, **recognition signals**, **worked examples**, and a **Key Extract** section — the reusable ideas you should take into the next problem.
 
+## Study UI (DSA Studio)
+
+```bash
+npm install
+npm run dev
+```
+
+Open **http://localhost:5173** — browse by Easy / Medium / Hard, reveal TypeScript solutions, run tests, and track your [Easy](https://leetcode.com/problem-list/2z168m6d/) / [Medium](https://leetcode.com/problem-list/vylst5u7/) prep lists. Details in [`STUDIO.md`](./STUDIO.md).
+
 ## How to use this repo
 
 1. Start with [`00-fundamentals/`](./00-fundamentals/) — complexity, interview strategy, and how to talk through solutions.
 2. Skim [`patterns/master-pattern-list.md`](./patterns/master-pattern-list.md) and [`cheat-sheets/`](./cheat-sheets/) — these are your recognition maps.
-3. Work topics in order (or follow a [`study-plans/`](./study-plans/) plan).
-4. For each problem file, read in this order:
+3. Work topics in order (or follow a [`study-plans/`](./study-plans/) plan), or use the Study UI.
+4. For each problem folder, read `README.md` then reveal `solution.ts`:
    - **Recognition** → when to reach for this pattern
    - **Intuition** → why the approach works
    - **Walkthrough** → apply it on a concrete input
-   - **Code** → a clean interview-ready solution
+   - **Solution** → `solution.ts` (interview-ready TypeScript)
    - **Key Extract** → what to memorize and reuse
 
 ## Folder map
@@ -43,16 +52,23 @@ Also:
 - [`cheat-sheets/`](./cheat-sheets/) — one-page lookups
 - [`study-plans/`](./study-plans/) — 2-week / 4-week / 8-week tracks
 
-## Problem file template (every example follows this)
+## Problem layout
+
+```text
+NN-topic/problems/<slug>/
+  meta.json          # title, leetcodeId, Easy|Medium|Hard, tags
+  README.md          # description (no solution code)
+  solution.ts
+  solution.test.ts
+```
+
+README sections typically include:
 
 ```text
 ## Problem
 ## Recognition (signals → pattern)
-## Intuition
-## Approach
-## Walkthrough (concrete input)
+## Intuition / Approach / Walkthrough
 ## Complexity
-## Code
 ## Pitfalls
 ## Key Extract  ← read this last; this is what you reuse
 ```
