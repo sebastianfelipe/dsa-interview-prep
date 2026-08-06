@@ -1,17 +1,6 @@
-# Merge Two Sorted Lists
+import { ListNode } from '@lib/helpers';
 
-## Problem
-
-Merge two sorted lists into one sorted list.
-
-## Recognition
-
-Dummy head + two-pointer merge (like merge step of merge sort).
-
-## Code (TypeScript)
-
-```ts
-function mergeTwoLists(
+export function mergeTwoLists(
   list1: ListNode | null,
   list2: ListNode | null,
 ): ListNode | null {
@@ -31,8 +20,3 @@ function mergeTwoLists(
   tail.next = list1 ?? list2;
   return dummy.next;
 }
-```
-
-## Key Extract
-
-**Dummy + tail.** Always attach the smaller head; splice remainder when one list ends. Same idea as merge k lists (with a heap of heads).

@@ -1,0 +1,9 @@
+{
+  "title": "Merge Two Sorted Lists",
+  "slug": "merge-two-sorted-lists",
+  "leetcodeId": 21,
+  "difficulty": "Easy",
+  "tags": [
+    "linked-list"
+  ]
+}

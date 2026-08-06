@@ -1,0 +1,9 @@
+{
+  "title": "Remove Duplicates from Sorted List",
+  "slug": "remove-duplicates-from-sorted-list",
+  "leetcodeId": 83,
+  "difficulty": "Easy",
+  "tags": [
+    "linked-list"
+  ]
+}
