@@ -9,15 +9,24 @@ npm install
 npm run dev
 ```
 
-- Web: http://localhost:5173
+- UI: http://localhost:5173
 - API: http://localhost:3001/api/catalog
+
+## Repo layout
+
+```text
+api/           NestJS content + test-runner API
+ui/            Vite React study app
+topics/        Numbered curriculum (00–16)
+resources/     patterns, cheat-sheets, study-plans, templates
+lists/         Easy/Medium prep-list definitions
+lib/           Shared TS helpers for solutions/tests
+```
 
 ## Problem layout
 
-Each problem lives in its own folder:
-
 ```text
-NN-topic/problems/<slug>/
+topics/NN-topic/problems/<slug>/
   meta.json
   README.md          # description only
   solution.ts
@@ -30,7 +39,7 @@ NN-topic/problems/<slug>/
 |--------|---------|
 | `npm run dev` | NestJS API + Vite React UI |
 | `npm run test:solutions` | Run all problem tests |
-| `npm run build` | Build API and web |
+| `npm run build` | Build API and UI |
 
 ## Prep lists
 
