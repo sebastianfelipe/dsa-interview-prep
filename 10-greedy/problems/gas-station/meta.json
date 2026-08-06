@@ -1,0 +1,9 @@
+{
+  "title": "Gas Station",
+  "slug": "gas-station",
+  "leetcodeId": 134,
+  "difficulty": "Medium",
+  "tags": [
+    "greedy"
+  ]
+}
