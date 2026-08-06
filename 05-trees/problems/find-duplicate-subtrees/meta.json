@@ -1,0 +1,11 @@
+{
+  "title": "Find Duplicate Subtrees",
+  "slug": "find-duplicate-subtrees",
+  "leetcodeId": 652,
+  "difficulty": "Medium",
+  "tags": [
+    "tree",
+    "dfs",
+    "hash-table"
+  ]
+}

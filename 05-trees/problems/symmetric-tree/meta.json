@@ -1,0 +1,11 @@
+{
+  "title": "Symmetric Tree",
+  "slug": "symmetric-tree",
+  "leetcodeId": 101,
+  "difficulty": "Easy",
+  "tags": [
+    "tree",
+    "dfs",
+    "bfs"
+  ]
+}

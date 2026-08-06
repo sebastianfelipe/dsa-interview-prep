@@ -1,0 +1,12 @@
+{
+  "title": "Binary Search Tree Iterator",
+  "slug": "binary-search-tree-iterator",
+  "leetcodeId": 173,
+  "difficulty": "Medium",
+  "tags": [
+    "tree",
+    "stack",
+    "design",
+    "bst"
+  ]
+}

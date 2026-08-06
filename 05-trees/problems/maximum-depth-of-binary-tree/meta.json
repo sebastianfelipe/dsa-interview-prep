@@ -1,0 +1,10 @@
+{
+  "title": "Maximum Depth of Binary Tree",
+  "slug": "maximum-depth-of-binary-tree",
+  "leetcodeId": 104,
+  "difficulty": "Easy",
+  "tags": [
+    "tree",
+    "dfs"
+  ]
+}

@@ -1,17 +1,6 @@
-# Binary Tree Level Order Traversal
+import { TreeNode } from '@lib/helpers';
 
-## Problem
-
-Return values level by level as `number[][]`.
-
-## Recognition
-
-**BFS** with level sizing.
-
-## Code (TypeScript)
-
-```ts
-function levelOrder(root: TreeNode | null): number[][] {
+export function levelOrder(root: TreeNode | null): number[][] {
   if (!root) return [];
   const result: number[][] = [];
   const queue: TreeNode[] = [root];
@@ -30,8 +19,3 @@ function levelOrder(root: TreeNode | null): number[][] {
   }
   return result;
 }
-```
-
-## Key Extract
-
-Freeze level `size`. Variants: zigzag (alternate reverse), right side view (`level[level.length-1]`).

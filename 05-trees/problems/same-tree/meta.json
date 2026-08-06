@@ -1,0 +1,11 @@
+{
+  "title": "Same Tree",
+  "slug": "same-tree",
+  "leetcodeId": 100,
+  "difficulty": "Easy",
+  "tags": [
+    "tree",
+    "dfs",
+    "bfs"
+  ]
+}

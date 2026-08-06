@@ -1,0 +1,10 @@
+{
+  "title": "Validate Binary Search Tree",
+  "slug": "validate-binary-search-tree",
+  "leetcodeId": 98,
+  "difficulty": "Medium",
+  "tags": [
+    "tree",
+    "bst"
+  ]
+}

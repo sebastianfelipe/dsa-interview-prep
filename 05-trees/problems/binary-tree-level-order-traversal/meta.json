@@ -1,0 +1,10 @@
+{
+  "title": "Binary Tree Level Order Traversal",
+  "slug": "binary-tree-level-order-traversal",
+  "leetcodeId": 102,
+  "difficulty": "Medium",
+  "tags": [
+    "tree",
+    "bfs"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "title": "All Possible Full Binary Trees",
+  "slug": "all-possible-full-binary-trees",
+  "leetcodeId": 894,
+  "difficulty": "Medium",
+  "tags": [
+    "tree",
+    "recursion",
+    "dynamic-programming",
+    "memoization"
+  ]
+}
