@@ -3,7 +3,7 @@ import path from 'path';
 
 export default defineConfig({
   test: {
-    include: ['**/problems/**/solution.test.ts'],
+    include: ['topics/**/problems/**/solution.test.ts'],
     globals: false,
     environment: 'node',
     testTimeout: 10_000,

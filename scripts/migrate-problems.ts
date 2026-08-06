@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const ROOT = path.resolve(__dirname, '..');
+const TOPICS_ROOT = path.join(ROOT, 'topics');
 
 type Difficulty = 'Easy' | 'Medium' | 'Hard';
 
@@ -213,7 +214,7 @@ function migrateFile(mdPath: string) {
   // Fix title if slug renamed
   const titled = readme.replace(/^# .+$/m, `# ${meta.title}`);
 
-  const outDir = path.join(ROOT, topic, 'problems', meta.slug);
+  const outDir = path.join(TOPICS_ROOT, topic, 'problems', meta.slug);
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(
     path.join(outDir, 'meta.json'),
@@ -240,9 +241,9 @@ function migrateFile(mdPath: string) {
 }
 
 function main() {
-  const topics = fs.readdirSync(ROOT).filter((d) => /^\d{2}-/.test(d));
+  const topics = fs.readdirSync(TOPICS_ROOT).filter((d) => /^\d{2}-/.test(d));
   for (const topic of topics) {
-    const problemsDir = path.join(ROOT, topic, 'problems');
+    const problemsDir = path.join(TOPICS_ROOT, topic, 'problems');
     if (!fs.existsSync(problemsDir)) continue;
     for (const file of fs.readdirSync(problemsDir)) {
       if (!file.endsWith('.md')) continue;

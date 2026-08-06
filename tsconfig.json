@@ -13,5 +13,5 @@
     },
     "types": ["node", "vitest/globals"]
   },
-  "include": ["lib/**/*.ts", "**/problems/**/*.ts", "vitest.solutions.config.ts"]
+  "include": ["lib/**/*.ts", "topics/**/problems/**/*.ts", "vitest.solutions.config.ts"]
 }
