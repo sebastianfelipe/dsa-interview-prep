@@ -14,17 +14,14 @@ import {
   cycleThemePreference,
   readPalette,
   readThemePreference,
-  resolveTheme,
   writePalette,
   writeThemePreference,
   type PaletteId,
-  type ResolvedTheme,
   type ThemePreference,
 } from './theme';
 
 type ThemeContextValue = {
   preference: ThemePreference;
-  resolved: ResolvedTheme;
   palette: PaletteId;
   setPreference: (preference: ThemePreference) => void;
   setPalette: (palette: PaletteId) => void;
@@ -37,15 +34,12 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [preference, setPreferenceState] = useState<ThemePreference>(() => readThemePreference());
   const [palette, setPaletteState] = useState<PaletteId>(() => readPalette());
-  const [resolved, setResolved] = useState<ResolvedTheme>(() =>
-    resolveTheme(readThemePreference()),
-  );
 
   const setPreference = useCallback(
     (next: ThemePreference) => {
       writeThemePreference(next);
       setPreferenceState(next);
-      setResolved(applyTheme(next, palette));
+      applyTheme(next, palette);
     },
     [palette],
   );
@@ -54,7 +48,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     (next: PaletteId) => {
       writePalette(next);
       setPaletteState(next);
-      setResolved(applyTheme(preference, next));
+      applyTheme(preference, next);
     },
     [preference],
   );
@@ -68,27 +62,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [palette, setPalette]);
 
   useEffect(() => {
-    setResolved(applyTheme(preference, palette));
-
-    if (preference !== 'system') return;
-
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => setResolved(applyTheme('system', palette));
-    media.addEventListener('change', onChange);
-    return () => media.removeEventListener('change', onChange);
+    applyTheme(preference, palette);
   }, [preference, palette]);
 
   const value = useMemo(
     () => ({
       preference,
-      resolved,
       palette,
       setPreference,
       setPalette,
       cycle,
       cyclePaletteMode,
     }),
-    [preference, resolved, palette, setPreference, setPalette, cycle, cyclePaletteMode],
+    [preference, palette, setPreference, setPalette, cycle, cyclePaletteMode],
   );
 
   return createElement(ThemeContext.Provider, { value }, children);

@@ -398,10 +398,6 @@ html[data-theme='light'] .theme-toggle-icon {
   background: transparent;
 }
 
-html[data-theme-preference='system'] .theme-toggle-icon {
-  background: linear-gradient(90deg, currentColor 50%, transparent 50%);
-}
-
 .theme-toggle-label {
   font-size: 0.85rem;
   font-weight: 600;
