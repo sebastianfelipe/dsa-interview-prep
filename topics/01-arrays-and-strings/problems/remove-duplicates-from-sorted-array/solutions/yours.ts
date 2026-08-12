@@ -7,6 +7,5 @@ export function removeDuplicates(nums: number[]): number {
     }
     i++;
   }
-
   return nums.length;
 }

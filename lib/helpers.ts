@@ -1,5 +1,4 @@
 /** Shared helpers for solutions and tests. */
-
 export class ListNode {
   val: number;
   next: ListNode | null;
@@ -8,7 +7,6 @@ export class ListNode {
     this.next = next;
   }
 }
-
 export class TreeNode {
   val: number;
   left: TreeNode | null;
@@ -19,7 +17,6 @@ export class TreeNode {
     this.right = right;
   }
 }
-
 export class Node {
   val: number;
   neighbors: Node[];
@@ -28,7 +25,6 @@ export class Node {
     this.neighbors = neighbors;
   }
 }
-
 export function listFromArray(arr: number[]): ListNode | null {
   const dummy = new ListNode(0);
   let curr = dummy;
@@ -38,7 +34,6 @@ export function listFromArray(arr: number[]): ListNode | null {
   }
   return dummy.next;
 }
-
 export function listToArray(head: ListNode | null): number[] {
   const out: number[] = [];
   let curr = head;
@@ -48,16 +43,19 @@ export function listToArray(head: ListNode | null): number[] {
   }
   return out;
 }
-
 /** Build a binary tree from level-order array (`null` for missing nodes). */
 export function treeFromArray(arr: (number | null)[]): TreeNode | null {
-  if (!arr.length || arr[0] == null) return null;
+  if (!arr.length || arr[0] == null) {
+    return null;
+  }
   const root = new TreeNode(arr[0]);
   const queue: TreeNode[] = [root];
   let i = 1;
   while (queue.length && i < arr.length) {
     const node = queue.shift();
-    if (!node) break;
+    if (!node) {
+      break;
+    }
     if (i < arr.length && arr[i] != null) {
       node.left = new TreeNode(arr[i] as number);
       queue.push(node.left);
@@ -71,14 +69,17 @@ export function treeFromArray(arr: (number | null)[]): TreeNode | null {
   }
   return root;
 }
-
 export function treeToArray(root: TreeNode | null): (number | null)[] {
-  if (!root) return [];
+  if (!root) {
+    return [];
+  }
   const out: (number | null)[] = [];
   const queue: (TreeNode | null)[] = [root];
   while (queue.length) {
     const node = queue.shift();
-    if (node === undefined) break;
+    if (node === undefined) {
+      break;
+    }
     if (!node) {
       out.push(null);
       continue;
@@ -87,6 +88,8 @@ export function treeToArray(root: TreeNode | null): (number | null)[] {
     queue.push(node.left);
     queue.push(node.right);
   }
-  while (out.length && out[out.length - 1] == null) out.pop();
+  while (out.length && out[out.length - 1] == null) {
+    out.pop();
+  }
   return out;
 }

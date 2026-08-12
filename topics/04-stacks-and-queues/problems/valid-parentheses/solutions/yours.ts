@@ -4,19 +4,17 @@ export function isValid(s: string): boolean {
     '[': ']',
     '{': '}',
   };
-
   const bracketsChain: string[] = [];
-
   for (const char of s) {
     if (char in bracketsMap) {
       bracketsChain.push(char);
-    } else {
+    }
+    else {
       const lastBracket = bracketsChain.pop();
       if (lastBracket === undefined || char !== bracketsMap[lastBracket]) {
         return false;
       }
     }
   }
-
   return bracketsChain.length === 0;
 }

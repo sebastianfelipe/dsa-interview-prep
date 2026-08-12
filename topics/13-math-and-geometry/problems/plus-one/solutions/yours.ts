@@ -4,13 +4,10 @@ export function plusOne(digits: number[]): number[] {
       digits[i]++;
       break;
     }
-
     digits[i] = 0;
-
     if (digits[i - 1] === undefined) {
       digits.unshift(1);
     }
   }
-
   return digits;
 }

@@ -7,6 +7,5 @@ export function removeElement(nums: number[], val: number): number {
     }
     i++;
   }
-
   return nums.length;
 }

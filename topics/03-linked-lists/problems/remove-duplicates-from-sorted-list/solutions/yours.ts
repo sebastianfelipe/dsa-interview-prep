@@ -1,5 +1,4 @@
 import { ListNode } from '@lib/helpers';
-
 export function deleteDuplicates(head: ListNode | null): ListNode | null {
   let current = head;
   while (current?.next) {
@@ -9,6 +8,5 @@ export function deleteDuplicates(head: ListNode | null): ListNode | null {
     }
     current = current.next;
   }
-
   return head;
 }

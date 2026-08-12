@@ -1,7 +1,6 @@
 export function subsets(nums: number[]): number[][] {
   const result: number[][] = [];
   const path: number[] = [];
-
   const dfs = (start: number): void => {
     result.push([...path]);
     for (let i = start; i < nums.length; i++) {
@@ -10,7 +9,6 @@ export function subsets(nums: number[]): number[][] {
       path.pop();
     }
   };
-
   dfs(0);
   return result;
 }

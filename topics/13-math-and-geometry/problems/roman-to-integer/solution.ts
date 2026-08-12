@@ -7,7 +7,6 @@ const ROMAN: Record<string, number> = {
   D: 500,
   M: 1000,
 };
-
 export function romanToInt(s: string): number {
   let total = 0;
   for (let i = 0; i < s.length; i++) {

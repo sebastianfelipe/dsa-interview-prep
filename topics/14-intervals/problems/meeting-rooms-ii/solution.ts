@@ -10,7 +10,8 @@ export function minMeetingRooms(intervals: number[][]): number {
       rooms += 1;
       maxRooms = Math.max(maxRooms, rooms);
       s += 1;
-    } else {
+    }
+    else {
       rooms -= 1;
       e += 1;
     }

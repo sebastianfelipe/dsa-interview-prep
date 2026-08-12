@@ -5,7 +5,8 @@ export function merge(nums1: number[], m: number, nums2: number[], n: number): v
   while (j >= 0) {
     if (i >= 0 && nums1[i] > nums2[j]) {
       nums1[k--] = nums1[i--];
-    } else {
+    }
+    else {
       nums1[k--] = nums2[j--];
     }
   }

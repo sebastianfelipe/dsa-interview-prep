@@ -7,14 +7,12 @@ export function mySqrt(x: number): number {
     if (estimatedX === x) {
       return guess;
     }
-
     if (estimatedX < x) {
       if ((guess + 1) * (guess + 1) > x) {
         return guess;
       }
       left = guess;
     }
-
     if (estimatedX > x) {
       if ((guess - 1) * (guess - 1) < x) {
         return guess - 1;

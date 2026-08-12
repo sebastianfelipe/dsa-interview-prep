@@ -1,17 +1,13 @@
 import { ListNode } from '@lib/helpers';
-
-export function mergeTwoLists(
-  list1: ListNode | null,
-  list2: ListNode | null,
-): ListNode | null {
+export function mergeTwoLists(list1: ListNode | null, list2: ListNode | null): ListNode | null {
   const dummy = new ListNode(0);
   let tail = dummy;
-
   while (list1 && list2) {
     if (list1.val <= list2.val) {
       tail.next = list1;
       list1 = list1.next;
-    } else {
+    }
+    else {
       tail.next = list2;
       list2 = list2.next;
     }

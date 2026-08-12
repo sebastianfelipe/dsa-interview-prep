@@ -8,7 +8,6 @@ export function romanToInt(s: string): number {
     D: 500,
     M: 1000,
   };
-
   let sum = 0;
   for (let i = 0; i < s.length; i++) {
     const symbol = s[i];
@@ -60,6 +59,5 @@ export function romanToInt(s: string): number {
       }
     }
   }
-
   return sum;
 }

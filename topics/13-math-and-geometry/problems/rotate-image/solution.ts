@@ -7,5 +7,7 @@ export function rotate(matrix: number[][]): void {
     }
   }
   // reverse each row
-  for (const row of matrix) row.reverse();
+  for (const row of matrix) {
+    row.reverse();
+  }
 }

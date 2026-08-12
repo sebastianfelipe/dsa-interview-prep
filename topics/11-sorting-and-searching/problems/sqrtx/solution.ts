@@ -1,5 +1,7 @@
 export function mySqrt(x: number): number {
-  if (x < 2) return x;
+  if (x < 2) {
+    return x;
+  }
   let lo = 1;
   let hi = Math.floor(x / 2);
   let ans = 1;
@@ -8,7 +10,8 @@ export function mySqrt(x: number): number {
     if (mid <= Math.floor(x / mid)) {
       ans = mid;
       lo = mid + 1;
-    } else {
+    }
+    else {
       hi = mid - 1;
     }
   }
