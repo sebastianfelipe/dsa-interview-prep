@@ -3,16 +3,53 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { spawn } from 'child_process';
 import { CatalogService } from '../catalog/catalog.service';
+import {
+  CODE_LANGUAGES,
+  type CodeLanguage,
+  languageFromFilename,
+  normalizeCodeLanguage,
+  swapLanguageExtension,
+} from '../code-language';
 
-export interface SolutionEntry {
+interface RawSolutionEntry {
   id: string;
   title: string;
-  file: string;
+  file?: string;
+  implementations?: Partial<Record<CodeLanguage, string>>;
   source: 'repo' | 'yours' | string;
   notes?: string;
   description?: string;
   time?: string;
   space?: string;
+}
+
+export interface SolutionEntry {
+  id: string;
+  title: string;
+  /** Preferred / primary file (back-compat). */
+  file: string;
+  languages: CodeLanguage[];
+  implementations: Partial<Record<CodeLanguage, string>>;
+  source: 'repo' | 'yours' | string;
+  notes?: string;
+  description?: string;
+  time?: string;
+  space?: string;
+}
+
+export interface SolutionDetail {
+  id: string;
+  title: string;
+  source: string;
+  notes?: string;
+  description?: string;
+  time?: string;
+  space?: string;
+  language: CodeLanguage;
+  languages: CodeLanguage[];
+  code: string;
+  hasCode: boolean;
+  path: string | null;
 }
 
 @Injectable()
@@ -25,22 +62,15 @@ export class ProblemsService {
 
     const catalogPath = path.join(dir, 'solutions.json');
     if (fs.existsSync(catalogPath)) {
-      const data = JSON.parse(fs.readFileSync(catalogPath, 'utf8')) as { solutions: SolutionEntry[] };
-      return data.solutions.filter((s) => fs.existsSync(path.join(dir, s.file)));
+      const data = JSON.parse(fs.readFileSync(catalogPath, 'utf8')) as {
+        solutions: RawSolutionEntry[];
+      };
+      return data.solutions
+        .map((raw) => this.normalizeEntry(dir, raw))
+        .filter((s) => s.languages.length > 0);
     }
 
-    if (fs.existsSync(path.join(dir, 'solution.ts'))) {
-      return [
-        {
-          id: 'recommended',
-          title: 'Recommended',
-          file: 'solution.ts',
-          source: 'repo',
-        },
-      ];
-    }
-
-    return [];
+    return this.discoverDefaultEntries(dir);
   }
 
   getProblem(topic: string, slug: string) {
@@ -50,10 +80,16 @@ export class ProblemsService {
     const readmePath = path.join(dir, 'README.md');
     const readme = fs.existsSync(readmePath) ? fs.readFileSync(readmePath, 'utf8') : '';
     const solutions = this.listSolutions(topic, slug);
-    return { ...summary, readme, solutions };
+    const languages = this.collectLanguages(solutions);
+    return { ...summary, readme, solutions, languages };
   }
 
-  getSolution(topic: string, slug: string, solutionId = 'recommended') {
+  getSolution(
+    topic: string,
+    slug: string,
+    solutionId = 'recommended',
+    language?: string,
+  ): SolutionDetail {
     const solutions = this.listSolutions(topic, slug);
     const entry =
       solutions.find((s) => s.id === solutionId) ??
@@ -61,9 +97,16 @@ export class ProblemsService {
       solutions[0];
     if (!entry) throw new NotFoundException('No solution file');
 
+    const resolved = normalizeCodeLanguage(
+      language,
+      entry.implementations.typescript
+        ? 'typescript'
+        : entry.languages[0] ?? 'typescript',
+    );
+    const relative = entry.implementations[resolved];
     const dir = this.catalog.problemDir(topic, slug);
-    const solutionPath = path.join(dir, entry.file);
-    if (!fs.existsSync(solutionPath)) throw new NotFoundException('No solution file');
+    const solutionPath = relative ? path.join(dir, relative) : null;
+    const hasCode = Boolean(solutionPath && fs.existsSync(solutionPath));
 
     return {
       id: entry.id,
@@ -73,9 +116,11 @@ export class ProblemsService {
       description: entry.description,
       time: entry.time,
       space: entry.space,
-      language: 'typescript',
-      code: fs.readFileSync(solutionPath, 'utf8'),
-      path: path.relative(this.catalog.root, solutionPath),
+      language: resolved,
+      languages: entry.languages,
+      code: hasCode && solutionPath ? fs.readFileSync(solutionPath, 'utf8') : '',
+      hasCode,
+      path: hasCode && solutionPath ? path.relative(this.catalog.root, solutionPath) : null,
     };
   }
 
@@ -127,5 +172,89 @@ export class ProblemsService {
         });
       });
     });
+  }
+
+  private normalizeEntry(dir: string, raw: RawSolutionEntry): SolutionEntry {
+    const implementations: Partial<Record<CodeLanguage, string>> = {};
+
+    if (raw.implementations) {
+      for (const lang of CODE_LANGUAGES) {
+        const file = raw.implementations[lang];
+        if (file && fs.existsSync(path.join(dir, file))) {
+          implementations[lang] = file;
+        }
+      }
+    }
+
+    if (raw.file) {
+      const lang = languageFromFilename(raw.file);
+      if (lang && !implementations[lang] && fs.existsSync(path.join(dir, raw.file))) {
+        implementations[lang] = raw.file;
+      }
+    }
+
+    const seeds = [
+      ...Object.values(implementations),
+      ...(raw.file ? [raw.file] : []),
+    ];
+    for (const seed of seeds) {
+      for (const lang of CODE_LANGUAGES) {
+        if (implementations[lang]) continue;
+        const candidate = swapLanguageExtension(seed, lang);
+        if (fs.existsSync(path.join(dir, candidate))) {
+          implementations[lang] = candidate;
+        }
+      }
+    }
+
+    const languages = CODE_LANGUAGES.filter((lang) => Boolean(implementations[lang]));
+    const file =
+      implementations.typescript ??
+      implementations.python ??
+      raw.file ??
+      Object.values(implementations)[0] ??
+      '';
+
+    return {
+      id: raw.id,
+      title: raw.title,
+      file,
+      languages,
+      implementations,
+      source: raw.source,
+      notes: raw.notes,
+      description: raw.description,
+      time: raw.time,
+      space: raw.space,
+    };
+  }
+
+  private discoverDefaultEntries(dir: string): SolutionEntry[] {
+    const implementations: Partial<Record<CodeLanguage, string>> = {};
+    if (fs.existsSync(path.join(dir, 'solution.ts'))) implementations.typescript = 'solution.ts';
+    if (fs.existsSync(path.join(dir, 'solution.py'))) implementations.python = 'solution.py';
+    const languages = CODE_LANGUAGES.filter((lang) => Boolean(implementations[lang]));
+    if (languages.length === 0) return [];
+
+    return [
+      {
+        id: 'recommended',
+        title: 'Recommended',
+        file: implementations.typescript ?? implementations.python ?? 'solution.ts',
+        languages,
+        implementations,
+        source: 'repo',
+      },
+    ];
+  }
+
+  private collectLanguages(solutions: SolutionEntry[]): CodeLanguage[] {
+    const set = new Set<CodeLanguage>();
+    for (const s of solutions) {
+      for (const lang of s.languages) set.add(lang);
+    }
+    // Always advertise supported studio languages so the picker stays stable.
+    for (const lang of CODE_LANGUAGES) set.add(lang);
+    return CODE_LANGUAGES.filter((lang) => set.has(lang));
   }
 }

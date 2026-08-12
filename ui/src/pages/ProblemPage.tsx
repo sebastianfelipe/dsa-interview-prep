@@ -13,6 +13,14 @@ import { CodeBlock } from '../components/CodeBlock';
 import { Markdown } from '../components/Markdown';
 import { ProblemNav } from '../components/ProblemNav';
 import {
+  CODE_LANGUAGES,
+  LANGUAGE_LABELS,
+  type CodeLanguage,
+  readCodeLanguage,
+  writeCodeLanguage,
+} from '../code-language';
+import { formatSourceCode } from '../format-code';
+import {
   createAiSolutionId,
   listLocalSolutions,
   removeLocalSolution,
@@ -44,6 +52,7 @@ export function ProblemPage() {
   const [selectedId, setSelectedId] = useState('recommended');
   const [solution, setSolution] = useState<SolutionDetail | null>(null);
   const [localSolutions, setLocalSolutions] = useState<LocalSolution[]>([]);
+  const [language, setLanguage] = useState<CodeLanguage>(() => readCodeLanguage());
   const [aiConfigured, setAiConfigured] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
   const [aiBusyMode, setAiBusyMode] = useState<AiExplainMode | null>(null);
@@ -53,6 +62,11 @@ export function ProblemPage() {
   const refreshLocals = useCallback(() => {
     setLocalSolutions(listLocalSolutions(topic, slug));
   }, [topic, slug]);
+
+  const setPreferredLanguage = useCallback((next: CodeLanguage) => {
+    setLanguage(next);
+    writeCodeLanguage(next);
+  }, []);
 
   useEffect(() => {
     api
@@ -103,6 +117,7 @@ export function ProblemPage() {
       id: s.id,
       title: s.title,
       file: '',
+      languages: [s.language === 'python' ? 'python' : 'typescript'],
       source: s.source,
       notes: s.notes,
       description: s.description,
@@ -117,6 +132,21 @@ export function ProblemPage() {
     [localSolutions, selectedId],
   );
 
+  const selectedRepo = useMemo(
+    () => problem?.solutions.find((s) => s.id === selectedId) ?? null,
+    [problem?.solutions, selectedId],
+  );
+
+  const languageAvailableForSelection = useMemo(() => {
+    if (selectedLocal) {
+      return (selectedLocal.language || 'typescript') === language;
+    }
+    if (!selectedRepo) return true;
+    const langs = selectedRepo.languages ?? [];
+    if (langs.length === 0) return language === 'typescript';
+    return langs.includes(language);
+  }, [selectedLocal, selectedRepo, language]);
+
   useEffect(() => {
     if (!problem) {
       setSolution(null);
@@ -124,6 +154,11 @@ export function ProblemPage() {
     }
 
     if (selectedLocal) {
+      const localLang = selectedLocal.language === 'python' ? 'python' : 'typescript';
+      if (localLang !== language) {
+        setSolution(null);
+        return;
+      }
       setSolution({
         id: selectedLocal.id,
         title: selectedLocal.title,
@@ -132,21 +167,23 @@ export function ProblemPage() {
         description: selectedLocal.description,
         time: selectedLocal.time,
         space: selectedLocal.space,
-        language: selectedLocal.language || 'typescript',
-        code: selectedLocal.code,
+        language: localLang,
+        languages: [localLang],
+        code: selectedLocal.code ? formatSourceCode(selectedLocal.code, localLang) : '',
+        hasCode: Boolean(selectedLocal.code),
         path: 'localStorage',
       });
       return;
     }
 
-    if (!problem.hasSolution) {
+    if (!problem.hasSolution && !selectedRepo) {
       setSolution(null);
       return;
     }
 
     let cancelled = false;
     api
-      .solution(topic, slug, selectedId)
+      .solution(topic, slug, selectedId, language)
       .then((s) => {
         if (!cancelled) setSolution(s);
       })
@@ -157,7 +194,7 @@ export function ProblemPage() {
     return () => {
       cancelled = true;
     };
-  }, [problem, topic, slug, selectedId, selectedLocal]);
+  }, [problem, topic, slug, selectedId, selectedLocal, selectedRepo, language]);
 
   const neighbors = useMemo(() => {
     if (listId) {
@@ -176,7 +213,8 @@ export function ProblemPage() {
     setAiBusyMode(mode);
     setAiError(null);
     try {
-      const result = await api.aiExplain(topic, slug, mode);
+      const result = await api.aiExplain(topic, slug, mode, language);
+      const codeLang = result.language === 'python' ? 'python' : 'typescript';
       const entry: LocalSolution = {
         id: createAiSolutionId(),
         title: result.title,
@@ -185,8 +223,8 @@ export function ProblemPage() {
         description: result.description,
         time: result.time,
         space: result.space,
-        code: result.code ?? '',
-        language: result.language || 'typescript',
+        code: result.code ? formatSourceCode(result.code, codeLang) : '',
+        language: codeLang,
         createdAt: new Date().toISOString(),
       };
       saveLocalSolution(topic, slug, entry);
@@ -217,10 +255,10 @@ export function ProblemPage() {
   if (!problem) return <main className="page">Loading…</main>;
 
   const selected = solutions.find((s) => s.id === selectedId) ?? solutions[0];
-  const description = solution?.description ?? selected?.description;
-  const notes = solution?.notes ?? selected?.notes;
-  const time = solution?.time ?? selected?.time;
-  const space = solution?.space ?? selected?.space;
+  const description = solution?.description ?? selected?.description ?? selectedRepo?.description;
+  const notes = solution?.notes ?? selected?.notes ?? selectedRepo?.notes;
+  const time = solution?.time ?? selected?.time ?? selectedRepo?.time;
+  const space = solution?.space ?? selected?.space ?? selectedRepo?.space;
   const showSolutionPane = true;
   const backTo = list
     ? { to: '/lists', label: list.title }
@@ -234,6 +272,13 @@ export function ProblemPage() {
     listId,
     label: list?.title ?? null,
   };
+
+  const missingLangLabel = LANGUAGE_LABELS[language];
+  const showMissingLanguage =
+    !selectedLocal &&
+    selectedRepo &&
+    !languageAvailableForSelection &&
+    Boolean(description || notes);
 
   const problemPane = (
     <div className="problem-pane">
@@ -317,7 +362,7 @@ export function ProblemPage() {
                 disabled={!aiConfigured || aiBusy}
                 aria-label={
                   aiConfigured
-                    ? 'Ask AI for a full solution'
+                    ? `Ask AI for a full ${LANGUAGE_LABELS[language]} solution`
                     : 'Ask AI solution (locked — add an OpenAI API key to unlock)'
                 }
                 onClick={() => askAi('full')}
@@ -353,24 +398,48 @@ export function ProblemPage() {
       <div className={`solution-block${revealed ? '' : ' is-locked'}`}>
         <div className="solution-meta">
           <strong>Code</strong>
+          <div className="language-switch" role="tablist" aria-label="Code language">
+            {CODE_LANGUAGES.map((lang) => (
+              <button
+                key={lang}
+                type="button"
+                role="tab"
+                aria-selected={language === lang}
+                className={`language-chip ${language === lang ? 'active' : ''}`}
+                onClick={() => setPreferredLanguage(lang)}
+              >
+                {LANGUAGE_LABELS[lang]}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="solution-code-wrap">
-          {solution && solution.code ? (
+          {solution?.hasCode && solution.code ? (
             <CodeBlock
               code={solution.code}
-              language={solution.language || 'typescript'}
+              language={solution.language || language}
               className="solution-code"
               aria-hidden={!revealed}
             />
-          ) : (
+          ) : selectedLocal && languageAvailableForSelection && !selectedLocal.code ? (
+            <pre className="solution-code">
+              <code>Hint only — no code for this chip.</code>
+            </pre>
+          ) : showMissingLanguage || (selectedLocal && !languageAvailableForSelection) ? (
             <pre className="solution-code">
               <code>
-                {selectedLocal && !selectedLocal.code
-                  ? 'Hint only — no code for this chip.'
-                  : problem.hasSolution
-                    ? 'Loading…'
-                    : 'No code yet.'}
+                {selectedLocal
+                  ? `This AI chip is ${LANGUAGE_LABELS[selectedLocal.language === 'python' ? 'python' : 'typescript']} — switch language or Ask AI for ${missingLangLabel}.`
+                  : `No ${missingLangLabel} yet for this approach — Ask AI to generate one, or add solution${language === 'python' ? '.py' : '.ts'}.`}
               </code>
+            </pre>
+          ) : problem.hasSolution && languageAvailableForSelection ? (
+            <pre className="solution-code">
+              <code>Loading…</code>
+            </pre>
+          ) : (
+            <pre className="solution-code">
+              <code>No code yet.</code>
             </pre>
           )}
           {!revealed && solution?.code && (

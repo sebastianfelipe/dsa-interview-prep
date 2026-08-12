@@ -5,6 +5,12 @@ import {
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import {
+  LANGUAGE_LABELS,
+  type CodeLanguage,
+  normalizeCodeLanguage,
+} from '../code-language';
+import { formatSourceCode } from '../format-code';
 import { ProblemsService } from '../problems/problems.service';
 
 export type AiExplainMode = 'hint' | 'full';
@@ -16,18 +22,21 @@ export interface AiExplainResult {
   time?: string;
   space?: string;
   code?: string;
-  language: string;
+  language: CodeLanguage;
   model: string;
   mode: AiExplainMode;
 }
 
-const SYSTEM_PROMPT = `You are a DSA interview tutor inside DSA Studio AI.
+function systemPrompt(language: CodeLanguage): string {
+  const label = LANGUAGE_LABELS[language];
+  return `You are a DSA interview tutor inside DSA Studio AI.
 Given one coding problem, analyze recognition signals and propose one clear interview approach.
 
 Rules:
 - Lead with the approach: pattern recognition, why it works, and how to talk through it in an interview.
 - Teach walkthroughs with the problem examples; do not dump trivia.
-- Language is secondary — reason in language-agnostic steps first. When code is requested, use clear interview-ready TypeScript as a vehicle for the approach (not as the point of the lesson).
+- Language is secondary — reason in language-agnostic steps first. When code is requested, use clear interview-ready ${label} as a vehicle for the approach (not as the point of the lesson).
+- Format code with real newlines and indentation (never put an entire function on one line; never escape newlines as \\n inside the JSON string value beyond normal JSON encoding).
 - Do not claim affiliation with LeetCode or copy proprietary editorial text.
 - Respond with a single JSON object only (no markdown fences).
 
@@ -38,8 +47,9 @@ JSON shape:
   "time": "e.g. O(n)",
   "space": "e.g. O(1)",
   "description": "markdown: Approach, why it works, example walkthrough (pattern-first, language-light)",
-  "code": "TypeScript source illustrating the approach (omit or empty string in hint mode)"
+  "code": "${label} source illustrating the approach (omit or empty string in hint mode)"
 }`;
+}
 
 @Injectable()
 export class AiService {
@@ -53,7 +63,14 @@ export class AiService {
     };
   }
 
-  async explain(topic: string, slug: string, mode: AiExplainMode = 'full'): Promise<AiExplainResult> {
+  async explain(
+    topic: string,
+    slug: string,
+    mode: AiExplainMode = 'full',
+    languageInput?: string,
+  ): Promise<AiExplainResult> {
+    const language = normalizeCodeLanguage(languageInput);
+    const label = LANGUAGE_LABELS[language];
     const apiKey = this.apiKey();
     if (!apiKey) {
       throw new ServiceUnavailableException('AI is not configured (missing OPENAI_API_KEY)');
@@ -68,7 +85,8 @@ export class AiService {
 
     const model = this.model();
     const userPrompt = [
-      `Mode: ${mode === 'hint' ? 'HINT ONLY — explain the approach and walk an example in language-agnostic terms; do not include solution code (set code to "").' : 'FULL — teach the approach first, then include a complete TypeScript illustration of that approach in code.'}`,
+      `Mode: ${mode === 'hint' ? 'HINT ONLY — explain the approach and walk an example in language-agnostic terms; do not include solution code (set code to "").' : `FULL — teach the approach first, then include a complete ${label} illustration of that approach in code.`}`,
+      `Code language for the illustration: ${label}`,
       `Topic: ${problem.topicTitle} (${topic})`,
       `Difficulty: ${problem.difficulty}`,
       `Slug: ${slug}`,
@@ -89,7 +107,7 @@ export class AiService {
         temperature: 0.4,
         response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: systemPrompt(language) },
           { role: 'user', content: userPrompt },
         ],
       }),
@@ -127,10 +145,12 @@ export class AiService {
       throw new BadGatewayException('OpenAI response missing description');
     }
 
-    const code = mode === 'full' ? (parsed.code ?? '').trim() : undefined;
-    if (mode === 'full' && !code) {
+    const rawCode = mode === 'full' ? (parsed.code ?? '').trim() : undefined;
+    if (mode === 'full' && !rawCode) {
       throw new BadGatewayException('OpenAI response missing code for full mode');
     }
+
+    const code = rawCode ? formatSourceCode(rawCode, language) : undefined;
 
     return {
       title,
@@ -139,7 +159,7 @@ export class AiService {
       space: parsed.space?.trim() || undefined,
       description,
       code: code || undefined,
-      language: 'typescript',
+      language,
       model,
       mode,
     };
@@ -188,7 +208,6 @@ export class AiService {
       return `OpenAI model "${this.model()}" was not found. Check OPENAI_MODEL in api/.env.`;
     }
     if (type === 'invalid_request_error' && message) {
-      // OpenAI messages here are usually about model/params, not secrets.
       return `OpenAI request invalid: ${message.slice(0, 180)}`;
     }
     return `OpenAI request failed (${response.status})`;

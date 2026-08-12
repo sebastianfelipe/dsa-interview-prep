@@ -1317,6 +1317,11 @@ html[data-theme='light'] .theme-toggle-icon {
 
 .solution-meta {
   flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem 0.75rem;
   padding: 0.75rem 1.1rem;
   font-size: 0.9rem;
   background: var(--code-bg);
@@ -1325,6 +1330,44 @@ html[data-theme='light'] .theme-toggle-icon {
 
 .solution-meta .muted {
   color: color-mix(in srgb, var(--code-fg) 70%, transparent);
+}
+
+.language-switch {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.language-chip {
+  appearance: none;
+  margin: 0;
+  border: 1px solid color-mix(in srgb, var(--code-fg) 22%, transparent);
+  border-radius: 999px;
+  padding: 0.22rem 0.65rem;
+  background: transparent;
+  color: color-mix(in srgb, var(--code-fg) 78%, transparent);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.language-chip:hover {
+  color: var(--code-fg);
+  border-color: color-mix(in srgb, var(--code-fg) 40%, transparent);
+}
+
+.language-chip.active {
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  color: var(--code-fg);
+}
+
+.language-chip:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 2px;
 }
 
 .solution-code-wrap {

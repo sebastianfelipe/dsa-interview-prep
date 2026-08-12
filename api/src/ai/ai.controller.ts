@@ -6,6 +6,7 @@ class ExplainBodyDto {
   topic!: string;
   slug!: string;
   mode?: AiExplainMode;
+  language?: string;
 }
 
 @ApiTags('ai')
@@ -31,11 +32,17 @@ export class AiController {
         topic: { type: 'string', example: '02-hashing' },
         slug: { type: 'string', example: 'two-sum' },
         mode: { type: 'string', enum: ['hint', 'full'], default: 'full' },
+        language: {
+          type: 'string',
+          enum: ['typescript', 'python'],
+          default: 'typescript',
+          description: 'Language for code illustrations (hint mode still omits code)',
+        },
       },
     },
   })
   explain(@Body() body: ExplainBodyDto) {
     const mode: AiExplainMode = body.mode === 'hint' ? 'hint' : 'full';
-    return this.ai.explain(body.topic, body.slug, mode);
+    return this.ai.explain(body.topic, body.slug, mode, body.language);
   }
 }

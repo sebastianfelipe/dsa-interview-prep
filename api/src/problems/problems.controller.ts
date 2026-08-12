@@ -33,12 +33,19 @@ export class ProblemsController {
     description: 'Solution id from solutions.json (default: recommended)',
     example: 'yours',
   })
+  @ApiQuery({
+    name: 'language',
+    required: false,
+    description: 'Code language (typescript | python). Falls back to an available implementation.',
+    example: 'python',
+  })
   getSolution(
     @Param('topic') topic: string,
     @Param('slug') slug: string,
     @Query('id') id?: string,
+    @Query('language') language?: string,
   ) {
-    return this.problems.getSolution(topic, slug, id ?? 'recommended');
+    return this.problems.getSolution(topic, slug, id ?? 'recommended', language);
   }
 
   @Post(':topic/:slug/run')

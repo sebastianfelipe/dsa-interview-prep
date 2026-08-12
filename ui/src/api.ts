@@ -25,10 +25,14 @@ export interface Catalog {
   difficulties: Difficulty[];
 }
 
+export type CodeLanguage = 'typescript' | 'python';
+
 export interface SolutionEntry {
   id: string;
   title: string;
   file: string;
+  languages?: CodeLanguage[];
+  implementations?: Partial<Record<CodeLanguage, string>>;
   source: string;
   notes?: string;
   description?: string;
@@ -39,6 +43,7 @@ export interface SolutionEntry {
 export interface ProblemDetail extends ProblemSummary {
   readme: string;
   solutions: SolutionEntry[];
+  languages?: CodeLanguage[];
 }
 
 export interface SolutionDetail {
@@ -50,8 +55,10 @@ export interface SolutionDetail {
   time?: string;
   space?: string;
   language: string;
+  languages?: CodeLanguage[];
   code: string;
-  path: string;
+  hasCode?: boolean;
+  path: string | null;
 }
 
 export interface ListSummary {
@@ -137,12 +144,15 @@ export const api = {
   catalog: (difficulty?: Difficulty) =>
     get<Catalog>(difficulty ? `/api/catalog?difficulty=${difficulty}` : '/api/catalog'),
   problem: (topic: string, slug: string) => get<ProblemDetail>(`/api/problems/${topic}/${slug}`),
-  solution: (topic: string, slug: string, id?: string) =>
-    get<SolutionDetail>(
-      id
-        ? `/api/problems/${topic}/${slug}/solution?id=${encodeURIComponent(id)}`
-        : `/api/problems/${topic}/${slug}/solution`,
-    ),
+  solution: (topic: string, slug: string, id?: string, language?: CodeLanguage) => {
+    const params = new URLSearchParams();
+    if (id) params.set('id', id);
+    if (language) params.set('language', language);
+    const qs = params.toString();
+    return get<SolutionDetail>(
+      `/api/problems/${topic}/${slug}/solution${qs ? `?${qs}` : ''}`,
+    );
+  },
   run: async (topic: string, slug: string) => {
     const res = await fetch(`/api/problems/${topic}/${slug}/run`, { method: 'POST' });
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
@@ -156,6 +166,10 @@ export const api = {
     ),
   doc: (path: string) => get<{ path: string; title: string; markdown: string }>(`/api/docs/${path}`),
   aiStatus: () => get<AiStatus>('/api/ai/status'),
-  aiExplain: (topic: string, slug: string, mode: AiExplainMode = 'full') =>
-    post<AiExplainResult>('/api/ai/explain', { topic, slug, mode }),
+  aiExplain: (
+    topic: string,
+    slug: string,
+    mode: AiExplainMode = 'full',
+    language: CodeLanguage = 'typescript',
+  ) => post<AiExplainResult>('/api/ai/explain', { topic, slug, mode, language }),
 };
