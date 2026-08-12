@@ -1,4 +1,4 @@
-# DSA Studio API
+# DSA Studio AI API
 
 NestJS backend for the study UI.
 

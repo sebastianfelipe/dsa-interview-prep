@@ -1,4 +1,4 @@
-# DSA Studio
+# DSA Studio AI
 
 Study UI for this repo: browse topics by difficulty, read pattern-first writeups, reveal TypeScript solutions, and run tests.
 

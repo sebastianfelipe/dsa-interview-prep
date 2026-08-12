@@ -13,9 +13,9 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('DSA Studio API')
+    .setTitle('DSA Studio AI API')
     .setDescription(
-      'NestJS backend for the DSA interview prep study UI — catalog, problem content, prep lists, reference docs, and solution test runner.',
+      'NestJS backend for DSA Studio AI — catalog, problem content, prep lists, reference docs, solution test runner, and optional OpenAI guidance.',
     )
     .setVersion('1.0')
     .addTag('catalog', 'Topic and problem catalog')
@@ -28,7 +28,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/swagger', app, document, {
     jsonDocumentUrl: 'api/swagger-json',
-    customSiteTitle: 'DSA Studio API',
+    customSiteTitle: 'DSA Studio AI API',
   });
 
   const port = Number(process.env.PORT ?? 3001);

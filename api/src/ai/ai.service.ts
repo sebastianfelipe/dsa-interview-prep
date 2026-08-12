@@ -21,7 +21,7 @@ export interface AiExplainResult {
   mode: AiExplainMode;
 }
 
-const SYSTEM_PROMPT = `You are a DSA interview tutor inside DSA Studio.
+const SYSTEM_PROMPT = `You are a DSA interview tutor inside DSA Studio AI.
 Given one coding problem, analyze recognition signals and propose one clear interview approach.
 
 Rules:

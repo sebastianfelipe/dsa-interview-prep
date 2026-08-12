@@ -8,7 +8,7 @@ export function AppShell() {
     <div className="app-shell">
       <header className="topbar">
         <NavLink to="/" className="brand">
-          DSA <span>Studio</span>
+          DSA Studio <span>AI</span>
         </NavLink>
         <div className="topbar-right">
           <nav className="nav">

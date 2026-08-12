@@ -1,4 +1,4 @@
-# DSA Studio
+# DSA Studio AI
 
 A structured, pattern-first guide for LeetCode-style coding interviews. Every topic includes **concepts**, **recognition signals**, **worked examples**, and a **Key Extract** section — the reusable ideas you should take into the next problem.
 
