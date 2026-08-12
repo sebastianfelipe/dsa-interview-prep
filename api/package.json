@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "DSA Studio NestJS API",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "build": "nest build",
     "start": "nest start",

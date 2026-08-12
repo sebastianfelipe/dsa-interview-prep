@@ -91,3 +91,7 @@ Examples use **TypeScript**. Interviewers often accept JS/TS; typed code also fo
 ## Progress tip
 
 Treat each **Key Extract** as a flashcard. If you can name the pattern from the recognition signals alone, you are interview-ready for that family of problems.
+
+## License
+
+Released under the [MIT License](./LICENSE).
