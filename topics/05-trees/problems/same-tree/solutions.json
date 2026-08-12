@@ -6,7 +6,9 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "DFS: structure + values",
-      "description": "**Approach:** Both null → true; one null or vals differ → false; else recurse left and right.\n\n**Complexity:** Time **O(n)**, space **O(h)**.\n\n**Why preferred:** Clean base cases; easy to adapt to BFS."
+      "description": "**Approach:** Both null → true; one null or vals differ → false; else recurse left and right.\n\n**Why preferred:** Clean base cases; easy to adapt to BFS.",
+      "time": "O(n)",
+      "space": "O(h)"
     },
     {
       "id": "yours",
@@ -14,7 +16,9 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "Recursive equality — same idea",
-      "description": "**Approach:** Null/null true; if values equal, recurse both children; else false.\n\n**Complexity:** Time **O(n)**, space **O(h)**.\n\n**vs recommended:** Matches the intended solution. Be careful with `p?.val === q?.val` when one side is null and the other isn’t (optional chaining can hide a mismatch — prefer explicit null checks)."
+      "description": "**Approach:** Null/null true; if values equal, recurse both children; else false.\n\n**vs recommended:** Matches the intended solution. Be careful with `p?.val === q?.val` when one side is null and the other isn’t (optional chaining can hide a mismatch — prefer explicit null checks).",
+      "time": "O(n)",
+      "space": "O(h)"
     }
   ]
 }

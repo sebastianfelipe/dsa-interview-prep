@@ -576,7 +576,7 @@ html[data-theme-preference='system'] .theme-toggle-icon {
 
 .page-problem {
   width: min(1280px, calc(100% - 2rem));
-  padding-top: 0.35rem;
+  padding-top: 1rem;
   padding-bottom: 2rem;
 }
 
@@ -731,18 +731,52 @@ html[data-theme-preference='system'] .theme-toggle-icon {
   padding: 1rem 1.15rem 1.15rem;
 }
 
+.solution-compare-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
 .solution-compare-title {
-  margin: 0 0 0.35rem;
+  margin: 0;
   font-family: var(--font-display);
   font-size: 1.15rem;
   font-weight: 600;
   letter-spacing: -0.02em;
+  min-width: 0;
 }
 
 .solution-compare-notes {
   margin: 0 0 0.85rem;
   color: var(--ink-soft);
   font-size: 0.92rem;
+}
+
+.solution-complexity {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.55rem 0.85rem;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: right;
+  flex-shrink: 0;
+  max-width: 55%;
+}
+
+.solution-complexity-label {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
 }
 
 .solution-compare .markdown {

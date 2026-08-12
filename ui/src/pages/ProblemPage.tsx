@@ -122,6 +122,8 @@ export function ProblemPage() {
   const selected = solutions.find((s) => s.id === selectedId) ?? solutions[0];
   const description = solution?.description ?? selected?.description;
   const notes = solution?.notes ?? selected?.notes;
+  const time = solution?.time ?? selected?.time;
+  const space = solution?.space ?? selected?.space;
   const showSolution = problem.hasSolution && revealed;
   const backTo = list
     ? { to: '/lists', label: list.title }
@@ -194,7 +196,23 @@ export function ProblemPage() {
       )}
 
       <div className="solution-compare">
-        <h2 className="solution-compare-title">{selected?.title ?? 'Solution'}</h2>
+        <div className="solution-compare-top">
+          <h2 className="solution-compare-title">{selected?.title ?? 'Solution'}</h2>
+          {(time || space) && (
+            <p className="solution-complexity">
+              {time && (
+                <span>
+                  <span className="solution-complexity-label">Time</span> {time}
+                </span>
+              )}
+              {space && (
+                <span>
+                  <span className="solution-complexity-label">Space</span> {space}
+                </span>
+              )}
+            </p>
+          )}
+        </div>
         {notes && <p className="solution-compare-notes">{notes}</p>}
         {description ? (
           <Markdown source={description} />

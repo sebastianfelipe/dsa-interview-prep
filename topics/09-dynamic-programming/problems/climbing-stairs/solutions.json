@@ -6,7 +6,9 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "Bottom-up Fibonacci with two vars",
-      "description": "**Approach:** `ways(i) = ways(i-1) + ways(i-2)`; iterate with two rolling variables.\n\n**Complexity:** Time **O(n)**, space **O(1)**.\n\n**Why preferred:** Shows DP without recursion or a global cache; what most interviewers want after Fibonacci recognition."
+      "description": "**Approach:** `ways(i) = ways(i-1) + ways(i-2)`; iterate with two rolling variables.\n\n**Why preferred:** Shows DP without recursion or a global cache; what most interviewers want after Fibonacci recognition.",
+      "time": "O(n)",
+      "space": "O(1)"
     },
     {
       "id": "yours",
@@ -14,7 +16,9 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "Top-down memo with module cache",
-      "description": "**Approach:** Recurse `f(n)=f(n-1)+f(n-2)` with a shared `calculations` map.\n\n**Complexity:** Time **O(n)**, space **O(n)** for memo + call stack.\n\n**vs recommended:** Correct DP insight. Module-level cache can leak across calls in tests/servers — prefer a local Map or bottom-up loop for interview code."
+      "description": "**Approach:** Recurse `f(n)=f(n-1)+f(n-2)` with a shared `calculations` map.\n\n**vs recommended:** Correct DP insight. Module-level cache can leak across calls in tests/servers — prefer a local Map or bottom-up loop for interview code.",
+      "time": "O(n)",
+      "space": "O(n)"
     }
   ]
 }

@@ -6,7 +6,9 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "O(n) time, O(n) space — interview target",
-      "description": "**Approach:** One pass with a hash map from value → index. For each `nums[i]`, look up `target - nums[i]`; if seen, return both indices.\n\n**Complexity:** Time **O(n)**, extra space **O(n)**.\n\n**Why preferred:** Same correctness as nested loops, but scales. In interviews, state brute force first, then upgrade to the map."
+      "description": "**Approach:** One pass with a hash map from value → index. For each `nums[i]`, look up `target - nums[i]`; if seen, return both indices.\n\n**Why preferred:** Same correctness as nested loops, but scales. In interviews, state brute force first, then upgrade to the map.",
+      "time": "O(n)",
+      "space": "O(n)"
     },
     {
       "id": "yours",
@@ -14,7 +16,9 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "O(n²) time, O(1) extra space — clear but slow",
-      "description": "**Approach:** Try every pair `(i1, i2)` with `i2 > i1` until their sum equals `target`.\n\n**Complexity:** Time **O(n²)**, extra space **O(1)**.\n\n**vs recommended:** Correct and easy to explain. The gap is asymptotic: the hash-map pass finds the complement in **O(1)** average instead of scanning the rest of the array. Keep this as your “first answer,” then mention the map."
+      "description": "**Approach:** Try every pair `(i1, i2)` with `i2 > i1` until their sum equals `target`.\n\n**vs recommended:** Correct and easy to explain. The gap is asymptotic: the hash-map pass finds the complement in **O(1)** average instead of scanning the rest of the array. Keep this as your “first answer,” then mention the map.",
+      "time": "O(n²)",
+      "space": "O(1)"
     }
   ]
 }

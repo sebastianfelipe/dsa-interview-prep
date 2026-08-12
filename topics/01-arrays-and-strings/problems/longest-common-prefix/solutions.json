@@ -1,0 +1,24 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Shrink prefix with startsWith",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Start from first word; trim until every string matches",
+      "description": "**Approach:** Take `strs[0]` as the candidate prefix. For each later string, while it does not `startsWith(prefix)`, drop the last character. Stop early if the prefix becomes empty.\n\n**Why preferred:** Short, easy to narrate, and naturally handles “no shared prefix” by shrinking to `''`.",
+      "time": "O(S)",
+      "space": "O(1)"
+    },
+    {
+      "id": "yours",
+      "title": "Column scan with every()",
+      "file": "solutions/yours.ts",
+      "source": "yours",
+      "notes": "Walk character positions up to the shortest string; stop on first mismatch",
+      "description": "**Approach:** Find the minimum string length, then for each index `position` check that every string has the same character there (`every`). Append matches into an array and `join` at the end; `break` on the first mismatch.\n\n**vs recommended:** Same idea (vertical scan) and very clear. The recommended version mutates one prefix string instead of building an array; both are interview-valid. Drop debug `console.log`s in the helper for real submissions.",
+      "time": "O(n · m)",
+      "space": "O(m)"
+    }
+  ]
+}

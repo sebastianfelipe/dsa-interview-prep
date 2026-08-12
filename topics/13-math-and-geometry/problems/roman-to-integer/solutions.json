@@ -6,7 +6,9 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "O(n) right-to-left: subtract when smaller than previous",
-      "description": "**Approach:** Map symbols to values. Walk right → left; if current < previous value, subtract, else add. Subtractive pairs (IV, IX, …) fall out naturally.\n\n**Complexity:** Time **O(n)**, space **O(1)**.\n\n**Why preferred:** One uniform rule — no special cases per letter."
+      "description": "**Approach:** Map symbols to values. Walk right → left; if current < previous value, subtract, else add. Subtractive pairs (IV, IX, …) fall out naturally.\n\n**Why preferred:** One uniform rule — no special cases per letter.",
+      "time": "O(n)",
+      "space": "O(1)"
     },
     {
       "id": "yours",
@@ -14,7 +16,9 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "Left-to-right with explicit IV/IX/XL/… cases",
-      "description": "**Approach:** Switch on `I`/`X`/`C` and look ahead for subtractive pairs; otherwise add the map value.\n\n**Complexity:** Time **O(n)**, space **O(1)**.\n\n**vs recommended:** Same big-O and readable for learners. More branches to maintain. The right-to-left “smaller than next → subtract” pattern is shorter and less error-prone in interviews."
+      "description": "**Approach:** Switch on `I`/`X`/`C` and look ahead for subtractive pairs; otherwise add the map value.\n\n**vs recommended:** Same big-O and readable for learners. More branches to maintain. The right-to-left “smaller than next → subtract” pattern is shorter and less error-prone in interviews.",
+      "time": "O(n)",
+      "space": "O(1)"
     }
   ]
 }

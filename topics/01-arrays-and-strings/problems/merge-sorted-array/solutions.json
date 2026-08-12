@@ -6,7 +6,9 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "Three pointers from the back — O(1) extra",
-      "description": "**Approach:** Fill `nums1` from index `m+n-1` downward, always taking the larger of `nums1[i]` / `nums2[j]`.\n\n**Complexity:** Time **O(m+n)**, space **O(1)**.\n\n**Why preferred:** Uses the spare tail of `nums1` so you never shift elements."
+      "description": "**Approach:** Fill `nums1` from index `m+n-1` downward, always taking the larger of `nums1[i]` / `nums2[j]`.\n\n**Why preferred:** Uses the spare tail of `nums1` so you never shift elements.",
+      "time": "O(m + n)",
+      "space": "O(1)"
     },
     {
       "id": "yours",
@@ -14,7 +16,9 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "Forward splice inserts — O((m+n)·n) shifts",
-      "description": "**Approach:** Walk `nums1`; when `nums2` value should go first, `splice` it in and `pop` a trailing zero slot.\n\n**Complexity:** Each `splice` is **O(m+n)** → overall roughly **O((m+n)·n)` worst case.\n\n**vs recommended:** Harder to reason about indices and slower. Filling from the back is the intended in-place merge."
+      "description": "**Approach:** Walk `nums1`; when `nums2` value should go first, `splice` it in and `pop` a trailing zero slot.\n\n**vs recommended:** Harder to reason about indices and slower. Filling from the back is the intended in-place merge.",
+      "time": "O((m + n) · n)",
+      "space": "O(1)"
     }
   ]
 }

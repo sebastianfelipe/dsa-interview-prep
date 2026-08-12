@@ -6,7 +6,9 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "Binary search — O(log n) insert point",
-      "description": "**Approach:** Classic binary search; when not found, `left` is the insert index.\n\n**Complexity:** Time **O(log n)**, space **O(1)**.\n\n**Why preferred:** The problem is in the binary-search family; linear scan misses the point."
+      "description": "**Approach:** Classic binary search; when not found, `left` is the insert index.\n\n**Why preferred:** The problem is in the binary-search family; linear scan misses the point.",
+      "time": "O(log n)",
+      "space": "O(1)"
     },
     {
       "id": "yours",
@@ -14,7 +16,9 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "findIndex linear scan — O(n)",
-      "description": "**Approach:** First index where `nums[i] >= target`, else `nums.length`.\n\n**Complexity:** Time **O(n)**, space **O(1)**.\n\n**vs recommended:** Correct lower-bound semantics. Upgrade to binary search for the expected complexity and topic practice."
+      "description": "**Approach:** First index where `nums[i] >= target`, else `nums.length`.\n\n**vs recommended:** Correct lower-bound semantics. Upgrade to binary search for the expected complexity and topic practice.",
+      "time": "O(n)",
+      "space": "O(1)"
     }
   ]
 }

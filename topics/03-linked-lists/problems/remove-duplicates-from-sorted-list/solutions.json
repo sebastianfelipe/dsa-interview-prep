@@ -6,7 +6,9 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "Single pass unlink duplicates",
-      "description": "**Approach:** Walk; while `next` equals current value, skip `next`; else advance.\n\n**Complexity:** Time **O(n)**, space **O(1)**.\n\n**Why preferred:** Minimal state; classic sorted-list trick."
+      "description": "**Approach:** Walk; while `next` equals current value, skip `next`; else advance.\n\n**Why preferred:** Minimal state; classic sorted-list trick.",
+      "time": "O(n)",
+      "space": "O(1)"
     },
     {
       "id": "yours",
@@ -14,7 +16,9 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "Same unlink pattern — good",
-      "description": "**Approach:** If `current.val === current.next.val`, set `current.next = current.next.next`; else move forward.\n\n**Complexity:** Time **O(n)**, space **O(1)**.\n\n**vs recommended:** Aligns with the recommended solution — keep practicing narration of pointer updates."
+      "description": "**Approach:** If `current.val === current.next.val`, set `current.next = current.next.next`; else move forward.\n\n**vs recommended:** Aligns with the recommended solution — keep practicing narration of pointer updates.",
+      "time": "O(n)",
+      "space": "O(1)"
     }
   ]
 }

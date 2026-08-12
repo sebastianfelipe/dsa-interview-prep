@@ -6,7 +6,9 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "Classic stack — push opens, match closes",
-      "description": "**Approach:** Stack of expected closers (or openings). On close, pop and verify match; empty stack at end.\n\n**Complexity:** Time **O(n)**, space **O(n)**.\n\n**Why preferred:** Canonical stack interview pattern with explicit empty-stack / mismatch guards."
+      "description": "**Approach:** Stack of expected closers (or openings). On close, pop and verify match; empty stack at end.\n\n**Why preferred:** Canonical stack interview pattern with explicit empty-stack / mismatch guards.",
+      "time": "O(n)",
+      "space": "O(n)"
     },
     {
       "id": "yours",
@@ -14,7 +16,9 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "Stack of openings + map — same idea",
-      "description": "**Approach:** Push openings from a map; on a closer, pop and check it maps to that closer; require empty stack at end.\n\n**Complexity:** Time **O(n)**, space **O(n)**.\n\n**vs recommended:** Essentially the same algorithm. Tighten with `!==`, and treat `pop()` on an empty stack as invalid (extra closing bracket)."
+      "description": "**Approach:** Push openings from a map; on a closer, pop and check it maps to that closer; require empty stack at end.\n\n**vs recommended:** Essentially the same algorithm. Tighten with `!==`, and treat `pop()` on an empty stack as invalid (extra closing bracket).",
+      "time": "O(n)",
+      "space": "O(n)"
     }
   ]
 }

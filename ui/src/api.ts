@@ -32,6 +32,8 @@ export interface SolutionEntry {
   source: string;
   notes?: string;
   description?: string;
+  time?: string;
+  space?: string;
 }
 
 export interface ProblemDetail extends ProblemSummary {
@@ -45,6 +47,8 @@ export interface SolutionDetail {
   source: string;
   notes?: string;
   description?: string;
+  time?: string;
+  space?: string;
   language: string;
   code: string;
   path: string;

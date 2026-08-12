@@ -11,6 +11,8 @@ export interface SolutionEntry {
   source: 'repo' | 'yours' | string;
   notes?: string;
   description?: string;
+  time?: string;
+  space?: string;
 }
 
 @Injectable()
@@ -69,6 +71,8 @@ export class ProblemsService {
       source: entry.source,
       notes: entry.notes,
       description: entry.description,
+      time: entry.time,
+      space: entry.space,
       language: 'typescript',
       code: fs.readFileSync(solutionPath, 'utf8'),
       path: path.relative(this.catalog.root, solutionPath),

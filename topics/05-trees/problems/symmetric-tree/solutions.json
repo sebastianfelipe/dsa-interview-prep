@@ -6,7 +6,9 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "Mirror DFS on left/right pair",
-      "description": "**Approach:** Helper compares two nodes as mirrors: vals equal and outer/inner children pair recursively.\n\n**Complexity:** Time **O(n)**, space **O(h)**.\n\n**Why preferred:** Clear mirror invariant; handles empty root safely."
+      "description": "**Approach:** Helper compares two nodes as mirrors: vals equal and outer/inner children pair recursively.\n\n**Why preferred:** Clear mirror invariant; handles empty root safely.",
+      "time": "O(n)",
+      "space": "O(h)"
     },
     {
       "id": "yours",
@@ -14,7 +16,9 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "Mirror helper — good; null-root guard",
-      "description": "**Approach:** `validateLeftAndRight` compares left/right as mirrors (left.left↔right.right, left.right↔right.left).\n\n**Complexity:** Time **O(n)**, space **O(h)**.\n\n**vs recommended:** Same core idea. Guard `root === null` (or empty children) before reading `root.left`/`root.right` so empty trees don’t throw."
+      "description": "**Approach:** `validateLeftAndRight` compares left/right as mirrors (left.left↔right.right, left.right↔right.left).\n\n**vs recommended:** Same core idea. Guard `root === null` (or empty children) before reading `root.left`/`root.right` so empty trees don’t throw.",
+      "time": "O(n)",
+      "space": "O(h)"
     }
   ]
 }
