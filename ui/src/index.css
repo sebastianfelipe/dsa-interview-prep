@@ -29,7 +29,7 @@ html[data-theme='light'] {
   --glow-a: rgba(13, 148, 136, 0.14);
   --glow-b: rgba(36, 53, 50, 0.08);
   --font-display: 'Fraunces', Georgia, serif;
-  --font-body: 'Source Sans 3', 'Segoe UI', sans-serif;
+  --font-body: 'Figtree', 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
   color-scheme: light;
 }
