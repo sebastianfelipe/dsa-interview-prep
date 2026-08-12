@@ -127,9 +127,34 @@ export function ProblemPage() {
     ? { to: '/lists', label: list.title }
     : { to: `/browse?topic=${problem.topic}`, label: problem.topicTitle };
 
+  const navProps = {
+    previous: neighbors.previous,
+    next: neighbors.next,
+    index: neighbors.index,
+    total: neighbors.total,
+    listId,
+    label: list?.title ?? null,
+  };
+
   const problemPane = (
     <div className="panel problem-pane">
-      <Markdown source={problem.readme} />
+      <div className="problem-pane-head">
+        <div className="problem-pane-title-row">
+          <h1 className="problem-pane-title">{problem.title}</h1>
+          <ProblemNav {...navProps} />
+        </div>
+        <div className="problem-pane-meta">
+          <Link className="problem-pane-back muted" to={backTo.to}>
+            ← {backTo.label}
+          </Link>
+          <span className={`badge ${problem.difficulty}`}>{problem.difficulty}</span>
+          {problem.leetcodeId != null && <span className="muted">LC {problem.leetcodeId}</span>}
+        </div>
+      </div>
+
+      <div className="problem-readme">
+        <Markdown source={problem.readme} />
+      </div>
 
       {problem.hasTests && (
         <div className="actions">
@@ -152,17 +177,19 @@ export function ProblemPage() {
   const solutionPane = (
     <section className="solution-panel">
       {solutions.length > 1 && (
-        <div className="filters">
-          {solutions.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              className={`chip ${selectedId === s.id ? 'active' : ''}`}
-              onClick={() => setSelectedId(s.id)}
-            >
-              {s.source === 'yours' ? `Yours · ${s.title}` : s.title}
-            </button>
-          ))}
+        <div className="solution-sticky-head">
+          <div className="filters">
+            {solutions.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                className={`chip ${selectedId === s.id ? 'active' : ''}`}
+                onClick={() => setSelectedId(s.id)}
+              >
+                {s.source === 'yours' ? `Yours · ${s.title}` : s.title}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -193,29 +220,8 @@ export function ProblemPage() {
     </section>
   );
 
-  const navProps = {
-    previous: neighbors.previous,
-    next: neighbors.next,
-    index: neighbors.index,
-    total: neighbors.total,
-    listId,
-    label: list?.title ?? null,
-  };
-
   return (
     <main className={`page page-problem${showSolution ? ' page-problem-split' : ''}`}>
-      <div className="problem-header">
-        <p className="muted">
-          <Link to={backTo.to}>← {backTo.label}</Link>
-        </p>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '0.5rem' }}>
-          <span className={`badge ${problem.difficulty}`}>{problem.difficulty}</span>
-          {problem.leetcodeId != null && <span className="muted">LC {problem.leetcodeId}</span>}
-        </div>
-      </div>
-
-      <ProblemNav {...navProps} />
-
       {showSolution ? (
         <div className="problem-solution-split">
           <div className="problem-pane-scroll">{problemPane}</div>
@@ -226,8 +232,7 @@ export function ProblemPage() {
           {problemPane}
           {problem.hasSolution && (
             <p className="muted solution-hidden-hint">
-              Solutions are hidden. Turn on <strong>Solutions on</strong> in the header to compare
-              approaches.
+              Solutions are locked. Unlock them from the header vault control to compare approaches.
             </p>
           )}
         </>
