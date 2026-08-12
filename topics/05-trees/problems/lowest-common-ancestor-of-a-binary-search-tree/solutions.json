@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "BST walk toward the split",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Go left/right until p and q diverge",
+      "time": "O(h)",
+      "space": "O(1)",
+      "description": "**Approach:** While both targets are on one side, move that way; otherwise current node is the LCA.\n\n**Example walkthrough:** `2` is left of `6`, `8` is right of `6`, so `6` is already the answer."
+    }
+  ]
+}

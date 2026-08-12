@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Brian Kernighan / bit loop",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "n &= n - 1 clears lowest set bit",
+      "time": "O(#bits)",
+      "space": "O(1)",
+      "description": "**Approach:** Count how many times you can clear the lowest set bit until n is 0.\n\n**Example walkthrough:** `1011` → clear to `1010` → `1000` → `0` (three steps)."
+    }
+  ]
+}

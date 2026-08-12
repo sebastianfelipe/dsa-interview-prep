@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Topo sort / cycle detect",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Kahn indegrees or DFS colors",
+      "time": "O(V + E)",
+      "space": "O(V + E)",
+      "description": "**Approach:** Build the graph; if you can order all courses (or DFS finds no back edge), return true.\n\n**Example walkthrough:** Edge `0 → 1`. Queue starts with `0` (indegree 0), unlocks `1`, both taken → `true`. A mutual edge leaves a cycle."
+    }
+  ]
+}

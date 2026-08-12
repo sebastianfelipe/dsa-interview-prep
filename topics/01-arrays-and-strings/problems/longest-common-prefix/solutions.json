@@ -6,7 +6,7 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "Start from first word; trim until every string matches",
-      "description": "**Approach:** Take `strs[0]` as the candidate prefix. For each later string, while it does not `startsWith(prefix)`, drop the last character. Stop early if the prefix becomes empty.\n\n**Why preferred:** Short, easy to narrate, and naturally handles “no shared prefix” by shrinking to `''`.",
+      "description": "**Approach:** Take `strs[0]` as the candidate prefix. For each later string, while it does not `startsWith(prefix)`, drop the last character. Stop early if the prefix becomes empty.\n\n**Why preferred:** Short, easy to narrate, and naturally handles “no shared prefix” by shrinking to `''`.\n\n**Example walkthrough:** Start with `\"flower\"`. `\"flow\"` does not start with `\"flower\"`, so shrink to `\"flow\"`. `\"flight\"` needs shrinking to `\"fl\"`. That prefix fits all three.",
       "time": "O(S)",
       "space": "O(1)"
     },
@@ -16,7 +16,7 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "Walk character positions up to the shortest string; stop on first mismatch",
-      "description": "**Approach:** Find the minimum string length, then for each index `position` check that every string has the same character there (`every`). Append matches into an array and `join` at the end; `break` on the first mismatch.\n\n**vs recommended:** Same idea (vertical scan) and very clear. The recommended version mutates one prefix string instead of building an array; both are interview-valid. Drop debug `console.log`s in the helper for real submissions.",
+      "description": "**Approach:** Find the minimum string length, then for each index `position` check that every string has the same character there (`every`). Append matches into an array and `join` at the end; `break` on the first mismatch.\n\n**vs recommended:** Same idea (vertical scan) and very clear. The recommended version mutates one prefix string instead of building an array; both are interview-valid. Drop debug `console.log`s in the helper for real submissions.\n\n**Example walkthrough:** Shortest length is `4` (`\"flow\"`). Position `0` is `f` in all; position `1` is `l` in all; position `2` differs (`o` vs `i`), so stop and join `\"fl\"`.",
       "time": "O(n · m)",
       "space": "O(m)"
     }

@@ -4,6 +4,14 @@
 
 Return whether a linked list has a cycle.
 
+## Examples
+
+### Example 1
+**Input:** `head = [3, 2, 0, -4]` with a cycle at index `1`
+**Output:** `true`
+**Explanation:** Tail connects back to node `2`.
+
+
 ## Recognition
 
 **Floyd cycle detection** — fast & slow.

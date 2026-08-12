@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Kadane’s algorithm",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Track best ending-here vs global best",
+      "time": "O(n)",
+      "space": "O(1)",
+      "description": "**Approach:** At each index, either extend the previous run or start fresh at the current value; keep the maximum seen.\n\n**Example walkthrough:** When you reach `4`, starting fresh beats carrying negatives. Then `-1, 2, 1` extend to sum `6`, the best."
+    }
+  ]
+}

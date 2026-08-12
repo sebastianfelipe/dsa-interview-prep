@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Hash map + doubly linked list",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "O(1) get/put with move-to-front",
+      "time": "O(1)",
+      "space": "O(capacity)",
+      "description": "**Approach:** Map key→node; on access move node to head; on overflow remove the tail.\n\n**Example walkthrough:** `get(1)` refreshes `1` as most recent, so inserting `3` drops the least-recent `2`."
+    }
+  ]
+}

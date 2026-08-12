@@ -6,7 +6,7 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "Iterative dummy head — O(1) extra stack",
-      "description": "**Approach:** Dummy node; always attach the smaller of `list1`/`list2`; append leftovers.\n\n**Why preferred:** No recursion depth risk on long lists; easy to narrate in interviews.",
+      "description": "**Approach:** Dummy node; always attach the smaller of `list1`/`list2`; append leftovers.\n\n**Why preferred:** No recursion depth risk on long lists; easy to narrate in interviews.\n\n**Example walkthrough:** Dummy head walks both lists: take `1` from list1, `1` from list2, `2`, `3`, `4`, `4`, always attaching the smaller current node.",
       "time": "O(n + m)",
       "space": "O(1)"
     },
@@ -16,7 +16,7 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "Recursive — elegant, uses call stack",
-      "description": "**Approach:** Base cases for null lists; pick the smaller head and recurse for `next`.\n\n**vs recommended:** Clean and correct. Prefer iterative dummy-head when lists can be long or the interviewer cares about stack space.",
+      "description": "**Approach:** Base cases for null lists; pick the smaller head and recurse for `next`.\n\n**vs recommended:** Clean and correct. Prefer iterative dummy-head when lists can be long or the interviewer cares about stack space.\n\n**Example walkthrough:** Recursively pick the smaller head (`1` vs `1`), then merge the remainders the same way until one list is empty.",
       "time": "O(n + m)",
       "space": "O(n + m)"
     }

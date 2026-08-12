@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "DFS on grid with backtracking",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Mark visited cells, then undo",
+      "time": "O(r · c · 4ᴸ)",
+      "space": "O(L)",
+      "description": "**Approach:** From each start cell matching word[0], search neighbors for the next letters.\n\n**Example walkthrough:** Start at `A`, step to `B`, `C`, down to `C`, `E`, `D` spelling `ABCCED` without reusing a cell."
+    }
+  ]
+}

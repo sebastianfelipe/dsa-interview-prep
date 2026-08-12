@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "DP / memoized split",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Odd n only; try left/right sizes",
+      "time": "Catalan-like",
+      "space": "Output-sensitive",
+      "description": "**Approach:** For each odd left size, combine every left FBT with every right FBT under a new root.\n\n**Example walkthrough:** For `n = 3`, only split `1+1` under a root → a single tree of three nodes."
+    }
+  ]
+}

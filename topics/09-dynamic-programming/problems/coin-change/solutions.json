@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Unbounded knapsack DP",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Min coins for every amount up to target",
+      "time": "O(amount · coins)",
+      "space": "O(amount)",
+      "description": "**Approach:** For each amount, try each coin and take 1 + best of the remainder.\n\n**Example walkthrough:** Build up to `11`: after having `5`, `10` needs one more `1` → three coins total."
+    }
+  ]
+}

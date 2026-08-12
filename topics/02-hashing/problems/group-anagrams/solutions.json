@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Hash by sorted key / count signature",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Group strings that scramble to the same key",
+      "time": "O(n · k log k) sorted key",
+      "space": "O(n · k)",
+      "description": "**Approach:** Map each word to a canonical key (sorted chars or 26-count), then bucket words by that key.\n\n**Example walkthrough:** \"eat\", \"tea\", \"ate\" all key to \"aet\" and land in one bucket; \"tan\"/\"nat\" share another."
+    }
+  ]
+}

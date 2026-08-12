@@ -4,6 +4,19 @@
 
 Return indices of two numbers in `nums` that add to `target`.
 
+## Examples
+
+### Example 1
+**Input:** `nums = [2, 7, 11, 15]`, `target = 9`
+**Output:** `[0, 1]`
+**Explanation:** `nums[0] + nums[1] = 2 + 7 = 9`, so the indices are `0` and `1`.
+
+### Example 2
+**Input:** `nums = [3, 2, 4]`, `target = 6`
+**Output:** `[1, 2]`
+**Explanation:** `2 + 4 = 6`.
+
+
 ## Recognition
 
 Unsorted + pair sum + indices → **complement hash map** (not two pointers unless sorted).

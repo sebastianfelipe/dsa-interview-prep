@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Floyd slow/fast pointers",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Fast catches slow iff a cycle exists",
+      "time": "O(n)",
+      "space": "O(1)",
+      "description": "**Approach:** Advance one pointer by 1 and another by 2; meeting means a loop.\n\n**Example walkthrough:** Slow and fast start at `3`. Fast laps inside the cycle and eventually lands on the same node as slow → `true`."
+    }
+  ]
+}

@@ -6,7 +6,7 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "Carry from LSD — handle 999… → 1000…",
-      "description": "**Approach:** From the last digit: if `< 9`, increment and return; else set `0` and continue; if all nines, prepend `1`.\n\n**Why preferred:** Standard carry pattern shared with add-binary / big-integer themes.",
+      "description": "**Approach:** From the last digit: if `< 9`, increment and return; else set `0` and continue; if all nines, prepend `1`.\n\n**Why preferred:** Standard carry pattern shared with add-binary / big-integer themes.\n\n**Example walkthrough:** From the right of `[1,2,3]`, `3 < 9`, so bump to `4` and stop → `[1,2,4]`. For `[9,9]`, both become `0` and you prepend `1`.",
       "time": "O(n)",
       "space": "O(1) amortized"
     },
@@ -16,7 +16,7 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "Right-to-left carry with unshift — solid",
-      "description": "**Approach:** Same carry walk; `unshift(1)` when the leading digit overflows.\n\n**vs recommended:** Effectively the same solution — keep it. Optional polish: build a new array or `digits = [1, ...digits]` only on full overflow to avoid mid-array `unshift` cost.",
+      "description": "**Approach:** Same carry walk; `unshift(1)` when the leading digit overflows.\n\n**vs recommended:** Effectively the same solution — keep it. Optional polish: build a new array or `digits = [1, ...digits]` only on full overflow to avoid mid-array `unshift` cost.\n\n**Example walkthrough:** Same right-to-left carry: increment or set `0` and continue; `unshift(1)` if you overflow the leading digit.",
       "time": "O(n)",
       "space": "O(1) amortized"
     }

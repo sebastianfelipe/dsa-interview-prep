@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Two pointers on sorted array",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Move left/right based on sum vs target",
+      "time": "O(n)",
+      "space": "O(1)",
+      "description": "**Approach:** Because the array is sorted, start at both ends and move the pointer that fixes an undershoot or overshoot.\n\n**Example walkthrough:** Left `2`, right `15` sum too big → move right. Eventually `2+7=9` → return 1-based `[1, 2]`."
+    }
+  ]
+}

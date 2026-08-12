@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Controlled inorder stack",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Push left spine; next pops and goes right",
+      "time": "Amortized O(1) next",
+      "space": "O(h)",
+      "description": "**Approach:** Lazy inorder: stack the path to the current minimum, then advance.\n\n**Example walkthrough:** Initial stack has `7` then `3`. First `next` pops `3`. Later pops emit the rest in sorted order."
+    }
+  ]
+}

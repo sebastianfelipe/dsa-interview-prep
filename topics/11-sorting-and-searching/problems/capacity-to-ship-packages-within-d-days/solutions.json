@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Binary search on capacity",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Greedy pack days for a mid capacity",
+      "time": "O(n log Σw)",
+      "space": "O(1)",
+      "description": "**Approach:** Search capacity from max(weight) to sum(weights); check how many days a mid needs.\n\n**Example walkthrough:** Capacity `15` packs the sequence into 5 days; smaller mid values need more than 5 → answer `15`."
+    }
+  ]
+}

@@ -4,6 +4,18 @@
 
 Rob houses in a line; cannot rob adjacent. Max money.
 
+## Examples
+
+### Example 1
+**Input:** `nums = [1, 2, 3, 1]`
+**Output:** `4`
+**Explanation:** Rob houses `1` and `3` (`1 + 3`).
+
+### Example 2
+**Input:** `nums = [2, 7, 9, 3, 1]`
+**Output:** `12` (`2 + 9 + 1`).
+
+
 ## Recognition
 
 1D DP: rob or skip current.

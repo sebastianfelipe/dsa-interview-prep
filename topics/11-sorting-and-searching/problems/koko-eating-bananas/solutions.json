@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Binary search on speed",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Feasible if hoursNeeded(k) ≤ h",
+      "time": "O(n log maxPile)",
+      "space": "O(1)",
+      "description": "**Approach:** Search eating speed between 1 and max pile; shrink toward the minimal feasible k.\n\n**Example walkthrough:** Try mid speed `6` — works but maybe lower; keep searching down until `4` is the smallest that still fits `h = 8`."
+    }
+  ]
+}

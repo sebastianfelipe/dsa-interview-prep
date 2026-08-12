@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Backtracking with used flags",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Build permutations position by position",
+      "time": "O(n · n!)",
+      "space": "O(n)",
+      "description": "**Approach:** Try each unused number for the next slot until the path length is n.\n\n**Example walkthrough:** First slot pick `1`, second `2`, third `3` → one perm; backtrack and swap choices to get the rest."
+    }
+  ]
+}

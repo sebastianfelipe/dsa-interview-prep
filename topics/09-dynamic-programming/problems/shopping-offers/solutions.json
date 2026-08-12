@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "DFS + memo on remaining needs",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Try each offer or buy leftovers at list price",
+      "time": "State-space exponential",
+      "space": "Memo on needs",
+      "description": "**Approach:** Recurse on the leftover needs tuple; cache the best price for each leftover.\n\n**Example walkthrough:** Needs `[3,2]`. Trying special `[1,2,10]` leaves needs `[2,0]`; pay `2·2 = 4` more for total `14`. Other mixes cost more; memo remembers each leftover needs tuple."
+    }
+  ]
+}

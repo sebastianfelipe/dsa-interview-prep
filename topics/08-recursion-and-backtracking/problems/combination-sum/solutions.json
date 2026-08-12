@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Backtracking with reuse",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Stay on index to reuse a value",
+      "time": "Exponential",
+      "space": "O(target)",
+      "description": "**Approach:** Subtract a chosen candidate and recurse; move index forward to avoid duplicate combos.\n\n**Example walkthrough:** Pick `2` thrice then need `1` — fail; pick `2,2,3` hits `7`. Separately picking `7` is the other combo."
+    }
+  ]
+}

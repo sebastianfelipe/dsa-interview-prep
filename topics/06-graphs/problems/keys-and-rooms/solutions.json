@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "DFS/BFS from room 0",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Collect keys as you visit",
+      "time": "O(rooms + keys)",
+      "space": "O(rooms)",
+      "description": "**Approach:** Start with room 0 visited; follow keys into new rooms until none remain.\n\n**Example walkthrough:** From `0` get key `1`, from `1` key `2`, from `2` key `3` — all visited → `true`."
+    }
+  ]
+}

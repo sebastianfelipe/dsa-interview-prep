@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "DFS/BFS flood fill",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Sink or mark each island once",
+      "time": "O(r · c)",
+      "space": "O(r · c)",
+      "description": "**Approach:** For every `1`, increment the answer and explore all connected land, marking it visited.\n\n**Example walkthrough:** Hit the top-left `1`, count `1`, and DFS clears that whole 2×2 block. Next find the middle `1` (island 2), then the bottom-right pair (island 3) → answer `3`."
+    }
+  ]
+}

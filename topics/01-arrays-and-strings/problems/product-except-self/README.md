@@ -4,6 +4,14 @@
 
 Return `answer` where `answer[i]` is product of all elements except `nums[i]`. No division. O(n) time.
 
+## Examples
+
+### Example 1
+**Input:** `nums = [1, 2, 3, 4]`
+**Output:** `[24, 12, 8, 6]`
+**Explanation:** Each index gets the product of all other values (no division).
+
+
 ## Recognition
 
 | Signal | Points to |

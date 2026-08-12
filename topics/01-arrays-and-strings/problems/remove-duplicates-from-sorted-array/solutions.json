@@ -6,7 +6,7 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "Two pointers — O(n) in-place overwrite",
-      "description": "**Approach:** `write` stays at the last unique; `read` scans ahead; copy when values differ.\n\n**Why preferred:** No shifting; returns the new length as required.",
+      "description": "**Approach:** `write` stays at the last unique; `read` scans ahead; copy when values differ.\n\n**Why preferred:** No shifting; returns the new length as required.\n\n**Example walkthrough:** Write pointer stays on the last unique. Read finds `2` different from `1`, writes it next, and returns write+1 = `2`.",
       "time": "O(n)",
       "space": "O(1)"
     },
@@ -16,7 +16,7 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "splice each duplicate — correct but O(n²)",
-      "description": "**Approach:** Walk with index `i`; when `nums[i] === nums[i-1]`, `splice(i, 1)` and stay; else advance.\n\n**vs recommended:** Logic is clear. Interview target is the slow/fast write pointer so each element moves at most once.",
+      "description": "**Approach:** Walk with index `i`; when `nums[i] === nums[i-1]`, `splice(i, 1)` and stay; else advance.\n\n**vs recommended:** Logic is clear. Interview target is the slow/fast write pointer so each element moves at most once.\n\n**Example walkthrough:** When you see a duplicate next to the previous value, `splice` it out; after removing the second `1`, the array is `[1, 2]`.",
       "time": "O(n²)",
       "space": "O(1)"
     }

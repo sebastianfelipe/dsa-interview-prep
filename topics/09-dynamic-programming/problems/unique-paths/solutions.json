@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Grid DP",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Ways[r][c] = from above + from left",
+      "time": "O(m · n)",
+      "space": "O(n)",
+      "description": "**Approach:** Fill a row DP: each cell adds paths from the left and “above” (previous row value).\n\n**Example walkthrough:** First row/col are all `1`. Interior cells accumulate until bottom-right is `28`."
+    }
+  ]
+}

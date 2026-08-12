@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Frequency map + bucket / heap",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Count then pick the k densest values",
+      "time": "O(n)",
+      "space": "O(n)",
+      "description": "**Approach:** Count frequencies, then use buckets (or a heap) to collect the k most common values.\n\n**Example walkthrough:** Counts: `1→3`, `2→2`, `3→1`. Buckets by frequency yield `1` then `2` for `k = 2`."
+    }
+  ]
+}

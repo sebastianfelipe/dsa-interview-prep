@@ -4,6 +4,14 @@
 
 Given a **1-indexed** sorted array `numbers` and `target`, return indices of two numbers that add to `target`. Exactly one solution. Use O(1) extra space.
 
+## Examples
+
+### Example 1
+**Input:** `numbers = [2, 7, 11, 15]`, `target = 9`
+**Output:** `[1, 2]`
+**Explanation:** 1-indexed indices of `2` and `7`.
+
+
 ## Recognition
 
 | Signal | Points to |

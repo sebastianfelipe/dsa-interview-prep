@@ -4,6 +4,14 @@
 
 Group strings that are anagrams of each other.
 
+## Examples
+
+### Example 1
+**Input:** `strs = ["eat", "tea", "tan", "ate", "nat", "bat"]`
+**Output:** `[["bat"],["nat","tan"],["ate","eat","tea"]]`
+**Explanation:** Anagrams share the same letter multiset.
+
+
 ## Recognition
 
 Grouping by equivalence → **signature key** in a `Map`.

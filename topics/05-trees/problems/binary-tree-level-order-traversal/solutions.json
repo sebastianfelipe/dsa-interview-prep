@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "BFS by queue",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Process level size batches",
+      "time": "O(n)",
+      "space": "O(n)",
+      "description": "**Approach:** Queue nodes level by level, recording each batch’s values.\n\n**Example walkthrough:** Start with `[3]`. Next queue `9,20`. Then `15,7`. Emit those three layers."
+    }
+  ]
+}

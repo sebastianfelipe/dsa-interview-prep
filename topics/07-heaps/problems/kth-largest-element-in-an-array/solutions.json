@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Min-heap of size k / quickselect",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Keep the k largest seen",
+      "time": "O(n log k) heap",
+      "space": "O(k)",
+      "description": "**Approach:** Push into a size-k min-heap; the root is the kth largest.\n\n**Example walkthrough:** Heap holds the best two; after processing all, the smaller of `{5,6}` is `5`."
+    }
+  ]
+}

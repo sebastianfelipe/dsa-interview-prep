@@ -4,6 +4,19 @@
 
 Given an integer `n`, return a list of all possible full binary trees with `n` nodes. Each node's value is `0`. A full binary tree is a binary tree where each node has exactly 0 or 2 children.
 
+## Examples
+
+### Example 1
+**Input:** `n = 3`
+**Output:** `[[0, 0, 0]]`
+**Explanation:** One full binary tree with 3 nodes.
+
+### Example 2
+**Input:** `n = 2`
+**Output:** `[]`
+**Explanation:** Even counts cannot form a full binary tree.
+
+
 ## Recognition
 
 Odd `n` only (even impossible). Recursively split remaining nodes into left/right odd counts; memoize by `n`.

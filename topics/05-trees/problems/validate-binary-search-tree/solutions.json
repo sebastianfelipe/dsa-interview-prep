@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "DFS with value bounds",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Tighten low/high along the path",
+      "time": "O(n)",
+      "space": "O(h)",
+      "description": "**Approach:** Each node must lie within an open interval inherited from ancestors.\n\n**Example walkthrough:** For `[5,1,4,...]`, node `4` must be `> 5`, but `4 < 5` → invalid immediately."
+    }
+  ]
+}

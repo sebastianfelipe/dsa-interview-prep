@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "DFS depth",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "1 + max(left, right)",
+      "time": "O(n)",
+      "space": "O(h)",
+      "description": "**Approach:** Recurse for subtree depths and take the larger child depth plus one.\n\n**Example walkthrough:** Left of `3` is depth `1` (`9`). Right goes `20 → 15/7` depth `2`. Answer `1 + 2 = 3`."
+    }
+  ]
+}

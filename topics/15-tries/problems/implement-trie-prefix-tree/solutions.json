@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Tree of character nodes",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "isEnd marks complete words",
+      "time": "O(L) per op",
+      "space": "O(total chars)",
+      "description": "**Approach:** Each insert walks/creates child nodes; search requires ending on `isEnd`.\n\n**Example walkthrough:** Inserting `\"apple\"` builds `a-p-p-l-e` with end on `e`. `\"app\"` exists as a path but not as a word until you insert it."
+    }
+  ]
+}

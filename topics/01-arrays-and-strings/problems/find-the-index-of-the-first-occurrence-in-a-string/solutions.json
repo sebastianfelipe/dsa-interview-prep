@@ -6,7 +6,7 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "Explicit scan (KMP-ready mental model)",
-      "description": "**Approach:** Slide `needle` over `haystack` (or implement KMP for optimal worst-case).\n\n**Why preferred:** Shows you can implement search without leaning on library helpers — useful interview signal.",
+      "description": "**Approach:** Slide `needle` over `haystack` (or implement KMP for optimal worst-case).\n\n**Why preferred:** Shows you can implement search without leaning on library helpers — useful interview signal.\n\n**Example walkthrough:** Slide a window of length `3` over `\"sadbutsad\"`. The slice at `0` equals `\"sad\"`, so return `0`.",
       "time": "O(n · m) naive / O(n + m) KMP",
       "space": "O(1) naive / O(m) KMP"
     },
@@ -16,7 +16,7 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "String.indexOf — valid LC, weak interview answer",
-      "description": "**Approach:** Return `haystack.indexOf(needle)`.\n\n**vs recommended:** Perfectly fine on LeetCode Easy. In interviews, be ready to write the nested scan (and mention KMP if asked about worst case).",
+      "description": "**Approach:** Return `haystack.indexOf(needle)`.\n\n**vs recommended:** Perfectly fine on LeetCode Easy. In interviews, be ready to write the nested scan (and mention KMP if asked about worst case).\n\n**Example walkthrough:** Delegate to `haystack.indexOf(\"sad\")`, which returns `0`.",
       "time": "Engine-dependent (typically near-linear)",
       "space": "O(1) extra"
     }

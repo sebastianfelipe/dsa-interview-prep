@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Sort then merge",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Extend end while overlapping",
+      "time": "O(n log n)",
+      "space": "O(n)",
+      "description": "**Approach:** Sort by start; if the next starts before current end, merge ends; else push a new interval.\n\n**Example walkthrough:** After sort, `[1,3]` merges with `[2,6]` into `[1,6]`; later intervals do not overlap."
+    }
+  ]
+}

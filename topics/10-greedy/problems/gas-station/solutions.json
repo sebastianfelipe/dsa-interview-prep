@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "One-pass gain reset",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "If total gas < total cost, impossible",
+      "time": "O(n)",
+      "space": "O(1)",
+      "description": "**Approach:** Track tank; when tank goes negative, reset start to i+1 and zero tank.\n\n**Example walkthrough:** Early stations drain the tank below zero, so start moves forward until index `3`, which finishes with non-negative total."
+    }
+  ]
+}

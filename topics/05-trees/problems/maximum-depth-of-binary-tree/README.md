@@ -4,6 +4,13 @@
 
 Return max depth (root to farthest leaf).
 
+## Examples
+
+### Example 1
+**Input:** `root = [3, 9, 20, null, null, 15, 7]`
+**Output:** `3`.
+
+
 ## Recognition
 
 DFS aggregate from children — or BFS counting levels.

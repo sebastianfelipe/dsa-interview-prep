@@ -6,7 +6,7 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "Walk from end — O(1) extra space",
-      "description": "**Approach:** Skip trailing spaces from the end, then count until the next space.\n\n**Why preferred:** No allocation; natural once you think “start from the end.”",
+      "description": "**Approach:** Skip trailing spaces from the end, then count until the next space.\n\n**Why preferred:** No allocation; natural once you think “start from the end.”\n\n**Example walkthrough:** Skip spaces from the end of `\"Hello World\"`, then count letters of `\"World\"` → `5`.",
       "time": "O(n)",
       "space": "O(1)"
     },
@@ -16,7 +16,7 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "split + findLast — clear, allocates tokens",
-      "description": "**Approach:** `split(\" \")`, then `findLast` non-empty word and take `.length`.\n\n**vs recommended:** Easy to read. End-scan version is the usual interview follow-up for constant extra space.",
+      "description": "**Approach:** `split(\" \")`, then `findLast` non-empty word and take `.length`.\n\n**vs recommended:** Easy to read. End-scan version is the usual interview follow-up for constant extra space.\n\n**Example walkthrough:** Split on spaces and take the last non-empty token `\"World\"`.length → `5`.",
       "time": "O(n)",
       "space": "O(n)"
     }

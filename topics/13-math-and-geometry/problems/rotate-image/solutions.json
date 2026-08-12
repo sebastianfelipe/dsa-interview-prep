@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Transpose then reverse rows",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Or layer cycles",
+      "time": "O(n²)",
+      "space": "O(1)",
+      "description": "**Approach:** Transpose the matrix, then reverse each row for a clockwise turn.\n\n**Example walkthrough:** Transpose → `[[1,4,7],[2,5,8],[3,6,9]]`, reverse rows → `[[7,4,1],…]`."
+    }
+  ]
+}

@@ -6,7 +6,7 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "No string conversion — math reverse / half compare",
-      "description": "**Approach:** Reject negatives; reverse digits (or half the digits) with arithmetic and compare to the original.\n\n**Why preferred:** Matches the common follow-up “solve without converting to a string.”",
+      "description": "**Approach:** Reject negatives; reverse digits (or half the digits) with arithmetic and compare to the original.\n\n**Why preferred:** Matches the common follow-up “solve without converting to a string.”\n\n**Example walkthrough:** For `121`, peel digits from the end to build `121` reversed (or half of it) and compare to the original — they match.",
       "time": "O(log₁₀ x)",
       "space": "O(1)"
     },
@@ -16,7 +16,7 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "String reverse — simple, uses O(n) space",
-      "description": "**Approach:** `toString`, reverse characters, compare equality.\n\n**vs recommended:** Fine for clarity. Interviewers often ask for a math-only version to avoid allocation and to practice digit extraction / reverse.",
+      "description": "**Approach:** `toString`, reverse characters, compare equality.\n\n**vs recommended:** Fine for clarity. Interviewers often ask for a math-only version to avoid allocation and to practice digit extraction / reverse.\n\n**Example walkthrough:** Turn `121` into `\"121\"`, reverse the characters to `\"121\"`, and see the strings are equal.",
       "time": "O(n)",
       "space": "O(n)"
     }

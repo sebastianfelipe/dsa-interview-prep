@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Sliding window + last-seen index",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Shrink left when a repeat enters the window",
+      "time": "O(n)",
+      "space": "O(min(n, alphabet))",
+      "description": "**Approach:** Grow a window with a map of last indices; when a character repeats inside the window, jump left past its previous index.\n\n**Example walkthrough:** In `\"abcabcbb\"`, the window grows `a-b-c`, then the second `a` forces left forward; best length stays `3`."
+    }
+  ]
+}

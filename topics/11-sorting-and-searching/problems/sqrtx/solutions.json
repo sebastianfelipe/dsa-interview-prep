@@ -6,7 +6,7 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "Binary search floor(sqrt(x))",
-      "description": "**Approach:** Search integer mid in `[0, x]` (or `[1, x]`); compare `mid*mid` to `x` carefully (overflow-aware); return floor.\n\n**Why preferred:** Clean loop invariants; standard “binary search on answer.”",
+      "description": "**Approach:** Search integer mid in `[0, x]` (or `[1, x]`); compare `mid*mid` to `x` carefully (overflow-aware); return floor.\n\n**Why preferred:** Clean loop invariants; standard “binary search on answer.”\n\n**Example walkthrough:** Binary search mid in `[0, 8]`. When `mid*mid <= 8` keep mid as answer and search right; eventually answer settles at `2`.",
       "time": "O(log x)",
       "space": "O(1)"
     },
@@ -16,7 +16,7 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "Binary search with neighbor checks — same family",
-      "description": "**Approach:** Maintain `[left, right]`, guess mid; if `guess²` undershoots/overshoots, check neighbors to decide floor.\n\n**vs recommended:** Correct pattern. Tighten to a standard `while (left <= right)` updating `ans` when `mid*mid <= x` — fewer special cases, same result.",
+      "description": "**Approach:** Maintain `[left, right]`, guess mid; if `guess²` undershoots/overshoots, check neighbors to decide floor.\n\n**vs recommended:** Correct pattern. Tighten to a standard `while (left <= right)` updating `ans` when `mid*mid <= x` — fewer special cases, same result.\n\n**Example walkthrough:** Guess the midpoint, compare `guess²` to `8`, and tighten bounds until the floor root `2` is found.",
       "time": "O(log x)",
       "space": "O(1)"
     }

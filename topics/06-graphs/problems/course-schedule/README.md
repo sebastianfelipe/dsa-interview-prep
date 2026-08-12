@@ -4,6 +4,19 @@
 
 `numCourses` courses, prerequisites `[a,b]` means b → a. Return true if you can finish (no cycle).
 
+## Examples
+
+### Example 1
+**Input:** `numCourses = 2`, `prerequisites = [[1, 0]]`
+**Output:** `true`
+**Explanation:** Take course `0` then `1`.
+
+### Example 2
+**Input:** `numCourses = 2`, `prerequisites = [[1, 0], [0, 1]]`
+**Output:** `false`
+**Explanation:** Cyclic dependency.
+
+
 ## Recognition
 
 Directed graph cycle detection / **topological sort**.

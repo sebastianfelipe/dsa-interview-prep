@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Modified binary search",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Decide which half is sorted",
+      "time": "O(log n)",
+      "space": "O(1)",
+      "description": "**Approach:** Check mid; search inside the sorted half if target lies there, else the other half.\n\n**Example walkthrough:** Mid might be `7`; left half sorted `4…7` does not contain `0`, so search right and find `0` at index `4`."
+    }
+  ]
+}

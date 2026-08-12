@@ -4,6 +4,14 @@
 
 Given `nums` (ints, may be negative) and `k`, return the **number** of contiguous subarrays that sum to `k`.
 
+## Examples
+
+### Example 1
+**Input:** `nums = [1, 1, 1]`, `k = 2`
+**Output:** `2`
+**Explanation:** Subarrays `[1, 1]` (indices 0–1) and `[1, 1]` (indices 1–2).
+
+
 ## Recognition
 
 | Signal | Points to |

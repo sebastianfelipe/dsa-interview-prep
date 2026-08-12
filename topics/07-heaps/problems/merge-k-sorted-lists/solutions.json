@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Min-heap of list heads",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Always attach the smallest current node",
+      "time": "O(N log k)",
+      "space": "O(k)",
+      "description": "**Approach:** Push each list head into a heap; pop min, push its next, repeat.\n\n**Example walkthrough:** Heap starts with `1,1,2`. Pop a `1`, push `4`; keep taking the current minimum until empty."
+    }
+  ]
+}

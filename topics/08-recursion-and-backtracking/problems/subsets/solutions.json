@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Backtracking include/exclude",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "At each index choose yes/no",
+      "time": "O(n · 2ⁿ)",
+      "space": "O(n)",
+      "description": "**Approach:** DFS with a path; either take `nums[i]` or skip it, record every path.\n\n**Example walkthrough:** From `[]`, branch on `1`, then `2`, then `3`, snapshotting the path at every leaf → all 8 subsets."
+    }
+  ]
+}

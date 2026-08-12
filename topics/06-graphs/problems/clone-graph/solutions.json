@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "DFS/BFS with map old→new",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Clone once per node, then wire neighbors",
+      "time": "O(n + e)",
+      "space": "O(n)",
+      "description": "**Approach:** Memoize cloned nodes so cycles do not recurse forever; copy edges via the map.\n\n**Example walkthrough:** Clone node `1`, then recursively clone neighbors `2` and `4`, linking the new nodes the same way."
+    }
+  ]
+}

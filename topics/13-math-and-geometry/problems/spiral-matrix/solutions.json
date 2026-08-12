@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Four-boundary walk",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Shrink top/bottom/left/right",
+      "time": "O(n · m)",
+      "space": "O(1) extra",
+      "description": "**Approach:** Traverse right, down, left, up, then move the boundaries inward.\n\n**Example walkthrough:** Layer 0 reads `1 2 3 6 9 8 7 4`, then the center `5`."
+    }
+  ]
+}

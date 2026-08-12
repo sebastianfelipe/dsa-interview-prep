@@ -6,7 +6,7 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "Two pointers overwrite — O(n)",
-      "description": "**Approach:** Copy every non-`val` into the next write slot; return write count.\n\n**Why preferred:** Order of kept elements can change unless you keep relative order; still meets the problem contract without shifting.",
+      "description": "**Approach:** Copy every non-`val` into the next write slot; return write count.\n\n**Why preferred:** Order of kept elements can change unless you keep relative order; still meets the problem contract without shifting.\n\n**Example walkthrough:** Copy every non-`3` forward: write `2`, then another `2`, return write count `2`.",
       "time": "O(n)",
       "space": "O(1)"
     },
@@ -16,7 +16,7 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "splice removals — works, costly shifts",
-      "description": "**Approach:** Scan; `splice` out each `val` without advancing `i` after a removal.\n\n**vs recommended:** Same in-place idea. Prefer overwrite/two-pointer so removals are **O(1)** each.",
+      "description": "**Approach:** Scan; `splice` out each `val` without advancing `i` after a removal.\n\n**vs recommended:** Same in-place idea. Prefer overwrite/two-pointer so removals are **O(1)** each.\n\n**Example walkthrough:** Whenever `nums[i] === 3`, `splice` that index out and stay; you end with `[2, 2]`.",
       "time": "O(n²)",
       "space": "O(1)"
     }

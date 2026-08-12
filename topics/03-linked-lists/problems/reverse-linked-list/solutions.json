@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Iterative pointer reverse",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "prev / curr / next dance",
+      "time": "O(n)",
+      "space": "O(1)",
+      "description": "**Approach:** Walk the list once, reversing `next` to point backward while advancing.\n\n**Example walkthrough:** `1→2` becomes `1←2`, then fold in `3`, and so on until `5` is the new head."
+    }
+  ]
+}

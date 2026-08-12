@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "DP rob / skip",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "dp[i] = max(dp[i-1], dp[i-2] + nums[i])",
+      "time": "O(n)",
+      "space": "O(1)",
+      "description": "**Approach:** For each house, choose better of skipping it or robbing it plus best two back.\n\n**Example walkthrough:** Best through `[1,2,3]` becomes `4` by taking `1+3`; the last `1` does not improve it."
+    }
+  ]
+}

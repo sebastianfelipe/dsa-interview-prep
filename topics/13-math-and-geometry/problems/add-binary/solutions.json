@@ -6,7 +6,7 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "Two indices + carry int — build result string",
-      "description": "**Approach:** Pointers at ends of `a`/`b`; sum bits + carry; prepend digit; finish leftover carry.\n\n**Why preferred:** Minimal moving parts; easy to dry-run in an interview.",
+      "description": "**Approach:** Pointers at ends of `a`/`b`; sum bits + carry; prepend digit; finish leftover carry.\n\n**Why preferred:** Minimal moving parts; easy to dry-run in an interview.\n\n**Example walkthrough:** Add from the right with a carry: `1+1` → write `0` carry `1`, then `1+carry` → write `0` carry `1`, finally leftover carry → `\"100\"`.",
       "time": "O(max(n, m))",
       "space": "O(max(n, m))"
     },
@@ -16,7 +16,7 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "Result digit array with unshift carry",
-      "description": "**Approach:** Align from the least significant digit into a result array; write `sum % 2` and `unshift(1)` on carry.\n\n**vs recommended:** Same arithmetic idea. Prefer a carry integer and push digits then reverse (or build a string) to keep **O(n)**.",
+      "description": "**Approach:** Align from the least significant digit into a result array; write `sum % 2` and `unshift(1)` on carry.\n\n**vs recommended:** Same arithmetic idea. Prefer a carry integer and push digits then reverse (or build a string) to keep **O(n)**.\n\n**Example walkthrough:** Same digit-wise sum into a result array, writing `sum % 2` and carrying with `unshift` when needed.",
       "time": "O(n²) worst with unshift",
       "space": "O(n)"
     }

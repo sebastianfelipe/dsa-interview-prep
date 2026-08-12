@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "XOR fold",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "x^x = 0, x^0 = x",
+      "time": "O(n)",
+      "space": "O(1)",
+      "description": "**Approach:** XOR all numbers; pairs cancel, the unique remains.\n\n**Example walkthrough:** `2 ^ 2 ^ 1 = 0 ^ 1 = 1`."
+    }
+  ]
+}

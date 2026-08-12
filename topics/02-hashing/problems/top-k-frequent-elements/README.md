@@ -4,6 +4,14 @@
 
 Return the `k` most frequent elements in `nums`.
 
+## Examples
+
+### Example 1
+**Input:** `nums = [1, 1, 1, 2, 2, 3]`, `k = 2`
+**Output:** `[1, 2]`
+**Explanation:** `1` appears thrice, `2` twice.
+
+
 ## Recognition
 
 Frequency map + top-k → **heap of size k** or **bucket sort by frequency**.

@@ -6,7 +6,7 @@
       "file": "solution.ts",
       "source": "repo",
       "notes": "Left → node → right (recur or stack)",
-      "description": "**Approach:** Classic inorder; recursive or iterative with an explicit stack.\n\n**Why preferred:** Standard template; iterative version proves you understand the call stack.",
+      "description": "**Approach:** Classic inorder; recursive or iterative with an explicit stack.\n\n**Why preferred:** Standard template; iterative version proves you understand the call stack.\n\n**Example walkthrough:** Visit left of `1` (none), emit `1`, go right to `2`, visit its left `3`, emit `3`, then emit `2`.",
       "time": "O(n)",
       "space": "O(h)"
     },
@@ -16,7 +16,7 @@
       "file": "solutions/yours.ts",
       "source": "yours",
       "notes": "Recursive accumulator — close; simplify leaf/edge logic",
-      "description": "**Approach:** Recurse left, push `root.val`, recurse right into a shared `response` array.\n\n**vs recommended:** Right traversal order. Drop the leaf special-case and the `left != right` guard — always: traverse left, visit, traverse right. Also practice the iterative stack form.",
+      "description": "**Approach:** Recurse left, push `root.val`, recurse right into a shared `response` array.\n\n**vs recommended:** Right traversal order. Drop the leaf special-case and the `left != right` guard — always: traverse left, visit, traverse right. Also practice the iterative stack form.\n\n**Example walkthrough:** Same recursive inorder into a shared array: left subtree, push node, right subtree.",
       "time": "O(n)",
       "space": "O(h)"
     }

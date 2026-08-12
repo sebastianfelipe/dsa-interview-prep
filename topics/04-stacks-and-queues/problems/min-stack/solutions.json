@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Parallel mins stack",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Store running minimum with each push",
+      "time": "O(1) ops",
+      "space": "O(n)",
+      "description": "**Approach:** Keep a second stack of minima so `getMin` is just a peek.\n\n**Example walkthrough:** After pushes, mins track `-2`, then `-2`, then `-3`. Pop removes `-3`; min falls back to `-2`."
+    }
+  ]
+}

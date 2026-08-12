@@ -4,6 +4,18 @@
 
 Given string `s`, return length of the longest substring with all unique characters.
 
+## Examples
+
+### Example 1
+**Input:** `s = "abcabcbb"`
+**Output:** `3`
+**Explanation:** `"abc"` is a longest substring without repeats.
+
+### Example 2
+**Input:** `s = "bbbbb"`
+**Output:** `1`.
+
+
 ## Recognition
 
 | Signal | Points to |

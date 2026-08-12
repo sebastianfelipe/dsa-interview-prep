@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Prefix and suffix products",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Two passes, O(1) extra besides output",
+      "time": "O(n)",
+      "space": "O(1) extra",
+      "description": "**Approach:** Fill left-products, then multiply running right-products while scanning from the end.\n\n**Example walkthrough:** Left pass puts `[1,1,2,6]`. Right pass multiplies `4,3,2,1` style factors to get `[24,12,8,6]`."
+    }
+  ]
+}

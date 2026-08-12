@@ -4,6 +4,14 @@
 
 Find the contiguous subarray with the largest sum; return that sum.
 
+## Examples
+
+### Example 1
+**Input:** `nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4]`
+**Output:** `6`
+**Explanation:** Subarray `[4, -1, 2, 1]` sums to `6`.
+
+
 ## Recognition
 
 | Signal | Points to |

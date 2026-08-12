@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Prefix sums + hash map",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Count prior prefixes equal to sum - k",
+      "time": "O(n)",
+      "space": "O(n)",
+      "description": "**Approach:** As the running sum grows, add how many earlier prefixes equal `sum - k`.\n\n**Example walkthrough:** After two `1`s, sum is `2`; a prior prefix `0` means one subarray. After three `1`s, another hit for total `2`."
+    }
+  ]
+}

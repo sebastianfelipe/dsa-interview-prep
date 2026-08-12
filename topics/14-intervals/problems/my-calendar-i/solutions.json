@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Store intervals; reject overlaps",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Touching endpoints are allowed",
+      "time": "O(n) per book naive",
+      "space": "O(n)",
+      "description": "**Approach:** On each book, check against existing ranges; insert only if no overlap.\n\n**Example walkthrough:** `[10,20)` is stored. `[15,25)` hits it → false. `[20,30)` only touches → true."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "BFS on labels 1…n²",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Each roll is an edge; teleport if board says so",
+      "time": "O(n²)",
+      "space": "O(n²)",
+      "description": "**Approach:** Breadth-first search over board squares; first time you reach the end is shortest.\n\n**Example walkthrough:** BFS from square `1`. Each move tries dice 1–6; if you land on a ladder/snake cell, teleport. The first time `36` is reached, the distance is `4`."
+    }
+  ]
+}

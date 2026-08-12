@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Monotonic decreasing stack",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Indices waiting for a warmer day",
+      "time": "O(n)",
+      "space": "O(n)",
+      "description": "**Approach:** Keep indices of unresolved cooler days; when a warmer day arrives, resolve them.\n\n**Example walkthrough:** `74` resolves `73` with distance `1`. Later `76` resolves several waiting cooler days at once."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Serialize subtrees + frequency map",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Identical serial strings are duplicates",
+      "time": "O(n²) naive strings / better with ids",
+      "space": "O(n)",
+      "description": "**Approach:** Postorder stringify each subtree; when a serialization is seen the second time, record that root.\n\n**Example walkthrough:** Subtree `\"4\"` appears thrice; `\"2,4\"` appears twice — emit those duplicate roots once each."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Greedy farthest reach",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Track the farthest index reachable so far",
+      "time": "O(n)",
+      "space": "O(1)",
+      "description": "**Approach:** Scan left to right; if you ever stand beyond farthest, fail; else update farthest.\n\n**Example walkthrough:** At index `0` farthest becomes `2`; from `1` farthest becomes `4`, which reaches the end → `true`."
+    }
+  ]
+}

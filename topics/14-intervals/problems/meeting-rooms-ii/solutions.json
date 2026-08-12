@@ -1,0 +1,14 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Chronological start/end sweep",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Sort starts and ends separately",
+      "time": "O(n log n)",
+      "space": "O(n)",
+      "description": "**Approach:** Scan events; a start needs a room (+1), an end frees one (−1); track the peak.\n\n**Example walkthrough:** Start `0` → rooms 1; start `5` → 2; end `10` → 1; … peak is `2`."
+    }
+  ]
+}
