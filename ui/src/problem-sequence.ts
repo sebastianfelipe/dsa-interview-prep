@@ -43,15 +43,19 @@ export function findProblemNeighbors(
   next: ProblemSummary | null;
 } {
   const index = sequence.findIndex((p) => p.topic === topic && p.slug === slug);
-  if (index < 0) {
-    return { index: -1, total: sequence.length, previous: null, next: null };
+  const total = sequence.length;
+  if (index < 0 || total === 0) {
+    return { index: -1, total, previous: null, next: null };
   }
-  return {
-    index,
-    total: sequence.length,
-    previous: sequence[index - 1] ?? null,
-    next: sequence[index + 1] ?? null,
-  };
+
+  // Wrap around so the sequence loops (first ↔ last).
+  if (total === 1) {
+    return { index, total, previous: null, next: null };
+  }
+
+  const previous = sequence[(index - 1 + total) % total] ?? null;
+  const next = sequence[(index + 1) % total] ?? null;
+  return { index, total, previous, next };
 }
 
 export function problemPath(topic: string, slug: string, listId?: string | null): string {
