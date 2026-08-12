@@ -8,7 +8,10 @@ export function AppShell() {
     <div className="app-shell">
       <header className="topbar">
         <NavLink to="/" className="brand">
-          DSA Studio <span>AI</span>
+          <span className="brand-mark-frame" aria-hidden="true">
+            <img className="brand-mark" src="/logo.png" alt="" width={28} height={28} />
+          </span>
+          DSA Studio <span className="brand-gradient-text">AI</span>
         </NavLink>
         <div className="topbar-right">
           <nav className="nav">

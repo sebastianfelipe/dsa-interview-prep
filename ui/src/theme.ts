@@ -4,13 +4,13 @@ const PALETTE_KEY = 'dsa-studio-palette';
 export type ThemePreference = 'light' | 'dark';
 
 /** Named color systems — cycle from the header control. */
-export const PALETTES = ['ink', 'forest', 'slate', 'signal'] as const;
+export const PALETTES = ['studio', 'slate', 'forest', 'signal'] as const;
 export type PaletteId = (typeof PALETTES)[number];
 
 export const PALETTE_LABELS: Record<PaletteId, string> = {
-  ink: 'Ink',
-  forest: 'Forest',
+  studio: 'Studio',
   slate: 'Slate',
+  forest: 'Forest',
   signal: 'Signal',
 };
 
@@ -46,13 +46,18 @@ export function writeThemePreference(preference: ThemePreference) {
 export function readPalette(): PaletteId {
   try {
     const value = localStorage.getItem(PALETTE_KEY);
+    // Migrate previous default "ink" → brand "studio"
+    if (value === 'ink') {
+      writePalette('studio');
+      return 'studio';
+    }
     if (value && (PALETTES as readonly string[]).includes(value)) {
       return value as PaletteId;
     }
   } catch {
     /* ignore */
   }
-  return 'ink';
+  return 'studio';
 }
 
 export function writePalette(palette: PaletteId) {

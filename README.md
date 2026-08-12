@@ -1,5 +1,11 @@
 # DSA Studio AI
 
+<p align="center">
+  <img src="./ui/public/logo.png" alt="DSA Studio AI" width="180" />
+</p>
+
+**Master DSA. Crack Interviews.**
+
 A structured, pattern-first guide for LeetCode-style coding interviews. Every topic includes **concepts**, **recognition signals**, **worked examples**, and a **Key Extract** section — the reusable ideas you should take into the next problem.
 
 ## Study UI

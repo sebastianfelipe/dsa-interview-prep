@@ -2,7 +2,7 @@
   "name": "dsa-studio-ai",
   "private": true,
   "license": "MIT",
-  "description": "DSA Studio AI — TypeScript interview prep UI, patterns, solutions, and optional AI guidance",
+  "description": "DSA Studio AI — Master DSA. Crack Interviews. Pattern-first prep with optional AI guidance",
   "workspaces": [
     "api",
     "ui"
