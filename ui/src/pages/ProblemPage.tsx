@@ -142,13 +142,15 @@ export function ProblemPage() {
 
   const solutionPane = (
     <section className="solution-panel">
-      {solutions.length > 1 && (
-        <div className="solution-sticky-head">
-          <div className="filters">
+      <div className="solution-compare">
+        <div className="solution-compare-switch">
+          <div className="solution-compare-chips" role="tablist" aria-label="Solutions">
             {solutions.map((s) => (
               <button
                 key={s.id}
                 type="button"
+                role="tab"
+                aria-selected={selectedId === s.id}
                 className={`chip ${selectedId === s.id ? 'active' : ''}`}
                 onClick={() => setSelectedId(s.id)}
               >
@@ -156,12 +158,6 @@ export function ProblemPage() {
               </button>
             ))}
           </div>
-        </div>
-      )}
-
-      <div className="solution-compare">
-        <div className="solution-compare-top">
-          <h2 className="solution-compare-title">{selected?.title ?? 'Solution'}</h2>
           {(time || space) && (
             <p className="solution-complexity">
               {time && (
