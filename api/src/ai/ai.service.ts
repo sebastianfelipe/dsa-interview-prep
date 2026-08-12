@@ -96,8 +96,7 @@ export class AiService {
     });
 
     if (!response.ok) {
-      // Never include response bodies that might echo auth headers; keep message generic.
-      throw new BadGatewayException(`OpenAI request failed (${response.status})`);
+      throw new BadGatewayException(await this.openAiFailureMessage(response));
     }
 
     const payload = (await response.json()) as {
@@ -153,5 +152,45 @@ export class AiService {
 
   private model(): string {
     return process.env.OPENAI_MODEL?.trim() || 'gpt-4o-mini';
+  }
+
+  /** Map OpenAI HTTP errors to short, safe UI messages (never echo secrets). */
+  private async openAiFailureMessage(response: Response): Promise<string> {
+    let code: string | undefined;
+    let type: string | undefined;
+    let message = '';
+    try {
+      const body = (await response.json()) as {
+        error?: { code?: string | null; type?: string; message?: string };
+      };
+      code = body.error?.code ?? undefined;
+      type = body.error?.type;
+      message = body.error?.message?.trim() ?? '';
+    } catch {
+      /* ignore non-JSON bodies */
+    }
+
+    if (
+      response.status === 429 &&
+      (code === 'insufficient_quota' ||
+        code === 'credit_balance_exhausted' ||
+        /quota|credit/i.test(message))
+    ) {
+      return 'OpenAI has no credits left on this key. Add billing credits, then try again.';
+    }
+    if (response.status === 429) {
+      return 'OpenAI rate limit hit. Wait a moment and try again.';
+    }
+    if (response.status === 401 || response.status === 403) {
+      return 'OpenAI rejected the API key. Check OPENAI_API_KEY in api/.env.';
+    }
+    if (response.status === 404 || code === 'model_not_found') {
+      return `OpenAI model "${this.model()}" was not found. Check OPENAI_MODEL in api/.env.`;
+    }
+    if (type === 'invalid_request_error' && message) {
+      // OpenAI messages here are usually about model/params, not secrets.
+      return `OpenAI request invalid: ${message.slice(0, 180)}`;
+    }
+    return `OpenAI request failed (${response.status})`;
   }
 }
