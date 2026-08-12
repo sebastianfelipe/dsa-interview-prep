@@ -1028,6 +1028,39 @@ html[data-theme='light'] .theme-toggle-icon {
   width: 100%;
 }
 
+.solution-compare-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem 0.75rem;
+}
+
+.solution-ai {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  margin-left: auto;
+}
+
+.solution-ai.is-locked .solution-ai-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.solution-ai-btn {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.78rem;
+}
+
+.solution-ai-error {
+  margin: 0;
+  color: var(--accent-hot);
+  font-size: 0.8rem;
+}
+
 .solution-compare-notes {
   margin: 0 0 0.45rem;
   color: var(--ink-soft);
@@ -1047,6 +1080,7 @@ html[data-theme='light'] .theme-toggle-icon {
   color: var(--ink);
   text-align: left;
   max-width: none;
+  min-height: 1.2em;
 }
 
 .solution-complexity-label {

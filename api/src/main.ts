@@ -1,7 +1,11 @@
 import 'reflect-metadata';
+import { config as loadEnv } from 'dotenv';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as path from 'path';
 import { AppModule } from './app.module';
+
+loadEnv({ path: path.join(__dirname, '..', '.env') });
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,6 +22,7 @@ async function bootstrap() {
     .addTag('problems', 'Problem content, solutions, and tests')
     .addTag('lists', 'Easy / Medium prep-list coverage')
     .addTag('docs', 'Reference markdown (fundamentals, patterns, cheat sheets)')
+    .addTag('ai', 'Optional OpenAI guidance (requires OPENAI_API_KEY)')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);

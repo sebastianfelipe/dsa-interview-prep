@@ -88,9 +88,48 @@ export interface RunResult {
   durationMs: number;
 }
 
+export interface AiStatus {
+  configured: boolean;
+  model: string | null;
+}
+
+export type AiExplainMode = 'hint' | 'full';
+
+export interface AiExplainResult {
+  title: string;
+  notes?: string;
+  description: string;
+  time?: string;
+  space?: string;
+  code?: string;
+  language: string;
+  model: string;
+  mode: AiExplainMode;
+}
+
 async function get<T>(url: string): Promise<T> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  return res.json() as Promise<T>;
+}
+
+async function post<T>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    let detail = `${res.status} ${res.statusText}`;
+    try {
+      const err = (await res.json()) as { message?: string | string[] };
+      if (typeof err.message === 'string') detail = err.message;
+      else if (Array.isArray(err.message)) detail = err.message.join(', ');
+    } catch {
+      /* ignore */
+    }
+    throw new Error(detail);
+  }
   return res.json() as Promise<T>;
 }
 
@@ -116,4 +155,7 @@ export const api = {
       '/api/docs',
     ),
   doc: (path: string) => get<{ path: string; title: string; markdown: string }>(`/api/docs/${path}`),
+  aiStatus: () => get<AiStatus>('/api/ai/status'),
+  aiExplain: (topic: string, slug: string, mode: AiExplainMode = 'full') =>
+    post<AiExplainResult>('/api/ai/explain', { topic, slug, mode }),
 };
