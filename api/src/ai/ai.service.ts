@@ -11,6 +11,7 @@ import {
   normalizeCodeLanguage,
 } from '../code-language';
 import { formatSourceCode } from '../format-code';
+import { formatComplexity } from '../format-complexity';
 import { ProblemsService } from '../problems/problems.service';
 
 export type AiExplainMode = 'hint' | 'full';
@@ -37,6 +38,7 @@ Rules:
 - Teach walkthroughs with the problem examples; do not dump trivia.
 - Language is secondary — reason in language-agnostic steps first. When code is requested, use clear interview-ready ${label} as a vehicle for the approach (not as the point of the lesson).
 - Format code with real newlines and indentation (never put an entire function on one line; never escape newlines as \\n inside the JSON string value beyond normal JSON encoding).
+- For time/space, prefer Unicode like the rest of the product: O(n²), O(2ⁿ), O(n · m), O(log₁₀ x) — not ASCII n^2 / log10 / *.
 - Do not claim affiliation with LeetCode or copy proprietary editorial text.
 - Respond with a single JSON object only (no markdown fences).
 
@@ -44,8 +46,8 @@ JSON shape:
 {
   "title": "short approach name",
   "notes": "one-line complexity or interview tip",
-  "time": "e.g. O(n)",
-  "space": "e.g. O(1)",
+  "time": "e.g. O(n), O(n²), O(n log n), O(log₁₀ x)",
+  "space": "e.g. O(1), O(n)",
   "description": "markdown: Approach, why it works, example walkthrough (pattern-first, language-light)",
   "code": "${label} source illustrating the approach (omit or empty string in hint mode)"
 }`;
@@ -155,8 +157,8 @@ export class AiService {
     return {
       title,
       notes: parsed.notes?.trim() || undefined,
-      time: parsed.time?.trim() || undefined,
-      space: parsed.space?.trim() || undefined,
+      time: formatComplexity(parsed.time),
+      space: formatComplexity(parsed.space),
       description,
       code: code || undefined,
       language,

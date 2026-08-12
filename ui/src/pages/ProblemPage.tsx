@@ -20,6 +20,7 @@ import {
   writeCodeLanguage,
 } from '../code-language';
 import { formatSourceCode } from '../format-code';
+import { formatComplexity } from '../format-complexity';
 import {
   createAiSolutionId,
   listLocalSolutions,
@@ -221,8 +222,8 @@ export function ProblemPage() {
         source: 'ai',
         notes: result.notes,
         description: result.description,
-        time: result.time,
-        space: result.space,
+        time: result.time ? formatComplexity(result.time) : undefined,
+        space: result.space ? formatComplexity(result.space) : undefined,
         code: result.code ? formatSourceCode(result.code, codeLang) : '',
         language: codeLang,
         createdAt: new Date().toISOString(),
@@ -257,8 +258,8 @@ export function ProblemPage() {
   const selected = solutions.find((s) => s.id === selectedId) ?? solutions[0];
   const description = solution?.description ?? selected?.description ?? selectedRepo?.description;
   const notes = solution?.notes ?? selected?.notes ?? selectedRepo?.notes;
-  const time = solution?.time ?? selected?.time ?? selectedRepo?.time;
-  const space = solution?.space ?? selected?.space ?? selectedRepo?.space;
+  const time = formatComplexity(solution?.time ?? selected?.time ?? selectedRepo?.time);
+  const space = formatComplexity(solution?.space ?? selected?.space ?? selectedRepo?.space);
   const showSolutionPane = true;
   const backTo = list
     ? { to: '/lists', label: list.title }
