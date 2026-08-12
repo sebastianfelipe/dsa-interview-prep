@@ -14,6 +14,6 @@ export function groupAnagrams(strs: string[]): string[][] {
 /** Faster key for lowercase a-z */
 export function anagramKey(word: string): string {
   const counts = new Array<number>(26).fill(0);
-  for (const ch of word) counts[ch.charCodeAt(0) - 97]! += 1;
+  for (const ch of word) counts[ch.charCodeAt(0) - 97] += 1;
   return counts.join("#");
 }

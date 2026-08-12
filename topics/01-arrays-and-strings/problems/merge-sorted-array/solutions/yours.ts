@@ -5,8 +5,8 @@ export function merge(nums1: number[], m: number, nums2: number[], n: number): v
       break;
     }
 
-    if (i >= m + pivot || nums1[i]! >= nums2[pivot]!) {
-      nums1.splice(i, 0, nums2[pivot]!);
+    if (i >= m + pivot || nums1[i] >= nums2[pivot]) {
+      nums1.splice(i, 0, nums2[pivot]);
       nums1.pop();
       pivot++;
     }

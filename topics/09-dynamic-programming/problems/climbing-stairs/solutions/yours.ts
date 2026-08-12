@@ -9,5 +9,5 @@ export function climbStairs(n: number): number {
     calculations[n] = climbStairs(n - 1) + climbStairs(n - 2);
   }
 
-  return calculations[n]!;
+  return calculations[n];
 }

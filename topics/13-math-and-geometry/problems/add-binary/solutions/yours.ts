@@ -9,7 +9,7 @@ export function addBinary(a: string, b: string): string {
     const aDigit = parseInt(a[a.length - offset - 1] || '0', 10);
     const bDigit = parseInt(b[b.length - offset - 1] || '0', 10);
 
-    const sum = aDigit + bDigit + result[result.length - offset - 1]!;
+    const sum = aDigit + bDigit + result[result.length - offset - 1];
 
     result[result.length - offset - 1] = sum % 2;
     if (sum > 1) {

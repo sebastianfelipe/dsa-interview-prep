@@ -9,8 +9,12 @@ export class Trie {
   insert(word: string): void {
     let node = this.root;
     for (const ch of word) {
-      if (!node.children.has(ch)) node.children.set(ch, new TrieNode());
-      node = node.children.get(ch)!;
+      let next = node.children.get(ch);
+      if (!next) {
+        next = new TrieNode();
+        node.children.set(ch, next);
+      }
+      node = next;
     }
     node.isEnd = true;
   }

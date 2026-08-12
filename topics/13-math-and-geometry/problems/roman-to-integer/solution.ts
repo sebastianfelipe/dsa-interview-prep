@@ -11,8 +11,8 @@ const ROMAN: Record<string, number> = {
 export function romanToInt(s: string): number {
   let total = 0;
   for (let i = 0; i < s.length; i++) {
-    const cur = ROMAN[s[i]!]!;
-    const next = i + 1 < s.length ? ROMAN[s[i + 1]!]! : 0;
+    const cur = ROMAN[s[i]];
+    const next = i + 1 < s.length ? ROMAN[s[i + 1]] : 0;
     total += cur < next ? -cur : cur;
   }
   return total;

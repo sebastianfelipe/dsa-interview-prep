@@ -10,7 +10,7 @@ export function levelOrder(root: TreeNode | null): number[][] {
     const size = queue.length - head;
     const level: number[] = [];
     for (let i = 0; i < size; i++) {
-      const node = queue[head++]!;
+      const node = queue[head++];
       level.push(node.val);
       if (node.left) queue.push(node.left);
       if (node.right) queue.push(node.right);

@@ -11,7 +11,7 @@ export function permute(nums: number[]): number[][] {
     for (let i = 0; i < nums.length; i++) {
       if (used[i]) continue;
       used[i] = true;
-      path.push(nums[i]!);
+      path.push(nums[i]);
       dfs();
       path.pop();
       used[i] = false;

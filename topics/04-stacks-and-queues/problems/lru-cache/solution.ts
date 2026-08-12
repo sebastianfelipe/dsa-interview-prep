@@ -47,13 +47,13 @@ export class LRUCache {
   private addToHead(node: DLLNode) {
     node.prev = this.head;
     node.next = this.head.next;
-    this.head.next!.prev = node;
+    if (this.head.next) this.head.next.prev = node;
     this.head.next = node;
   }
 
   private removeNode(node: DLLNode) {
-    node.prev!.next = node.next;
-    node.next!.prev = node.prev;
+    if (node.prev) node.prev.next = node.next;
+    if (node.next) node.next.prev = node.prev;
   }
 
   private moveToHead(node: DLLNode) {
@@ -62,7 +62,10 @@ export class LRUCache {
   }
 
   private removeTail(): DLLNode {
-    const node = this.tail.prev!;
+    const node = this.tail.prev;
+    if (!node || node === this.head) {
+      throw new Error('LRUCache is empty');
+    }
     this.removeNode(node);
     return node;
   }

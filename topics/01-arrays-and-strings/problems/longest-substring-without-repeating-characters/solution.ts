@@ -4,7 +4,7 @@ export function lengthOfLongestSubstring(s: string): number {
   let best = 0;
 
   for (let right = 0; right < s.length; right++) {
-    const ch = s[right]!;
+    const ch = s[right];
     const prev = last.get(ch);
     if (prev !== undefined && prev >= left) left = prev + 1;
     last.set(ch, right);

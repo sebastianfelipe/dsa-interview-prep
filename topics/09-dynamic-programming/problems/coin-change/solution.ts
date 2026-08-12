@@ -5,8 +5,8 @@ export function coinChange(coins: number[], amount: number): number {
 
   for (let a = 1; a <= amount; a++) {
     for (const coin of coins) {
-      if (coin <= a) dp[a] = Math.min(dp[a]!, dp[a - coin]! + 1);
+      if (coin <= a) dp[a] = Math.min(dp[a], dp[a - coin] + 1);
     }
   }
-  return dp[amount]! > amount ? -1 : dp[amount]!;
+  return dp[amount] > amount ? -1 : dp[amount];
 }

@@ -56,14 +56,15 @@ export function treeFromArray(arr: (number | null)[]): TreeNode | null {
   const queue: TreeNode[] = [root];
   let i = 1;
   while (queue.length && i < arr.length) {
-    const node = queue.shift()!;
+    const node = queue.shift();
+    if (!node) break;
     if (i < arr.length && arr[i] != null) {
-      node.left = new TreeNode(arr[i]!);
+      node.left = new TreeNode(arr[i] as number);
       queue.push(node.left);
     }
     i += 1;
     if (i < arr.length && arr[i] != null) {
-      node.right = new TreeNode(arr[i]!);
+      node.right = new TreeNode(arr[i] as number);
       queue.push(node.right);
     }
     i += 1;
@@ -76,7 +77,8 @@ export function treeToArray(root: TreeNode | null): (number | null)[] {
   const out: (number | null)[] = [];
   const queue: (TreeNode | null)[] = [root];
   while (queue.length) {
-    const node = queue.shift()!;
+    const node = queue.shift();
+    if (node === undefined) break;
     if (!node) {
       out.push(null);
       continue;

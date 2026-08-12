@@ -5,7 +5,8 @@ export function cloneGraph(node: Node | null): Node | null {
   const map = new Map<Node, Node>();
 
   const dfs = (n: Node): Node => {
-    if (map.has(n)) return map.get(n)!;
+    const existing = map.get(n);
+    if (existing) return existing;
     const copy = new Node(n.val);
     map.set(n, copy);
     for (const nei of n.neighbors) {

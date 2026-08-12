@@ -8,7 +8,8 @@ export class BSTIterator {
   }
 
   next(): number {
-    const node = this.stack.pop()!;
+    const node = this.stack.pop();
+    if (!node) throw new Error('BSTIterator has no next node');
     this.pushLeft(node.right);
     return node.val;
   }

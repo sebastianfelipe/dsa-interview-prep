@@ -11,7 +11,7 @@ export function romanToInt(s: string): number {
 
   let sum = 0;
   for (let i = 0; i < s.length; i++) {
-    const symbol = s[i]!;
+    const symbol = s[i];
     switch (symbol) {
       case 'I': {
         if (s[i + 1] === 'V') {
@@ -24,7 +24,7 @@ export function romanToInt(s: string): number {
           i++;
           break;
         }
-        sum += symbolsMap[symbol]!;
+        sum += symbolsMap[symbol];
         break;
       }
       case 'X': {
@@ -38,7 +38,7 @@ export function romanToInt(s: string): number {
           i++;
           break;
         }
-        sum += symbolsMap[symbol]!;
+        sum += symbolsMap[symbol];
         break;
       }
       case 'C': {
@@ -52,11 +52,11 @@ export function romanToInt(s: string): number {
           i++;
           break;
         }
-        sum += symbolsMap[symbol]!;
+        sum += symbolsMap[symbol];
         break;
       }
       default: {
-        sum += symbolsMap[symbol]!;
+        sum += symbolsMap[symbol];
       }
     }
   }

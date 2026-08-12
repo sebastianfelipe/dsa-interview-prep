@@ -6,13 +6,13 @@ export function search(nums: number[], target: number): number {
     const mid = lo + ((hi - lo) >> 1);
     if (nums[mid] === target) return mid;
 
-    if (nums[lo]! <= nums[mid]!) {
+    if (nums[lo] <= nums[mid]) {
       // left half sorted
-      if (nums[lo]! <= target && target < nums[mid]!) hi = mid - 1;
+      if (nums[lo] <= target && target < nums[mid]) hi = mid - 1;
       else lo = mid + 1;
     } else {
       // right half sorted
-      if (nums[mid]! < target && target <= nums[hi]!) lo = mid + 1;
+      if (nums[mid] < target && target <= nums[hi]) lo = mid + 1;
       else hi = mid - 1;
     }
   }

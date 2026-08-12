@@ -8,7 +8,7 @@ export function combinationSum(candidates: number[], target: number): number[][]
       return;
     }
     for (let i = start; i < candidates.length; i++) {
-      const c = candidates[i]!;
+      const c = candidates[i];
       if (c > remain) continue; // prune (better if sorted)
       path.push(c);
       dfs(i, remain - c); // i not i+1 → reuse allowed

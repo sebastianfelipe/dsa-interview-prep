@@ -7,7 +7,7 @@ export function mergeKLists(lists: Array<ListNode | null>): ListNode | null {
   const dummy = new ListNode(0);
   let tail = dummy;
   while (heap.size) {
-    const node = heap.pop()!;
+    const node = heap.pop();
     tail.next = node;
     tail = node;
     if (node.next) heap.push(node.next);

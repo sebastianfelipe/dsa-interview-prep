@@ -4,5 +4,5 @@ export function findKthLargest(nums: number[], k: number): number {
     heap.push(num);
     if (heap.size > k) heap.pop();
   }
-  return heap.peek()!;
+  return heap.peek();
 }

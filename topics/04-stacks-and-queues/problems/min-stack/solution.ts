@@ -4,7 +4,7 @@ export class MinStack {
 
   push(val: number): void {
     this.stack.push(val);
-    const min = this.mins.length ? Math.min(val, this.mins[this.mins.length - 1]!) : val;
+    const min = this.mins.length ? Math.min(val, this.mins[this.mins.length - 1]) : val;
     this.mins.push(min);
   }
 
@@ -14,10 +14,10 @@ export class MinStack {
   }
 
   top(): number {
-    return this.stack[this.stack.length - 1]!;
+    return this.stack[this.stack.length - 1];
   }
 
   getMin(): number {
-    return this.mins[this.mins.length - 1]!;
+    return this.mins[this.mins.length - 1];
   }
 }

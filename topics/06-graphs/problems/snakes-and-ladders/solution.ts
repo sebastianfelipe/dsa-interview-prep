@@ -12,7 +12,7 @@ export function snakesAndLadders(board: number[][]): number {
 
   function destination(label: number): number {
     const [r, c] = labelToRC(label);
-    const val = board[r]![c]!;
+    const val = board[r][c];
     return val === -1 ? label : val;
   }
 
@@ -21,7 +21,9 @@ export function snakesAndLadders(board: number[][]): number {
   visited[1] = true;
 
   while (queue.length) {
-    const [curr, moves] = queue.shift()!;
+    const front = queue.shift();
+    if (!front) break;
+    const [curr, moves] = front;
     if (curr === target) return moves;
     for (let roll = 1; roll <= 6 && curr + roll <= target; roll++) {
       const next = destination(curr + roll);

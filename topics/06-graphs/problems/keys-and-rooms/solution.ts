@@ -5,8 +5,9 @@ export function canVisitAllRooms(rooms: number[][]): boolean {
   let count = 1;
 
   while (stack.length) {
-    const room = stack.pop()!;
-    for (const key of rooms[room]!) {
+    const room = stack.pop();
+    if (room === undefined) break;
+    for (const key of rooms[room]) {
       if (!visited[key]) {
         visited[key] = true;
         count++;
