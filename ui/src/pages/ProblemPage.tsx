@@ -219,8 +219,8 @@ export function ProblemPage() {
 
       {showSolution ? (
         <div className="problem-solution-split">
-          {problemPane}
-          {solutionPane}
+          <div className="problem-pane-scroll">{problemPane}</div>
+          <div className="solution-pane-scroll">{solutionPane}</div>
         </div>
       ) : (
         <>
@@ -233,10 +233,6 @@ export function ProblemPage() {
           )}
         </>
       )}
-
-      <div className="problem-nav-footer">
-        <ProblemNav {...navProps} />
-      </div>
     </main>
   );
 }
