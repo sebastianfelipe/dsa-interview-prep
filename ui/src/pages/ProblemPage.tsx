@@ -7,6 +7,7 @@ import {
   type ProblemDetail,
   type SolutionDetail,
 } from '../api';
+import { CodeBlock } from '../components/CodeBlock';
 import { Markdown } from '../components/Markdown';
 import { ProblemNav } from '../components/ProblemNav';
 import { useSolutionReveal } from '../solution-reveal-context';
@@ -189,9 +190,18 @@ export function ProblemPage() {
           <strong>Code</strong>
         </div>
         <div className="solution-code-wrap">
-          <pre className="solution-code" aria-hidden={!revealed}>
-            <code>{solution ? solution.code : 'Loading…'}</code>
-          </pre>
+          {solution ? (
+            <CodeBlock
+              code={solution.code}
+              language={solution.language || 'typescript'}
+              className="solution-code"
+              aria-hidden={!revealed}
+            />
+          ) : (
+            <pre className="solution-code">
+              <code>Loading…</code>
+            </pre>
+          )}
           {!revealed && (
             <div className="solution-code-lock">
               <span>Code is locked — unlock from the header to read it</span>
