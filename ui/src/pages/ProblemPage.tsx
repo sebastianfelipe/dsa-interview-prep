@@ -179,7 +179,6 @@ export function ProblemPage() {
       <div className="solution-block">
         <div className="solution-meta">
           <strong>Code</strong>
-          {solution?.path && <span className="muted"> · {solution.path}</span>}
         </div>
         {solution ? (
           <pre>
