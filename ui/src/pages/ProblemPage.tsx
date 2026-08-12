@@ -5,7 +5,6 @@ import {
   type Catalog,
   type ListDetail,
   type ProblemDetail,
-  type RunResult,
   type SolutionDetail,
 } from '../api';
 import { Markdown } from '../components/Markdown';
@@ -27,8 +26,6 @@ export function ProblemPage() {
   const [list, setList] = useState<ListDetail | null>(null);
   const [selectedId, setSelectedId] = useState('recommended');
   const [solution, setSolution] = useState<SolutionDetail | null>(null);
-  const [running, setRunning] = useState(false);
-  const [result, setResult] = useState<RunResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -50,7 +47,6 @@ export function ProblemPage() {
 
   useEffect(() => {
     setSolution(null);
-    setResult(null);
     setSelectedId('recommended');
     api
       .problem(topic, slug)
@@ -96,25 +92,6 @@ export function ProblemPage() {
     return findProblemNeighbors(flattenCatalogProblems(catalog), topic, slug);
   }, [listId, list, catalog, topic, slug]);
 
-  async function runTests() {
-    setRunning(true);
-    setResult(null);
-    try {
-      const r = await api.run(topic, slug);
-      setResult(r);
-    } catch (e) {
-      setResult({
-        passed: false,
-        exitCode: 1,
-        stdout: '',
-        stderr: String(e),
-        durationMs: 0,
-      });
-    } finally {
-      setRunning(false);
-    }
-  }
-
   if (error) return <main className="page">{error}</main>;
   if (!problem) return <main className="page">Loading…</main>;
 
@@ -157,22 +134,6 @@ export function ProblemPage() {
       <div className="problem-readme">
         <Markdown source={problem.readme} />
       </div>
-
-      {problem.hasTests && (
-        <div className="actions">
-          <button type="button" className="btn btn-primary" onClick={runTests} disabled={running}>
-            {running ? 'Running…' : 'Run tests'}
-          </button>
-        </div>
-      )}
-
-      {result && (
-        <div className={`test-result ${result.passed ? 'pass' : 'fail'}`}>
-          {result.passed ? 'All tests passed' : 'Tests failed'} · {result.durationMs}ms
-          {'\n\n'}
-          {result.stdout || result.stderr}
-        </div>
-      )}
     </div>
   );
 
