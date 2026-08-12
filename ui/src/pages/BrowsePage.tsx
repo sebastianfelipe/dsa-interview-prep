@@ -18,7 +18,10 @@ export function BrowsePage() {
       .catch((e) => setError(String(e)));
   }, []);
 
-  const topics = catalog?.topics ?? [];
+  const topics = useMemo(
+    () => (catalog?.topics ?? []).filter((t) => t.problems.length > 0),
+    [catalog],
+  );
   const activeTopic = topics.find((t) => t.id === topicId) ?? topics[0];
 
   const problems = useMemo(() => {
