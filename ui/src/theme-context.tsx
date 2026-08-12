@@ -10,10 +10,14 @@ import {
 } from 'react';
 import {
   applyTheme,
+  cyclePalette,
   cycleThemePreference,
+  readPalette,
   readThemePreference,
   resolveTheme,
+  writePalette,
   writeThemePreference,
+  type PaletteId,
   type ResolvedTheme,
   type ThemePreference,
 } from './theme';
@@ -21,40 +25,70 @@ import {
 type ThemeContextValue = {
   preference: ThemePreference;
   resolved: ResolvedTheme;
+  palette: PaletteId;
   setPreference: (preference: ThemePreference) => void;
+  setPalette: (palette: PaletteId) => void;
   cycle: () => void;
+  cyclePaletteMode: () => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [preference, setPreferenceState] = useState<ThemePreference>(() => readThemePreference());
-  const [resolved, setResolved] = useState<ResolvedTheme>(() => resolveTheme(readThemePreference()));
+  const [palette, setPaletteState] = useState<PaletteId>(() => readPalette());
+  const [resolved, setResolved] = useState<ResolvedTheme>(() =>
+    resolveTheme(readThemePreference()),
+  );
 
-  const setPreference = useCallback((next: ThemePreference) => {
-    writeThemePreference(next);
-    setPreferenceState(next);
-    setResolved(applyTheme(next));
-  }, []);
+  const setPreference = useCallback(
+    (next: ThemePreference) => {
+      writeThemePreference(next);
+      setPreferenceState(next);
+      setResolved(applyTheme(next, palette));
+    },
+    [palette],
+  );
+
+  const setPalette = useCallback(
+    (next: PaletteId) => {
+      writePalette(next);
+      setPaletteState(next);
+      setResolved(applyTheme(preference, next));
+    },
+    [preference],
+  );
 
   const cycle = useCallback(() => {
     setPreference(cycleThemePreference(preference));
   }, [preference, setPreference]);
 
+  const cyclePaletteMode = useCallback(() => {
+    setPalette(cyclePalette(palette));
+  }, [palette, setPalette]);
+
   useEffect(() => {
-    setResolved(applyTheme(preference));
+    setResolved(applyTheme(preference, palette));
 
     if (preference !== 'system') return;
 
     const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => setResolved(applyTheme('system'));
+    const onChange = () => setResolved(applyTheme('system', palette));
     media.addEventListener('change', onChange);
     return () => media.removeEventListener('change', onChange);
-  }, [preference]);
+  }, [preference, palette]);
 
   const value = useMemo(
-    () => ({ preference, resolved, setPreference, cycle }),
-    [preference, resolved, setPreference, cycle],
+    () => ({
+      preference,
+      resolved,
+      palette,
+      setPreference,
+      setPalette,
+      cycle,
+      cyclePaletteMode,
+    }),
+    [preference, resolved, palette, setPreference, setPalette, cycle, cyclePaletteMode],
   );
 
   return createElement(ThemeContext.Provider, { value }, children);

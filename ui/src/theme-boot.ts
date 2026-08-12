@@ -1,4 +1,4 @@
-import { applyTheme, readThemePreference } from './theme';
+import { applyTheme, readPalette, readThemePreference } from './theme';
 
 // Avoid a flash of the wrong theme before React mounts.
-applyTheme(readThemePreference());
+applyTheme(readThemePreference(), readPalette());
