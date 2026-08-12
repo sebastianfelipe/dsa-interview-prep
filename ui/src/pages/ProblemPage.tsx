@@ -64,7 +64,7 @@ export function ProblemPage() {
   }, [topic, slug]);
 
   useEffect(() => {
-    if (!revealed || !problem?.hasSolution) {
+    if (!problem?.hasSolution) {
       setSolution(null);
       return;
     }
@@ -82,7 +82,7 @@ export function ProblemPage() {
     return () => {
       cancelled = true;
     };
-  }, [revealed, problem?.hasSolution, topic, slug, selectedId]);
+  }, [problem?.hasSolution, topic, slug, selectedId]);
 
   const neighbors = useMemo(() => {
     if (listId) {
@@ -124,7 +124,7 @@ export function ProblemPage() {
   const notes = solution?.notes ?? selected?.notes;
   const time = solution?.time ?? selected?.time;
   const space = solution?.space ?? selected?.space;
-  const showSolution = problem.hasSolution && revealed;
+  const showSolutionPane = problem.hasSolution;
   const backTo = list
     ? { to: '/lists', label: list.title }
     : { to: `/browse?topic=${problem.topic}`, label: problem.topicTitle };
@@ -221,39 +221,33 @@ export function ProblemPage() {
         )}
       </div>
 
-      <div className="solution-block">
+      <div className={`solution-block${revealed ? '' : ' is-locked'}`}>
         <div className="solution-meta">
           <strong>Code</strong>
         </div>
-        {solution ? (
-          <pre>
-            <code>{solution.code}</code>
+        <div className="solution-code-wrap">
+          <pre className="solution-code" aria-hidden={!revealed}>
+            <code>{solution ? solution.code : 'Loading…'}</code>
           </pre>
-        ) : (
-          <pre>
-            <code>Loading…</code>
-          </pre>
-        )}
+          {!revealed && (
+            <div className="solution-code-lock">
+              <span>Code is locked — unlock from the header to read it</span>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
 
   return (
-    <main className={`page page-problem${showSolution ? ' page-problem-split' : ''}`}>
-      {showSolution ? (
+    <main className={`page page-problem${showSolutionPane ? ' page-problem-split' : ''}`}>
+      {showSolutionPane ? (
         <div className="problem-solution-split">
           <div className="problem-pane-scroll">{problemPane}</div>
           <div className="solution-pane-scroll">{solutionPane}</div>
         </div>
       ) : (
-        <>
-          {problemPane}
-          {problem.hasSolution && (
-            <p className="muted solution-hidden-hint">
-              Solutions are locked. Unlock them from the header vault control to compare approaches.
-            </p>
-          )}
-        </>
+        problemPane
       )}
     </main>
   );
