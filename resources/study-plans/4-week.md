@@ -4,30 +4,30 @@
 
 ## Week 1 — Linear structures
 
-- Fundamentals + arrays/strings patterns (all files in `01`)
-- Hashing (`02`)
-- Linked lists (`03`)
-- Target: 12–15 problems across these folders
+- [Fundamentals](/reference/topics/00-fundamentals) + [Arrays & Strings](/browse?topic=01-arrays-and-strings) patterns
+- [Hashing](/browse?topic=02-hashing)
+- [Linked Lists](/browse?topic=03-linked-lists)
+- Target: 12–15 problems across these topics
 
 ## Week 2 — Trees, stacks, heaps
 
-- Stacks & monotonic stack (`04`)
-- Trees (`05`) — BFS, DFS, BST
-- Heaps (`07`)
+- [Stacks & Queues](/browse?topic=04-stacks-and-queues) (including monotonic stack)
+- [Trees](/browse?topic=05-trees) — BFS, DFS, BST
+- [Heaps](/browse?topic=07-heaps)
 - Target: 12–15 problems
 
 ## Week 3 — Graphs + recursion
 
-- Graphs BFS/DFS + matrix (`06`)
-- Topological sort + Union-Find intros (`16`)
-- Backtracking (`08`)
+- [Graphs](/browse?topic=06-graphs) — BFS/DFS + matrix
+- [Advanced](/reference/topics/16-advanced-topics) — topological sort + Union-Find intros
+- [Recursion & Backtracking](/browse?topic=08-recursion-and-backtracking)
 - Target: 12–15 problems
 
 ## Week 4 — DP, greedy, search
 
-- DP patterns (`09`) — 1D, grid, knapsack family
-- Greedy (`10`) + intervals (`14`)
-- Binary search (`11`)
+- [Dynamic Programming](/browse?topic=09-dynamic-programming) — 1D, grid, knapsack family
+- [Greedy](/browse?topic=10-greedy) + [Intervals](/browse?topic=14-intervals)
+- [Sorting & Searching](/browse?topic=11-sorting-and-searching)
 - 2 mock interviews
 - Target: 12–15 problems + review all Key Extracts
 

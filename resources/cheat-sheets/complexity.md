@@ -1,6 +1,6 @@
 # Big-O + Structure Cheatsheet
 
-See also [`../00-fundamentals/complexity-cheatsheet.md`](../../topics/00-fundamentals/complexity-cheatsheet.md).
+See also [Fundamentals · Complexity cheatsheet](/reference/topics/00-fundamentals/complexity-cheatsheet).
 
 ## TypeScript collection costs (amortized)
 

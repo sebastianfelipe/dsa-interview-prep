@@ -2,11 +2,11 @@
 
 Pick a plan based on time until interviews.
 
-| Plan | File | Audience |
-|------|------|----------|
-| 2 weeks intensive | [2-week.md](./2-week.md) | Refresh + high-frequency patterns |
-| 4 weeks solid | [4-week.md](./4-week.md) | First serious prep |
-| 8 weeks mastery | [8-week.md](./8-week.md) | Deeper coverage + mock interviews |
+| Plan | Audience |
+|------|----------|
+| [2 weeks intensive](/reference/resources/study-plans/2-week) | Refresh + high-frequency patterns |
+| [4 weeks solid](/reference/resources/study-plans/4-week) | First serious prep |
+| [8 weeks mastery](/reference/resources/study-plans/8-week) | Deeper coverage + mock interviews |
 
 ## Daily session shape (any plan)
 

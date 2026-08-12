@@ -4,14 +4,14 @@
 
 | Week | Theme | Depth |
 |------|-------|-------|
-| 1 | Fundamentals, arrays, hashing | All patterns in `01`–`02` |
-| 2 | Linked lists, stacks, queues | Monotonic stack mastery |
-| 3 | Trees + BST + tries | `05` + `15` |
-| 4 | Graphs + Union-Find + topo | `06` + `16` |
-| 5 | Heaps + intervals + greedy | `07`, `10`, `14` |
-| 6 | Backtracking + bit + math | `08`, `12`, `13` |
-| 7 | Dynamic programming deep dive | All `09` patterns + 15 DP problems |
-| 8 | Mixed mocks, binary search on answer, weak spots | 4+ timed mocks |
+| 1 | Fundamentals, arrays, hashing | [Fundamentals](/reference/topics/00-fundamentals), [Arrays & Strings](/browse?topic=01-arrays-and-strings), [Hashing](/browse?topic=02-hashing) |
+| 2 | Linked lists, stacks, queues | [Linked Lists](/browse?topic=03-linked-lists), [Stacks & Queues](/browse?topic=04-stacks-and-queues) — monotonic stack mastery |
+| 3 | Trees + BST + tries | [Trees](/browse?topic=05-trees), [Tries](/browse?topic=15-tries) |
+| 4 | Graphs + Union-Find + topo | [Graphs](/browse?topic=06-graphs), [Advanced](/reference/topics/16-advanced-topics) |
+| 5 | Heaps + intervals + greedy | [Heaps](/browse?topic=07-heaps), [Greedy](/browse?topic=10-greedy), [Intervals](/browse?topic=14-intervals) |
+| 6 | Backtracking + bit + math | [Recursion & Backtracking](/browse?topic=08-recursion-and-backtracking), [Bit Manipulation](/browse?topic=12-bit-manipulation), [Math & Geometry](/browse?topic=13-math-and-geometry) |
+| 7 | Dynamic programming deep dive | [Dynamic Programming](/browse?topic=09-dynamic-programming) — all patterns + 15 DP problems |
+| 8 | Mixed mocks, binary search on answer, weak spots | [Sorting & Searching](/browse?topic=11-sorting-and-searching) + 4+ timed mocks |
 
 ## Extra habits
 
