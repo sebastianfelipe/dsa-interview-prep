@@ -63,7 +63,7 @@ export function ListsPage() {
                 <Link
                   key={p.slug}
                   className="list-item list-item-link"
-                  to={`/problems/${p.topic}/${p.slug}`}
+                  to={`/problems/${p.topic}/${p.slug}?list=${encodeURIComponent(selected.id)}`}
                 >
                   <div>
                     <strong>

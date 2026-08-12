@@ -1,18 +1,52 @@
-import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { api, type ProblemDetail, type RunResult, type SolutionDetail } from '../api';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import {
+  api,
+  type Catalog,
+  type ListDetail,
+  type ProblemDetail,
+  type RunResult,
+  type SolutionDetail,
+} from '../api';
 import { Markdown } from '../components/Markdown';
+import { ProblemNav } from '../components/ProblemNav';
 import { useSolutionReveal } from '../solution-reveal-context';
+import {
+  findProblemNeighbors,
+  flattenCatalogProblems,
+  flattenListProblems,
+} from '../problem-sequence';
 
 export function ProblemPage() {
   const { topic = '', slug = '' } = useParams();
+  const [searchParams] = useSearchParams();
+  const listId = searchParams.get('list');
   const { revealed } = useSolutionReveal();
   const [problem, setProblem] = useState<ProblemDetail | null>(null);
+  const [catalog, setCatalog] = useState<Catalog | null>(null);
+  const [list, setList] = useState<ListDetail | null>(null);
   const [selectedId, setSelectedId] = useState('recommended');
   const [solution, setSolution] = useState<SolutionDetail | null>(null);
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<RunResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (listId) {
+      setCatalog(null);
+      api
+        .list(listId)
+        .then(setList)
+        .catch(() => setList(null));
+      return;
+    }
+
+    setList(null);
+    api
+      .catalog()
+      .then(setCatalog)
+      .catch(() => setCatalog(null));
+  }, [listId]);
 
   useEffect(() => {
     setSolution(null);
@@ -50,6 +84,18 @@ export function ProblemPage() {
     };
   }, [revealed, problem?.hasSolution, topic, slug, selectedId]);
 
+  const neighbors = useMemo(() => {
+    if (listId) {
+      if (!list || list.id !== listId) {
+        return { index: -1, total: 0, previous: null, next: null };
+      }
+      return findProblemNeighbors(flattenListProblems(list), topic, slug);
+    }
+
+    if (!catalog) return { index: -1, total: 0, previous: null, next: null };
+    return findProblemNeighbors(flattenCatalogProblems(catalog), topic, slug);
+  }, [listId, list, catalog, topic, slug]);
+
   async function runTests() {
     setRunning(true);
     setResult(null);
@@ -77,6 +123,9 @@ export function ProblemPage() {
   const description = solution?.description ?? selected?.description;
   const notes = solution?.notes ?? selected?.notes;
   const showSolution = problem.hasSolution && revealed;
+  const backTo = list
+    ? { to: '/lists', label: list.title }
+    : { to: `/browse?topic=${problem.topic}`, label: problem.topicTitle };
 
   const problemPane = (
     <div className="panel problem-pane">
@@ -145,17 +194,28 @@ export function ProblemPage() {
     </section>
   );
 
+  const navProps = {
+    previous: neighbors.previous,
+    next: neighbors.next,
+    index: neighbors.index,
+    total: neighbors.total,
+    listId,
+    label: list?.title ?? null,
+  };
+
   return (
     <main className={`page page-problem${showSolution ? ' page-problem-split' : ''}`}>
       <div className="problem-header">
         <p className="muted">
-          <Link to={`/browse?topic=${problem.topic}`}>← {problem.topicTitle}</Link>
+          <Link to={backTo.to}>← {backTo.label}</Link>
         </p>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '0.5rem' }}>
           <span className={`badge ${problem.difficulty}`}>{problem.difficulty}</span>
           {problem.leetcodeId != null && <span className="muted">LC {problem.leetcodeId}</span>}
         </div>
       </div>
+
+      <ProblemNav {...navProps} />
 
       {showSolution ? (
         <div className="problem-solution-split">
@@ -173,6 +233,10 @@ export function ProblemPage() {
           )}
         </>
       )}
+
+      <div className="problem-nav-footer">
+        <ProblemNav {...navProps} />
+      </div>
     </main>
   );
 }
