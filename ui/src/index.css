@@ -584,20 +584,35 @@ html[data-theme-preference='system'] .theme-toggle-icon {
   width: min(1280px, calc(100% - 2rem));
 }
 
+.page-problem-split {
+  width: min(1480px, calc(100% - 2rem));
+}
+
+.problem-header {
+  margin-bottom: 0.25rem;
+}
+
+.problem-solution-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.problem-pane {
+  margin: 0;
+}
+
 .solution-panel {
-  margin-top: 1.5rem;
+  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
   animation: rise 280ms ease both;
 }
 
 .solution-panel .filters {
-  margin-bottom: 0.85rem;
-}
-
-.solution-split {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-  gap: 1rem;
-  align-items: start;
+  margin-bottom: 0;
 }
 
 .solution-compare {
@@ -661,8 +676,8 @@ html[data-theme-preference='system'] .theme-toggle-icon {
   color: color-mix(in srgb, var(--code-fg) 70%, transparent);
 }
 
-@media (max-width: 900px) {
-  .solution-split {
+@media (max-width: 980px) {
+  .problem-solution-split {
     grid-template-columns: 1fr;
   }
 }
