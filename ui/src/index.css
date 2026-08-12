@@ -209,6 +209,23 @@ html[data-theme-preference='system'] .theme-toggle-icon {
   font-weight: 600;
 }
 
+.solution-reveal-icon {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 2px;
+  border: 1.5px solid currentColor;
+  display: inline-block;
+  position: relative;
+}
+
+.solution-reveal-icon[data-on='1'] {
+  background: currentColor;
+}
+
+.solution-reveal-icon[data-on='0'] {
+  background: transparent;
+}
+
 .page {
   width: min(1120px, calc(100% - 2rem));
   margin: 0 auto;
@@ -563,14 +580,91 @@ html[data-theme-preference='system'] .theme-toggle-icon {
   margin: 1rem 0 1.25rem;
 }
 
+.page-problem {
+  width: min(1280px, calc(100% - 2rem));
+}
+
+.solution-panel {
+  margin-top: 1.5rem;
+  animation: rise 280ms ease both;
+}
+
+.solution-panel .filters {
+  margin-bottom: 0.85rem;
+}
+
+.solution-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.solution-compare {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 1rem 1.15rem 1.15rem;
+}
+
+.solution-compare-title {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.solution-compare-notes {
+  margin: 0 0 0.85rem;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+
+.solution-compare .markdown {
+  font-size: 0.95rem;
+}
+
+.solution-compare .markdown p {
+  margin: 0.55rem 0;
+}
+
+.solution-compare .markdown p:first-child {
+  margin-top: 0;
+}
+
+.solution-compare .markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.solution-hidden-hint {
+  margin-top: 1.25rem;
+}
+
 .solution-block {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--code-bg);
   color: var(--code-fg);
-  margin-top: 0.75rem;
+  margin-top: 0;
+  min-height: 12rem;
   animation: rise 280ms ease both;
+}
+
+.solution-meta {
+  padding: 0.75rem 1.1rem 0;
+  font-size: 0.9rem;
+}
+
+.solution-meta .muted {
+  color: color-mix(in srgb, var(--code-fg) 70%, transparent);
+}
+
+@media (max-width: 900px) {
+  .solution-split {
+    grid-template-columns: 1fr;
+  }
 }
 
 .solution-block pre {

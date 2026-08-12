@@ -1,0 +1,20 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Two pointers overwrite",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Two pointers overwrite — O(n)",
+      "description": "**Approach:** Copy every non-`val` into the next write slot; return write count.\n\n**Complexity:** Time **O(n)**, space **O(1)**.\n\n**Why preferred:** Order of kept elements can change unless you keep relative order; still meets the problem contract without shifting."
+    },
+    {
+      "id": "yours",
+      "title": "In-place splice removals",
+      "file": "solutions/yours.ts",
+      "source": "yours",
+      "notes": "splice removals — works, costly shifts",
+      "description": "**Approach:** Scan; `splice` out each `val` without advancing `i` after a removal.\n\n**Complexity:** Time **O(n²)** typical, space **O(1)**.\n\n**vs recommended:** Same in-place idea. Prefer overwrite/two-pointer so removals are **O(1)** each."
+    }
+  ]
+}

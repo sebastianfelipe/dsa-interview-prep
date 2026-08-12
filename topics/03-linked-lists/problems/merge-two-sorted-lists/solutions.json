@@ -1,0 +1,20 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Iterative dummy head",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Iterative dummy head — O(1) extra stack",
+      "description": "**Approach:** Dummy node; always attach the smaller of `list1`/`list2`; append leftovers.\n\n**Complexity:** Time **O(n+m)**, space **O(1)** extra (iterative).\n\n**Why preferred:** No recursion depth risk on long lists; easy to narrate in interviews."
+    },
+    {
+      "id": "yours",
+      "title": "Recursive merge",
+      "file": "solutions/yours.ts",
+      "source": "yours",
+      "notes": "Recursive — elegant, uses call stack",
+      "description": "**Approach:** Base cases for null lists; pick the smaller head and recurse for `next`.\n\n**Complexity:** Time **O(n+m)**, space **O(n+m)** call stack in worst case.\n\n**vs recommended:** Clean and correct. Prefer iterative dummy-head when lists can be long or the interviewer cares about stack space."
+    }
+  ]
+}

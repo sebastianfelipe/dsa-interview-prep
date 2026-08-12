@@ -1,0 +1,20 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Two pointers (slow/fast)",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Two pointers — O(n) in-place overwrite",
+      "description": "**Approach:** `write` stays at the last unique; `read` scans ahead; copy when values differ.\n\n**Complexity:** Time **O(n)**, space **O(1)**.\n\n**Why preferred:** No shifting; returns the new length as required."
+    },
+    {
+      "id": "yours",
+      "title": "In-place splice duplicates",
+      "file": "solutions/yours.ts",
+      "source": "yours",
+      "notes": "splice each duplicate — correct but O(n²)",
+      "description": "**Approach:** Walk with index `i`; when `nums[i] === nums[i-1]`, `splice(i, 1)` and stay; else advance.\n\n**Complexity:** Time **O(n²)** from repeated splices, space **O(1)**.\n\n**vs recommended:** Logic is clear. Interview target is the slow/fast write pointer so each element moves at most once."
+    }
+  ]
+}

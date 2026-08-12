@@ -25,8 +25,29 @@ export interface Catalog {
   difficulties: Difficulty[];
 }
 
+export interface SolutionEntry {
+  id: string;
+  title: string;
+  file: string;
+  source: string;
+  notes?: string;
+  description?: string;
+}
+
 export interface ProblemDetail extends ProblemSummary {
   readme: string;
+  solutions: SolutionEntry[];
+}
+
+export interface SolutionDetail {
+  id: string;
+  title: string;
+  source: string;
+  notes?: string;
+  description?: string;
+  language: string;
+  code: string;
+  path: string;
 }
 
 export interface ListSummary {
@@ -73,8 +94,12 @@ export const api = {
   catalog: (difficulty?: Difficulty) =>
     get<Catalog>(difficulty ? `/api/catalog?difficulty=${difficulty}` : '/api/catalog'),
   problem: (topic: string, slug: string) => get<ProblemDetail>(`/api/problems/${topic}/${slug}`),
-  solution: (topic: string, slug: string) =>
-    get<{ language: string; code: string; path: string }>(`/api/problems/${topic}/${slug}/solution`),
+  solution: (topic: string, slug: string, id?: string) =>
+    get<SolutionDetail>(
+      id
+        ? `/api/problems/${topic}/${slug}/solution?id=${encodeURIComponent(id)}`
+        : `/api/problems/${topic}/${slug}/solution`,
+    ),
   run: async (topic: string, slug: string) => {
     const res = await fetch(`/api/problems/${topic}/${slug}/run`, { method: 'POST' });
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);

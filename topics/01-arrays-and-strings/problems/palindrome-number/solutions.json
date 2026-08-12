@@ -1,0 +1,20 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Math reverse / digit compare",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "No string conversion — math reverse / half compare",
+      "description": "**Approach:** Reject negatives; reverse digits (or half the digits) with arithmetic and compare to the original.\n\n**Complexity:** Time **O(log₁₀ x)**, extra space **O(1)**.\n\n**Why preferred:** Matches the common follow-up “solve without converting to a string.”"
+    },
+    {
+      "id": "yours",
+      "title": "String reverse",
+      "file": "solutions/yours.ts",
+      "source": "yours",
+      "notes": "String reverse — simple, uses O(n) space",
+      "description": "**Approach:** `toString`, reverse characters, compare equality.\n\n**Complexity:** Time **O(n)**, space **O(n)** for the string(s).\n\n**vs recommended:** Fine for clarity. Interviewers often ask for a math-only version to avoid allocation and to practice digit extraction / reverse."
+    }
+  ]
+}

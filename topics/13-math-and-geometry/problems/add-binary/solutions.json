@@ -1,0 +1,20 @@
+{
+  "solutions": [
+    {
+      "id": "recommended",
+      "title": "Two-pointer binary addition",
+      "file": "solution.ts",
+      "source": "repo",
+      "notes": "Two indices + carry int — build result string",
+      "description": "**Approach:** Pointers at ends of `a`/`b`; sum bits + carry; prepend digit; finish leftover carry.\n\n**Complexity:** Time **O(max(n,m))**, space **O(max(n,m))** for output.\n\n**Why preferred:** Minimal moving parts; easy to dry-run in an interview."
+    },
+    {
+      "id": "yours",
+      "title": "Digit-wise sum with carry array",
+      "file": "solutions/yours.ts",
+      "source": "yours",
+      "notes": "Result digit array with unshift carry",
+      "description": "**Approach:** Align from the least significant digit into a result array; write `sum % 2` and `unshift(1)` on carry.\n\n**Complexity:** Time can degrade with repeated `unshift` (**O(n²)** worst); space **O(n)**.\n\n**vs recommended:** Same arithmetic idea. Prefer a carry integer and push digits then reverse (or build a string) to keep **O(n)**."
+    }
+  ]
+}
