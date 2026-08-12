@@ -713,7 +713,6 @@ html[data-theme-preference='system'] .theme-toggle-icon {
 .solution-sticky-head {
   flex-shrink: 0;
   padding-bottom: 0.15rem;
-  background: var(--paper);
 }
 
 .solution-panel .filters {
