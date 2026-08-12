@@ -1,15 +1,15 @@
-# DSA Interview Prep
+# DSA Studio
 
 A structured, pattern-first guide for LeetCode-style coding interviews. Every topic includes **concepts**, **recognition signals**, **worked examples**, and a **Key Extract** section — the reusable ideas you should take into the next problem.
 
-## Study UI (DSA Studio)
+## Study UI
 
 ```bash
 yarn
 yarn dev
 ```
 
-Open **http://localhost:5173** — browse by Easy / Medium / Hard, reveal TypeScript solutions, run tests, and track your [Easy](https://leetcode.com/problem-list/2z168m6d/) / [Medium](https://leetcode.com/problem-list/vylst5u7/) prep lists. API Swagger lives at **http://localhost:3001/api/swagger**. Details in [`STUDIO.md`](./STUDIO.md).
+Open **http://localhost:5173** — browse by Easy / Medium / Hard, reveal TypeScript solutions, and track your [Easy](https://leetcode.com/problem-list/2z168m6d/) / [Medium](https://leetcode.com/problem-list/vylst5u7/) prep lists. API Swagger lives at **http://localhost:3001/api/swagger**. Details in [`STUDIO.md`](./STUDIO.md).
 
 ## Repo layout
 

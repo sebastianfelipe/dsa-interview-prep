@@ -1,8 +1,8 @@
 {
-  "name": "dsa-interview-prep",
+  "name": "dsa-studio",
   "private": true,
   "license": "MIT",
-  "description": "TypeScript DSA interview prep \u2014 patterns, templates, study UI",
+  "description": "DSA Studio — TypeScript interview prep UI, patterns, and solutions",
   "workspaces": [
     "api",
     "ui"
