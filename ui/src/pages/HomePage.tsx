@@ -16,8 +16,8 @@ export function HomePage() {
           <span className="hero-tagline-rule" aria-hidden="true" />
         </p>
         <p>
-          Pattern-first interview prep. Read the recognition signals, reveal a TypeScript solution
-          when you are ready, and run the tests.
+          Pattern-first interview prep. Read the recognition signals, study the approach, then reveal
+          a solution when you are ready.
         </p>
         <div className="cta-row">
           <Link className="btn btn-primary" to="/browse">

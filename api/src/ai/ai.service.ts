@@ -25,9 +25,9 @@ const SYSTEM_PROMPT = `You are a DSA interview tutor inside DSA Studio AI.
 Given one coding problem, analyze recognition signals and propose one clear interview approach.
 
 Rules:
-- Teach patterns and walkthroughs; do not dump trivia.
-- Use the examples in the problem statement when explaining.
-- Prefer interview-ready TypeScript when code is requested.
+- Lead with the approach: pattern recognition, why it works, and how to talk through it in an interview.
+- Teach walkthroughs with the problem examples; do not dump trivia.
+- Language is secondary — reason in language-agnostic steps first. When code is requested, use clear interview-ready TypeScript as a vehicle for the approach (not as the point of the lesson).
 - Do not claim affiliation with LeetCode or copy proprietary editorial text.
 - Respond with a single JSON object only (no markdown fences).
 
@@ -37,8 +37,8 @@ JSON shape:
   "notes": "one-line complexity or interview tip",
   "time": "e.g. O(n)",
   "space": "e.g. O(1)",
-  "description": "markdown explanation: Approach, why it works, example walkthrough",
-  "code": "TypeScript source (omit or empty string in hint mode)"
+  "description": "markdown: Approach, why it works, example walkthrough (pattern-first, language-light)",
+  "code": "TypeScript source illustrating the approach (omit or empty string in hint mode)"
 }`;
 
 @Injectable()
@@ -68,7 +68,7 @@ export class AiService {
 
     const model = this.model();
     const userPrompt = [
-      `Mode: ${mode === 'hint' ? 'HINT ONLY — explain the approach and walk an example, but do not include solution code (set code to "").' : 'FULL — include a complete TypeScript solution in code.'}`,
+      `Mode: ${mode === 'hint' ? 'HINT ONLY — explain the approach and walk an example in language-agnostic terms; do not include solution code (set code to "").' : 'FULL — teach the approach first, then include a complete TypeScript illustration of that approach in code.'}`,
       `Topic: ${problem.topicTitle} (${topic})`,
       `Difficulty: ${problem.difficulty}`,
       `Slug: ${slug}`,

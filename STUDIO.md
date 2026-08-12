@@ -2,7 +2,7 @@
 
 **Master DSA. Crack Interviews.**
 
-Study UI for this repo: browse topics by difficulty, read pattern-first writeups, reveal TypeScript solutions, and run tests.
+Study UI for this repo: browse topics by difficulty, read pattern-first writeups, and compare solution approaches.
 
 ## Quick start
 

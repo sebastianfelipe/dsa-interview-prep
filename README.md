@@ -15,7 +15,7 @@ yarn
 yarn dev
 ```
 
-Open **http://localhost:5173** — browse by Easy / Medium / Hard, reveal TypeScript solutions, and track your [Easy](https://leetcode.com/problem-list/2z168m6d/) / [Medium](https://leetcode.com/problem-list/vylst5u7/) prep lists. API Swagger lives at **http://localhost:3001/api/swagger**. Details in [`STUDIO.md`](./STUDIO.md).
+Open **http://localhost:5173** — browse by Easy / Medium / Hard, study approaches and solutions, and track your [Easy](https://leetcode.com/problem-list/2z168m6d/) / [Medium](https://leetcode.com/problem-list/vylst5u7/) prep lists. API Swagger lives at **http://localhost:3001/api/swagger**. Details in [`STUDIO.md`](./STUDIO.md).
 
 ## Repo layout
 
@@ -37,7 +37,7 @@ Open **http://localhost:5173** — browse by Easy / Medium / Hard, reveal TypeSc
    - **Recognition** → when to reach for this pattern
    - **Intuition** → why the approach works
    - **Walkthrough** → apply it on a concrete input
-   - **Solution** → `solution.ts` (interview-ready TypeScript)
+   - **Solution** → `solution.ts` (reference implementation)
    - **Key Extract** → what to memorize and reuse
 
 ## Folder map
@@ -92,7 +92,7 @@ README sections typically include:
 
 ## Suggested language
 
-Examples use **TypeScript**. Interviewers often accept JS/TS; typed code also forces you to clarify inputs/outputs. Templates live in [`resources/templates/`](./resources/templates/).
+Examples include a reference implementation in **TypeScript**, but the curriculum is approach-first — patterns, complexity, and how you’d explain the idea in an interview. Templates live in [`resources/templates/`](./resources/templates/).
 
 ## Progress tip
 

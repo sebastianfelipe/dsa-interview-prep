@@ -21,7 +21,7 @@ export class AiController {
 
   @Post('explain')
   @ApiOperation({
-    summary: 'Generate an on-demand approach (hint) or full TypeScript solution for one problem',
+    summary: 'Generate an on-demand approach (hint) or full solution walkthrough for one problem',
   })
   @ApiBody({
     schema: {

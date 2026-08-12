@@ -24,7 +24,7 @@ export class ProblemsController {
   }
 
   @Get(':topic/:slug/solution')
-  @ApiOperation({ summary: 'Reveal TypeScript solution source' })
+  @ApiOperation({ summary: 'Reveal solution source' })
   @ApiParam({ name: 'topic', example: '02-hashing' })
   @ApiParam({ name: 'slug', example: 'two-sum' })
   @ApiQuery({
