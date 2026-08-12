@@ -13,3 +13,10 @@ package-lock.json
 api/.env
 ui/.env
 ui/.env.local
+
+# Personal attempts — keep locally, never commit
+**/solutions/yours.ts
+**/solutions/yours.py
+**/solutions/yours.js
+**/solutions/yours.tsx
+**/solutions/yours.jsx
