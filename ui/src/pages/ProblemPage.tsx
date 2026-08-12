@@ -46,6 +46,7 @@ export function ProblemPage() {
   const [localSolutions, setLocalSolutions] = useState<LocalSolution[]>([]);
   const [aiConfigured, setAiConfigured] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
+  const [aiBusyMode, setAiBusyMode] = useState<AiExplainMode | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -172,6 +173,7 @@ export function ProblemPage() {
 
   async function askAi(mode: AiExplainMode) {
     setAiBusy(true);
+    setAiBusyMode(mode);
     setAiError(null);
     try {
       const result = await api.aiExplain(topic, slug, mode);
@@ -194,6 +196,7 @@ export function ProblemPage() {
       setAiError(e instanceof Error ? e.message : String(e));
     } finally {
       setAiBusy(false);
+      setAiBusyMode(null);
     }
   }
 
@@ -297,7 +300,7 @@ export function ProblemPage() {
             >
               <button
                 type="button"
-                className="btn btn-ghost solution-ai-btn"
+                className="solution-ai-btn solution-ai-btn-hint"
                 disabled={!aiConfigured || aiBusy}
                 aria-label={
                   aiConfigured
@@ -306,11 +309,11 @@ export function ProblemPage() {
                 }
                 onClick={() => askAi('hint')}
               >
-                {aiBusy ? '…' : 'Hint'}
+                {aiBusyMode === 'hint' ? 'Working…' : 'Hint'}
               </button>
               <button
                 type="button"
-                className="btn btn-accent solution-ai-btn"
+                className="solution-ai-btn solution-ai-btn-ask"
                 disabled={!aiConfigured || aiBusy}
                 aria-label={
                   aiConfigured
@@ -319,12 +322,12 @@ export function ProblemPage() {
                 }
                 onClick={() => askAi('full')}
               >
-                {aiBusy ? '…' : 'Ask AI'}
+                {aiBusyMode === 'full' ? 'Working…' : 'Ask AI'}
               </button>
               {selectedLocal && (
                 <button
                   type="button"
-                  className="btn btn-ghost solution-ai-btn"
+                  className="solution-ai-btn solution-ai-btn-discard"
                   disabled={aiBusy}
                   title="Remove this local AI solution"
                   onClick={discardSelectedLocal}
