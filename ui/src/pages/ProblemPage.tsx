@@ -116,7 +116,7 @@ export function ProblemPage() {
   };
 
   const problemPane = (
-    <div className="panel problem-pane">
+    <div className="problem-pane">
       <div className="problem-pane-head">
         <div className="problem-pane-title-row">
           <h1 className="problem-pane-title">{problem.title}</h1>
@@ -131,8 +131,10 @@ export function ProblemPage() {
         </div>
       </div>
 
-      <div className="problem-readme">
-        <Markdown source={problem.readme} />
+      <div className="panel problem-pane-body">
+        <div className="problem-readme">
+          <Markdown source={problem.readme} />
+        </div>
       </div>
     </div>
   );
