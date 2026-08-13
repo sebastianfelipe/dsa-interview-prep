@@ -14,7 +14,7 @@ import { formatSourceCode } from '../format-code';
 import { formatComplexity } from '../format-complexity';
 import { ProblemsService } from '../problems/problems.service';
 
-export type AiExplainMode = 'hint' | 'full';
+export type AiExplainMode = 'hint' | 'full' | 'coach'; // coach = in-place guidance on learner code
 
 export interface AiExplainResult {
   title: string;
@@ -28,8 +28,36 @@ export interface AiExplainResult {
   mode: AiExplainMode;
 }
 
-function systemPrompt(language: CodeLanguage, hasGuidance: boolean): string {
+function systemPrompt(language: CodeLanguage, mode: AiExplainMode, hasGuidance: boolean): string {
   const label = LANGUAGE_LABELS[language];
+
+  if (mode === 'coach') {
+    return `You are a DSA interview coach inside DSA Studio AI.
+The learner is writing their own ${label} solution. Coach them in place — do not solve the problem for them.
+
+Rules:
+- Review the learner's current code and optional question.
+- Give targeted guidance: what looks right, likely bugs, a small next step, complexity or edge-case tips.
+- Do NOT provide a complete working solution or a drop-in replacement implementation.
+- Do NOT dump a full rewrite of their function. Short illustrative snippets (a few lines) are OK only when needed to clarify a point.
+- Prefer questions and nudges that keep them thinking.
+- If their code is empty, help them start (signature, approach sketch, first step) without writing the full algorithm.
+- Language is secondary — reason clearly; refer to ${label} only when discussing their code.
+- For time/space, prefer Unicode like the rest of the product: O(n²), O(2ⁿ), O(n · m), O(log₁₀ x).
+- Do not claim affiliation with LeetCode or copy proprietary editorial text.
+- Respond with a single JSON object only (no markdown fences).
+
+JSON shape:
+{
+  "title": "short coaching headline",
+  "notes": "one-line tip",
+  "time": "optional complexity note or empty",
+  "space": "optional complexity note or empty",
+  "description": "markdown coaching: what's working, what to check next, hints — no full solution",
+  "code": ""
+}`;
+  }
+
   const guidanceRules = hasGuidance
     ? `- CRITICAL: The user message includes LEARNER GUIDANCE. That guidance is a hard requirement for this response.
 - Build the approach, title, description, and code around that guidance (pattern, data structure, complexity bound, or style).
@@ -81,10 +109,12 @@ export class AiService {
     mode: AiExplainMode = 'full',
     languageInput?: string,
     guidanceInput?: string,
+    codeInput?: string,
   ): Promise<AiExplainResult> {
     const language = normalizeCodeLanguage(languageInput);
     const label = LANGUAGE_LABELS[language];
     const guidance = this.normalizeGuidance(guidanceInput);
+    const learnerCode = this.normalizeCode(codeInput);
     const apiKey = this.apiKey();
     if (!apiKey) {
       throw new ServiceUnavailableException('AI is not configured (missing OPENAI_API_KEY)');
@@ -98,9 +128,16 @@ export class AiService {
     }
 
     const model = this.model();
+    const modeLine =
+      mode === 'hint'
+        ? 'HINT ONLY — explain the approach and walk an example in language-agnostic terms; do not include solution code (set code to "").'
+        : mode === 'coach'
+          ? 'COACH ONLY — guide the learner on their current code; do not solve the whole problem; set code to "".'
+          : `FULL — teach the approach first, then include a complete ${label} illustration of that approach in code.`;
+
     const userPrompt = [
-      `Mode: ${mode === 'hint' ? 'HINT ONLY — explain the approach and walk an example in language-agnostic terms; do not include solution code (set code to "").' : `FULL — teach the approach first, then include a complete ${label} illustration of that approach in code.`}`,
-      `Code language for the illustration: ${label}`,
+      `Mode: ${modeLine}`,
+      `Code language: ${label}`,
       `Topic: ${problem.topicTitle} (${topic})`,
       `Difficulty: ${problem.difficulty}`,
       `Slug: ${slug}`,
@@ -108,14 +145,30 @@ export class AiService {
       '',
       'Problem README:',
       problem.readme,
+      mode === 'coach'
+        ? [
+            '',
+            '=== LEARNER CODE (coach on this; do not replace it) ===',
+            learnerCode?.trim() ? learnerCode : '(empty — help them get started)',
+            '=== END LEARNER CODE ===',
+          ].join('\n')
+        : '',
       guidance
         ? [
             '',
-            '=== LEARNER GUIDANCE (REQUIRED) ===',
-            'Follow this as the primary approach for title, description, and code.',
-            'Do not fall back to a more common default approach unless this guidance is impossible.',
-            guidance,
-            '=== END LEARNER GUIDANCE ===',
+            mode === 'coach'
+              ? [
+                  '=== LEARNER QUESTION ===',
+                  guidance,
+                  '=== END LEARNER QUESTION ===',
+                ].join('\n')
+              : [
+                  '=== LEARNER GUIDANCE (REQUIRED) ===',
+                  'Follow this as the primary approach for title, description, and code.',
+                  'Do not fall back to a more common default approach unless this guidance is impossible.',
+                  guidance,
+                  '=== END LEARNER GUIDANCE ===',
+                ].join('\n'),
           ].join('\n')
         : '',
     ]
@@ -130,11 +183,10 @@ export class AiService {
       },
       body: JSON.stringify({
         model,
-        // Stay closer to the requested approach when the learner gave direction.
-        temperature: guidance ? 0.2 : 0.4,
+        temperature: mode === 'coach' ? 0.35 : guidance ? 0.2 : 0.4,
         response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: systemPrompt(language, Boolean(guidance)) },
+          { role: 'system', content: systemPrompt(language, mode, Boolean(guidance)) },
           { role: 'user', content: userPrompt },
         ],
       }),
@@ -166,7 +218,9 @@ export class AiService {
       throw new BadGatewayException('OpenAI returned invalid JSON');
     }
 
-    const title = (parsed.title ?? 'AI approach').trim() || 'AI approach';
+    const title =
+      (parsed.title ?? (mode === 'coach' ? 'Coaching' : 'AI approach')).trim() ||
+      (mode === 'coach' ? 'Coaching' : 'AI approach');
     const description = (parsed.description ?? '').trim();
     if (!description) {
       throw new BadGatewayException('OpenAI response missing description');
@@ -198,6 +252,12 @@ export class AiService {
     if (!trimmed) return undefined;
     // Keep prompts bounded for cost/latency; UI mirrors this limit.
     return trimmed.slice(0, 2000);
+  }
+
+  private normalizeCode(codeInput?: string): string | undefined {
+    if (typeof codeInput !== 'string') return undefined;
+    // Bound payload size for cost/latency.
+    return codeInput.slice(0, 40_000);
   }
 
   private apiKey(): string | undefined {

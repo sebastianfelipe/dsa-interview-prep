@@ -7,8 +7,15 @@ class ExplainBodyDto {
   slug!: string;
   mode?: AiExplainMode;
   language?: string;
-  /** Optional user direction for the approach (patterns, constraints, style). */
+  /** Optional user direction for the approach, or a coach question on their code. */
   guidance?: string;
+  /** Learner code for coach mode (ignored for hint/full). */
+  code?: string;
+}
+
+function normalizeMode(mode?: string): AiExplainMode {
+  if (mode === 'hint' || mode === 'coach') return mode;
+  return 'full';
 }
 
 @ApiTags('ai')
@@ -24,7 +31,8 @@ export class AiController {
 
   @Post('explain')
   @ApiOperation({
-    summary: 'Generate an on-demand approach (hint) or full solution walkthrough for one problem',
+    summary:
+      'Generate a hint, full walkthrough, or in-place coaching on the learner’s own code for one problem',
   })
   @ApiBody({
     schema: {
@@ -33,24 +41,35 @@ export class AiController {
       properties: {
         topic: { type: 'string', example: '02-hashing' },
         slug: { type: 'string', example: 'two-sum' },
-        mode: { type: 'string', enum: ['hint', 'full'], default: 'full' },
+        mode: { type: 'string', enum: ['hint', 'full', 'coach'], default: 'full' },
         language: {
           type: 'string',
           enum: ['typescript', 'python'],
           default: 'typescript',
-          description: 'Language for code illustrations (hint mode still omits code)',
+          description: 'Language for code illustrations (hint/coach omit solution code)',
         },
         guidance: {
           type: 'string',
           description:
-            'Optional learner direction for the approach (e.g. prefer two pointers, O(1) space, no hash map)',
+            'Optional learner direction (hint/full) or question about their code (coach)',
           example: 'Solve with two pointers in O(1) extra space; avoid hashing.',
+        },
+        code: {
+          type: 'string',
+          description: 'Current learner code for coach mode',
         },
       },
     },
   })
   explain(@Body() body: ExplainBodyDto) {
-    const mode: AiExplainMode = body.mode === 'hint' ? 'hint' : 'full';
-    return this.ai.explain(body.topic, body.slug, mode, body.language, body.guidance);
+    const mode = normalizeMode(body.mode);
+    return this.ai.explain(
+      body.topic,
+      body.slug,
+      mode,
+      body.language,
+      body.guidance,
+      body.code,
+    );
   }
 }
