@@ -28,8 +28,17 @@ export interface AiExplainResult {
   mode: AiExplainMode;
 }
 
-function systemPrompt(language: CodeLanguage): string {
+function systemPrompt(language: CodeLanguage, hasGuidance: boolean): string {
   const label = LANGUAGE_LABELS[language];
+  const guidanceRules = hasGuidance
+    ? `- CRITICAL: The user message includes LEARNER GUIDANCE. That guidance is a hard requirement for this response.
+- Build the approach, title, description, and code around that guidance (pattern, data structure, complexity bound, or style).
+- Do not substitute a more common default approach (e.g. hash map) when the learner asked for something else.
+- If the guidance is impossible or a poor fit, say so in the first paragraph, then still get as close as practical and explain the tradeoff.
+- The title must name the guided approach (not a generic "Optimal" / "Recommended" label).
+- Start the description with a short line: **Guidance:** <restated learner request>.`
+    : `- If the learner provides approach guidance, follow it when designing the solution.`;
+
   return `You are a DSA interview tutor inside DSA Studio AI.
 Given one coding problem, analyze recognition signals and propose one clear interview approach.
 
@@ -37,7 +46,7 @@ Rules:
 - Lead with the approach: pattern recognition, why it works, and how to talk through it in an interview.
 - Teach walkthroughs with the problem examples; do not dump trivia.
 - Language is secondary — reason in language-agnostic steps first. When code is requested, use clear interview-ready ${label} as a vehicle for the approach (not as the point of the lesson).
-- If the learner provides approach guidance, follow it when it is valid for the problem. Prefer their requested pattern, constraints, or style; if it is a poor fit, say so briefly and still honor it as far as practical, or explain the tradeoff.
+${guidanceRules}
 - Format code with real newlines and indentation (never put an entire function on one line; never escape newlines as \\n inside the JSON string value beyond normal JSON encoding).
 - For time/space, prefer Unicode like the rest of the product: O(n²), O(2ⁿ), O(n · m), O(log₁₀ x) — not ASCII n^2 / log10 / *.
 - Do not claim affiliation with LeetCode or copy proprietary editorial text.
@@ -45,7 +54,7 @@ Rules:
 
 JSON shape:
 {
-  "title": "short approach name",
+  "title": "short approach name${hasGuidance ? ' that reflects the learner guidance' : ''}",
   "notes": "one-line complexity or interview tip",
   "time": "e.g. O(n), O(n²), O(n log n), O(log₁₀ x)",
   "space": "e.g. O(1), O(n)",
@@ -96,16 +105,19 @@ export class AiService {
       `Difficulty: ${problem.difficulty}`,
       `Slug: ${slug}`,
       `Title: ${problem.title}`,
-      guidance
-        ? [
-            '',
-            'Learner approach guidance (honor this when designing the solution):',
-            guidance,
-          ].join('\n')
-        : '',
       '',
       'Problem README:',
       problem.readme,
+      guidance
+        ? [
+            '',
+            '=== LEARNER GUIDANCE (REQUIRED) ===',
+            'Follow this as the primary approach for title, description, and code.',
+            'Do not fall back to a more common default approach unless this guidance is impossible.',
+            guidance,
+            '=== END LEARNER GUIDANCE ===',
+          ].join('\n')
+        : '',
     ]
       .filter(Boolean)
       .join('\n');
@@ -118,10 +130,11 @@ export class AiService {
       },
       body: JSON.stringify({
         model,
-        temperature: 0.4,
+        // Stay closer to the requested approach when the learner gave direction.
+        temperature: guidance ? 0.2 : 0.4,
         response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: systemPrompt(language) },
+          { role: 'system', content: systemPrompt(language, Boolean(guidance)) },
           { role: 'user', content: userPrompt },
         ],
       }),
