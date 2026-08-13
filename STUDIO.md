@@ -33,15 +33,28 @@ topics/NN-topic/problems/<slug>/
   meta.json
   README.md          # description only
   solution.ts
-  solution.test.ts
+  cases.json         # structured I/O: examples + edgeCases
+  solution.test.ts   # thin Vitest bridge over cases.json
 ```
+
+## Run / Submit (I/O judge)
+
+On a problem page, the selected chip’s TypeScript loads into an editable console:
+
+| Action | Suite | API |
+|--------|--------|-----|
+| **Run** | Public `examples` only | `POST /api/problems/:topic/:slug/run` |
+| **Submit** | `examples` + `edgeCases` | `POST /api/problems/:topic/:slug/submit` |
+
+Body: `{ "code": "...", "language": "typescript" }`.  
+Response includes `summary.passed/total` and per-case `inputs` / `expected` / `actual`.
 
 ## Scripts
 
 | Script | Purpose |
 |--------|---------|
 | `yarn dev` | NestJS API + Vite React UI |
-| `yarn test:solutions` | Run all problem tests |
+| `yarn test:solutions` | Run all problem tests (via cases.json) |
 | `yarn build` | Build API and UI |
 | `yarn workspace api dev` | API only (watch) |
 

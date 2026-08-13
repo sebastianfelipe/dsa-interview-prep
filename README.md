@@ -15,7 +15,7 @@ yarn
 yarn dev
 ```
 
-Open **http://localhost:5173** — browse by Easy / Medium / Hard, study approaches and solutions, and track your [Easy](https://leetcode.com/problem-list/2z168m6d/) / [Medium](https://leetcode.com/problem-list/vylst5u7/) prep lists. API Swagger lives at **http://localhost:3001/api/swagger**. Details in [`STUDIO.md`](./STUDIO.md).
+Open **http://localhost:5173** — browse by Easy / Medium / Hard, study approaches and solutions, **Run** / **Submit** chip TypeScript against I/O cases, and track your [Easy](https://leetcode.com/problem-list/2z168m6d/) / [Medium](https://leetcode.com/problem-list/vylst5u7/) prep lists. API Swagger lives at **http://localhost:3001/api/swagger**. Details in [`STUDIO.md`](./STUDIO.md).
 
 ## Repo layout
 
@@ -76,7 +76,8 @@ topics/NN-topic/problems/<slug>/
   meta.json          # title, leetcodeId, Easy|Medium|Hard, tags
   README.md          # description (no solution code)
   solution.ts
-  solution.test.ts
+  cases.json         # example + edge-case I/O for Run / Submit
+  solution.test.ts   # Vitest bridge over cases.json
 ```
 
 README sections typically include:
