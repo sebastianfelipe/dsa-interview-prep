@@ -555,6 +555,24 @@ html[data-theme='light'] .theme-toggle-icon {
   min-width: 4.25rem;
 }
 
+.code-lock-toggle {
+  flex: 0 0 auto;
+  padding: 0.2rem 0.55rem;
+  border-color: color-mix(in srgb, var(--code-fg) 22%, transparent);
+  background: color-mix(in srgb, var(--code-fg) 8%, transparent);
+  color: var(--code-fg);
+}
+
+.code-lock-toggle:hover {
+  border-color: color-mix(in srgb, var(--code-fg) 36%, transparent);
+  background: color-mix(in srgb, var(--code-fg) 14%, transparent);
+}
+
+.code-lock-toggle .theme-toggle-label {
+  min-width: 3.75rem;
+  font-size: 0.72rem;
+}
+
 .page {
   width: min(1120px, calc(100% - 2rem));
   margin: 0 auto;
@@ -1312,8 +1330,17 @@ html[data-theme='light'] .theme-toggle-icon {
 .solution-compare-chips {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.4rem;
   width: 100%;
+}
+
+.chip-group-sep {
+  width: 1px;
+  align-self: stretch;
+  min-height: 1.4rem;
+  margin: 0 0.15rem;
+  background: color-mix(in srgb, var(--line) 90%, var(--ink-soft));
 }
 
 .chip-group {
@@ -1324,6 +1351,10 @@ html[data-theme='light'] .theme-toggle-icon {
   border-radius: 999px;
   background: var(--surface);
   overflow: hidden;
+}
+
+.chip-group-hint {
+  border-style: dashed;
 }
 
 .chip-group.is-active {

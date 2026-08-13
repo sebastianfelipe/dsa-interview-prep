@@ -1,7 +1,11 @@
+export type LocalSolutionMode = 'hint' | 'full';
+
 export interface LocalSolution {
   id: string;
   title: string;
   source: 'ai' | 'local';
+  /** Present on newer AI chips; older entries are inferred from code. */
+  mode?: LocalSolutionMode;
   notes?: string;
   description?: string;
   time?: string;
@@ -9,6 +13,14 @@ export interface LocalSolution {
   code: string;
   language: string;
   createdAt: string;
+}
+
+/** Classify AI/local chips for ordering and labels. */
+export function localSolutionKind(s: LocalSolution): 'hint' | 'ai' | 'local' {
+  if (s.source === 'local') return 'local';
+  if (s.mode === 'hint') return 'hint';
+  if (s.mode === 'full') return 'ai';
+  return s.code.trim() ? 'ai' : 'hint';
 }
 
 type Store = Record<string, LocalSolution[]>;

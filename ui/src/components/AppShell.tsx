@@ -1,7 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { ThemeToggle } from './ThemeToggle';
 import { PaletteToggle } from './PaletteToggle';
-import { SolutionRevealToggle } from './SolutionRevealToggle';
 
 export function AppShell() {
   return (
@@ -25,7 +24,6 @@ export function AppShell() {
               Reference
             </NavLink>
           </nav>
-          <SolutionRevealToggle />
           <PaletteToggle />
           <ThemeToggle />
         </div>

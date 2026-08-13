@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import {
   api,
@@ -27,11 +27,12 @@ import { formatComplexity } from '../format-complexity';
 import {
   createAiSolutionId,
   listLocalSolutions,
+  localSolutionKind,
   removeLocalSolution,
   saveLocalSolution,
   type LocalSolution,
 } from '../local-solutions';
-import { useSolutionReveal } from '../solution-reveal-context';
+import { SolutionRevealToggle } from '../components/SolutionRevealToggle';
 import {
   findProblemNeighbors,
   flattenCatalogProblems,
@@ -45,17 +46,28 @@ import {
 } from '../workspace-layout';
 
 function chipLabel(s: SolutionEntry) {
+  if (s.source === 'hint') return `Hint · ${s.title}`;
   if (s.source === 'ai') return `AI · ${s.title}`;
   if (s.source === 'yours') return `Yours · ${s.title}`;
   if (s.source === 'local') return `Local · ${s.title}`;
   return s.title;
 }
 
+function sortRepoSolutions(repo: SolutionEntry[]): SolutionEntry[] {
+  return [...repo].sort((a, b) => {
+    if (a.id === 'recommended') return -1;
+    if (b.id === 'recommended') return 1;
+    if (a.source === 'yours' && b.source !== 'yours') return 1;
+    if (b.source === 'yours' && a.source !== 'yours') return -1;
+    return 0;
+  });
+}
+
 export function ProblemPage() {
   const { topic = '', slug = '' } = useParams();
   const [searchParams] = useSearchParams();
   const listId = searchParams.get('list');
-  const { revealed } = useSolutionReveal();
+  const [codeUnlocked, setCodeUnlocked] = useState(false);
   const [problem, setProblem] = useState<ProblemDetail | null>(null);
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [list, setList] = useState<ListDetail | null>(null);
@@ -98,6 +110,10 @@ export function ProblemPage() {
   }, []);
 
   useEffect(() => {
+    setCodeUnlocked(false);
+  }, [topic, slug]);
+
+  useEffect(() => {
     api
       .aiStatus()
       .then((s) => setAiConfigured(s.configured))
@@ -134,9 +150,7 @@ export function ProblemPage() {
       .problem(topic, slug)
       .then((p) => {
         setProblem(p);
-        const locals = listLocalSolutions(topic, slug);
         const preferred =
-          locals[0]?.id ??
           p.solutions.find((s) => s.id === 'recommended')?.id ??
           p.solutions[0]?.id ??
           'recommended';
@@ -145,21 +159,37 @@ export function ProblemPage() {
       .catch((e) => setError(String(e)));
   }, [topic, slug, refreshLocals]);
 
-  const solutions = useMemo((): SolutionEntry[] => {
-    const repo = problem?.solutions ?? [];
-    const localEntries: SolutionEntry[] = localSolutions.map((s) => ({
+  const solutionGroups = useMemo(() => {
+    const repo = sortRepoSolutions(problem?.solutions ?? []);
+    const toEntry = (s: LocalSolution, source: SolutionEntry['source']): SolutionEntry => ({
       id: s.id,
       title: s.title,
       file: '',
       languages: [s.language === 'python' ? 'python' : 'typescript'],
-      source: s.source,
+      source,
       notes: s.notes,
       description: s.description,
       time: s.time,
       space: s.space,
-    }));
-    return [...localEntries, ...repo];
+    });
+
+    const ai: SolutionEntry[] = [];
+    const hints: SolutionEntry[] = [];
+    const localExtra: SolutionEntry[] = [];
+    for (const s of localSolutions) {
+      const kind = localSolutionKind(s);
+      if (kind === 'hint') hints.push(toEntry(s, 'hint'));
+      else if (kind === 'local') localExtra.push(toEntry(s, 'local'));
+      else ai.push(toEntry(s, 'ai'));
+    }
+
+    return { repo, ai, hints, localExtra };
   }, [problem?.solutions, localSolutions]);
+
+  const solutions = useMemo((): SolutionEntry[] => {
+    const { repo, ai, hints, localExtra } = solutionGroups;
+    return [...repo, ...ai, ...hints, ...localExtra];
+  }, [solutionGroups]);
 
   const selectedLocal = useMemo(
     () => localSolutions.find((s) => s.id === selectedId) ?? null,
@@ -253,6 +283,7 @@ export function ProblemPage() {
         id: createAiSolutionId(),
         title: result.title,
         source: 'ai',
+        mode: result.mode === 'hint' ? 'hint' : 'full',
         notes: result.notes,
         description: result.description,
         time: result.time ? formatComplexity(result.time) : undefined,
@@ -288,7 +319,7 @@ export function ProblemPage() {
   const canEditCode =
     language === 'typescript' &&
     Boolean(solution?.hasCode && solution.code) &&
-    (Boolean(selectedLocal) || revealed || selectedRepo?.source === 'yours');
+    (Boolean(selectedLocal) || codeUnlocked || selectedRepo?.source === 'yours');
 
   useEffect(() => {
     if (!solution?.hasCode || !solution.code || language !== 'typescript') return;
@@ -504,36 +535,60 @@ export function ProblemPage() {
           <div className={`solution-compare${approachOpen ? '' : ' is-collapsed'}`}>
             <div className="solution-compare-top">
               <div className="solution-compare-chips" role="tablist" aria-label="Solutions">
-                {solutions.map((s) => {
-                  const removable = s.source === 'ai' || s.source === 'local';
-                  return (
-                    <div
-                      key={s.id}
-                      className={`chip-group${selectedId === s.id ? ' is-active' : ''}`}
-                    >
-                      <button
-                        type="button"
-                        role="tab"
-                        aria-selected={selectedId === s.id}
-                        className={`chip ${selectedId === s.id ? 'active' : ''}`}
-                        onClick={() => setSelectedId(s.id)}
+                {(
+                  [
+                    { key: 'repo', items: solutionGroups.repo, label: null },
+                    { key: 'ai', items: solutionGroups.ai, label: 'AI' },
+                    { key: 'hints', items: solutionGroups.hints, label: 'Hints' },
+                    { key: 'local', items: solutionGroups.localExtra, label: 'Local' },
+                  ] as const
+                ).flatMap((group, index, groups) => {
+                  if (group.items.length === 0) return [];
+                  const prevHasItems = groups.slice(0, index).some((g) => g.items.length > 0);
+                  const nodes: ReactNode[] = [];
+                  if (prevHasItems) {
+                    nodes.push(
+                      <span
+                        key={`${group.key}-sep`}
+                        className="chip-group-sep"
+                        role="separator"
+                        aria-label={group.label ? `${group.label} solutions` : 'More solutions'}
+                      />,
+                    );
+                  }
+                  for (const s of group.items) {
+                    const removable =
+                      s.source === 'ai' || s.source === 'hint' || s.source === 'local';
+                    nodes.push(
+                      <div
+                        key={s.id}
+                        className={`chip-group chip-group-${s.source}${selectedId === s.id ? ' is-active' : ''}`}
                       >
-                        {chipLabel(s)}
-                      </button>
-                      {removable && (
                         <button
                           type="button"
-                          className="chip-remove"
-                          disabled={aiBusy}
-                          title={`Remove ${chipLabel(s)}`}
-                          aria-label={`Remove ${chipLabel(s)}`}
-                          onClick={() => discardLocal(s.id)}
+                          role="tab"
+                          aria-selected={selectedId === s.id}
+                          className={`chip ${selectedId === s.id ? 'active' : ''}`}
+                          onClick={() => setSelectedId(s.id)}
                         >
-                          ×
+                          {chipLabel(s)}
                         </button>
-                      )}
-                    </div>
-                  );
+                        {removable && (
+                          <button
+                            type="button"
+                            className="chip-remove"
+                            disabled={aiBusy}
+                            title={`Remove ${chipLabel(s)}`}
+                            aria-label={`Remove ${chipLabel(s)}`}
+                            onClick={() => discardLocal(s.id)}
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>,
+                    );
+                  }
+                  return nodes;
                 })}
               </div>
               <div className="solution-compare-meta">
@@ -640,6 +695,10 @@ export function ProblemPage() {
                     {judgeBusy && judgeMode === 'submit' ? 'Submitting…' : 'Submit'}
                   </button>
                 </div>
+                <SolutionRevealToggle
+                  revealed={codeUnlocked}
+                  onToggle={() => setCodeUnlocked((open) => !open)}
+                />
               </div>
             </div>
             <div className="solution-code-wrap">
@@ -669,11 +728,9 @@ export function ProblemPage() {
               ) : problem.hasSolution &&
                 languageAvailableForSelection &&
                 language === 'typescript' &&
-                !revealed ? (
+                !codeUnlocked ? (
                 <pre className="solution-code">
-                  <code>
-                    Unlock solutions in the header to edit and run this chip, or use Ask AI / Yours.
-                  </code>
+                  <code>Unlock code to edit and run this chip, or use Ask AI / Yours.</code>
                 </pre>
               ) : problem.hasSolution && languageAvailableForSelection ? (
                 <pre className="solution-code">
@@ -684,9 +741,9 @@ export function ProblemPage() {
                   <code>No code yet.</code>
                 </pre>
               )}
-              {!revealed && solution?.code && !canEditCode && (
+              {!codeUnlocked && solution?.code && !canEditCode && (
                 <div className="solution-code-lock">
-                  <span>Code is locked — unlock from the header to read it</span>
+                  <span>Code is locked — unlock to read it</span>
                 </div>
               )}
             </div>

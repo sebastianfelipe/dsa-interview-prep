@@ -1,5 +1,3 @@
-import { useSolutionReveal } from '../solution-reveal-context';
-
 function VaultIcon({ open }: { open: boolean }) {
   if (open) {
     return (
@@ -22,15 +20,19 @@ function VaultIcon({ open }: { open: boolean }) {
   );
 }
 
-export function SolutionRevealToggle() {
-  const { revealed, toggle } = useSolutionReveal();
+type SolutionRevealToggleProps = {
+  revealed: boolean;
+  onToggle: () => void;
+};
+
+export function SolutionRevealToggle({ revealed, onToggle }: SolutionRevealToggleProps) {
   const label = revealed ? 'Unlocked' : 'Locked';
 
   return (
     <button
       type="button"
-      className="theme-toggle vault-toggle"
-      onClick={toggle}
+      className="theme-toggle vault-toggle code-lock-toggle"
+      onClick={onToggle}
       aria-pressed={revealed}
       aria-label={`Solutions ${label.toLowerCase()}. Click to ${revealed ? 'lock' : 'unlock'} solutions.`}
       title={`Solutions ${label.toLowerCase()}`}
