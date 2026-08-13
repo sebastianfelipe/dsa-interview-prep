@@ -17,6 +17,7 @@ import {
   swapLanguageExtension,
 } from '../code-language';
 import type { RunBody, RunMode, RunResultDto } from './run-dto';
+import { buildTypescriptStarter } from './starter-code';
 
 /** Parse judge CLI stdout. npm noise goes to stderr; never slice from the last `{`. */
 function parseJudgeStdout(stdout: string, stderr: string): unknown {
@@ -111,7 +112,39 @@ export class ProblemsService {
     const readme = fs.existsSync(readmePath) ? fs.readFileSync(readmePath, 'utf8') : '';
     const solutions = this.listSolutions(topic, slug);
     const languages = this.collectLanguages(solutions);
-    return { ...summary, readme, solutions, languages };
+    return {
+      ...summary,
+      readme,
+      solutions,
+      languages,
+      starterCode: this.buildStarterCode(dir),
+    };
+  }
+
+  private buildStarterCode(dir: string): string {
+    const casesPath = path.join(dir, 'cases.json');
+    const solutionPath = path.join(dir, 'solution.ts');
+    let exportName: string | undefined;
+    let type: string | undefined;
+    let argNames: string[] | undefined;
+    if (fs.existsSync(casesPath)) {
+      try {
+        const file = JSON.parse(fs.readFileSync(casesPath, 'utf8')) as {
+          type?: string;
+          exportName?: string;
+          argNames?: string[];
+        };
+        exportName = file.exportName;
+        type = file.type;
+        argNames = file.argNames;
+      } catch {
+        /* ignore malformed cases */
+      }
+    }
+    const solutionCode = fs.existsSync(solutionPath)
+      ? fs.readFileSync(solutionPath, 'utf8')
+      : undefined;
+    return buildTypescriptStarter({ solutionCode, exportName, type, argNames });
   }
 
   getSolution(
