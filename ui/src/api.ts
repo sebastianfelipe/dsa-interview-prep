@@ -87,12 +87,25 @@ export interface ListDetail {
   }[];
 }
 
+export type RunMode = 'run' | 'submit';
+
+export interface CaseResult {
+  id: string;
+  status: 'passed' | 'failed' | 'error';
+  inputs: unknown;
+  expected: unknown;
+  actual?: unknown;
+  error?: string;
+}
+
 export interface RunResult {
   passed: boolean;
-  exitCode: number;
-  stdout: string;
-  stderr: string;
+  mode: RunMode;
+  summary: { total: number; passed: number; failed: number };
+  cases: CaseResult[];
   durationMs: number;
+  stdout?: string;
+  stderr?: string;
 }
 
 export interface AiStatus {
@@ -153,11 +166,17 @@ export const api = {
       `/api/problems/${topic}/${slug}/solution${qs ? `?${qs}` : ''}`,
     );
   },
-  run: async (topic: string, slug: string) => {
-    const res = await fetch(`/api/problems/${topic}/${slug}/run`, { method: 'POST' });
-    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-    return res.json() as Promise<RunResult>;
-  },
+  run: (topic: string, slug: string, code: string, mode: RunMode = 'run') =>
+    post<RunResult>(`/api/problems/${topic}/${slug}/run`, {
+      code,
+      language: 'typescript',
+      mode,
+    }),
+  submit: (topic: string, slug: string, code: string) =>
+    post<RunResult>(`/api/problems/${topic}/${slug}/submit`, {
+      code,
+      language: 'typescript',
+    }),
   lists: () => get<ListSummary[]>('/api/lists'),
   list: (id: string) => get<ListDetail>(`/api/lists/${id}`),
   docsIndex: () =>

@@ -6,10 +6,12 @@ import {
   type Catalog,
   type ListDetail,
   type ProblemDetail,
+  type RunMode,
+  type RunResult,
   type SolutionDetail,
   type SolutionEntry,
 } from '../api';
-import { CodeBlock } from '../components/CodeBlock';
+import { JudgePanel } from '../components/JudgePanel';
 import { Markdown } from '../components/Markdown';
 import { ProblemNav } from '../components/ProblemNav';
 import {
@@ -59,6 +61,12 @@ export function ProblemPage() {
   const [aiBusyMode, setAiBusyMode] = useState<AiExplainMode | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [codeBuffer, setCodeBuffer] = useState('');
+  const [codeSourceKey, setCodeSourceKey] = useState('');
+  const [judgeBusy, setJudgeBusy] = useState(false);
+  const [judgeMode, setJudgeMode] = useState<RunMode | null>(null);
+  const [judgeResult, setJudgeResult] = useState<RunResult | null>(null);
+  const [judgeError, setJudgeError] = useState<string | null>(null);
 
   const refreshLocals = useCallback(() => {
     setLocalSolutions(listLocalSolutions(topic, slug));
@@ -96,6 +104,10 @@ export function ProblemPage() {
   useEffect(() => {
     setSolution(null);
     setAiError(null);
+    setJudgeResult(null);
+    setJudgeError(null);
+    setCodeBuffer('');
+    setCodeSourceKey('');
     refreshLocals();
     api
       .problem(topic, slug)
@@ -252,6 +264,60 @@ export function ProblemPage() {
     setSelectedId(next);
   }
 
+  const canEditCode =
+    language === 'typescript' &&
+    Boolean(solution?.hasCode && solution.code) &&
+    (Boolean(selectedLocal) || revealed || selectedRepo?.source === 'yours');
+
+  useEffect(() => {
+    if (!solution?.hasCode || !solution.code || language !== 'typescript') return;
+    if (!canEditCode) return;
+    const key = `${topic}/${slug}/${selectedId}/${language}/${solution.path ?? 'local'}`;
+    if (key === codeSourceKey) return;
+    setCodeBuffer(solution.code);
+    setCodeSourceKey(key);
+    setJudgeResult(null);
+    setJudgeError(null);
+  }, [solution, language, canEditCode, topic, slug, selectedId, codeSourceKey]);
+
+  async function runJudge(mode: RunMode) {
+    if (language !== 'typescript') {
+      setJudgeError('Only TypeScript can be judged right now');
+      return;
+    }
+    if (!codeBuffer.trim()) {
+      setJudgeError('Add TypeScript code in the console first');
+      return;
+    }
+    setJudgeBusy(true);
+    setJudgeMode(mode);
+    setJudgeError(null);
+    try {
+      const result =
+        mode === 'submit'
+          ? await api.submit(topic, slug, codeBuffer)
+          : await api.run(topic, slug, codeBuffer, 'run');
+      setJudgeResult(result);
+    } catch (e) {
+      setJudgeResult(null);
+      setJudgeError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setJudgeBusy(false);
+      setJudgeMode(null);
+    }
+  }
+
+  function saveBufferToLocalChip() {
+    if (!selectedLocal) return;
+    const entry: LocalSolution = {
+      ...selectedLocal,
+      code: codeBuffer,
+      language: 'typescript',
+    };
+    saveLocalSolution(topic, slug, entry);
+    refreshLocals();
+  }
+
   if (error) return <main className="page">{error}</main>;
   if (!problem) return <main className="page">Loading…</main>;
 
@@ -396,31 +462,79 @@ export function ProblemPage() {
         )}
       </div>
 
-      <div className={`solution-block${revealed ? '' : ' is-locked'}`}>
+      <div className={`solution-block${canEditCode || !solution?.code ? '' : ' is-locked'}`}>
         <div className="solution-meta">
           <strong>Code</strong>
-          <div className="language-switch" role="tablist" aria-label="Code language">
-            {CODE_LANGUAGES.map((lang) => (
+          <div className="solution-meta-actions">
+            <div className="language-switch" role="tablist" aria-label="Code language">
+              {CODE_LANGUAGES.map((lang) => (
+                <button
+                  key={lang}
+                  type="button"
+                  role="tab"
+                  aria-selected={language === lang}
+                  className={`language-chip ${language === lang ? 'active' : ''}`}
+                  onClick={() => setPreferredLanguage(lang)}
+                >
+                  {LANGUAGE_LABELS[lang]}
+                </button>
+              ))}
+            </div>
+            <div className="judge-actions">
+              {selectedLocal && language === 'typescript' && (
+                <button
+                  type="button"
+                  className="judge-btn judge-btn-ghost"
+                  disabled={judgeBusy || !codeBuffer.trim()}
+                  onClick={saveBufferToLocalChip}
+                >
+                  Save
+                </button>
+              )}
               <button
-                key={lang}
                 type="button"
-                role="tab"
-                aria-selected={language === lang}
-                className={`language-chip ${language === lang ? 'active' : ''}`}
-                onClick={() => setPreferredLanguage(lang)}
+                className="judge-btn"
+                disabled={judgeBusy || language !== 'typescript' || !codeBuffer.trim() || !problem.hasTests}
+                title={
+                  language !== 'typescript'
+                    ? 'Judging is TypeScript-only for now'
+                    : !problem.hasTests
+                      ? 'No I/O cases for this problem'
+                      : 'Run against example cases'
+                }
+                onClick={() => runJudge('run')}
               >
-                {LANGUAGE_LABELS[lang]}
+                {judgeBusy && judgeMode === 'run' ? 'Running…' : 'Run'}
               </button>
-            ))}
+              <button
+                type="button"
+                className="judge-btn judge-btn-submit"
+                disabled={judgeBusy || language !== 'typescript' || !codeBuffer.trim() || !problem.hasTests}
+                title={
+                  language !== 'typescript'
+                    ? 'Judging is TypeScript-only for now'
+                    : !problem.hasTests
+                      ? 'No I/O cases for this problem'
+                      : 'Submit against examples + edge cases'
+                }
+                onClick={() => runJudge('submit')}
+              >
+                {judgeBusy && judgeMode === 'submit' ? 'Submitting…' : 'Submit'}
+              </button>
+            </div>
           </div>
         </div>
         <div className="solution-code-wrap">
-          {solution?.hasCode && solution.code ? (
-            <CodeBlock
-              code={solution.code}
-              language={solution.language || language}
-              className="solution-code"
-              aria-hidden={!revealed}
+          {canEditCode ? (
+            <textarea
+              className="solution-code solution-console"
+              spellCheck={false}
+              value={codeBuffer}
+              onChange={(e) => {
+                setCodeBuffer(e.target.value);
+                setJudgeResult(null);
+              }}
+              aria-label="Solution code console"
             />
           ) : selectedLocal && languageAvailableForSelection && !selectedLocal.code ? (
             <pre className="solution-code">
@@ -434,6 +548,10 @@ export function ProblemPage() {
                   : `No ${missingLangLabel} yet for this approach — Ask AI to generate one, or add solution${language === 'python' ? '.py' : '.ts'}.`}
               </code>
             </pre>
+          ) : problem.hasSolution && languageAvailableForSelection && language === 'typescript' && !revealed ? (
+            <pre className="solution-code">
+              <code>Unlock solutions in the header to edit and run this chip, or use Ask AI / Yours.</code>
+            </pre>
           ) : problem.hasSolution && languageAvailableForSelection ? (
             <pre className="solution-code">
               <code>Loading…</code>
@@ -443,12 +561,14 @@ export function ProblemPage() {
               <code>No code yet.</code>
             </pre>
           )}
-          {!revealed && solution?.code && (
+          {!revealed && solution?.code && !canEditCode && (
             <div className="solution-code-lock">
               <span>Code is locked — unlock from the header to read it</span>
             </div>
           )}
         </div>
+        {judgeError && <p className="judge-error-banner">{judgeError}</p>}
+        <JudgePanel result={judgeResult} busy={judgeBusy} mode={judgeMode} />
       </div>
     </section>
   );
