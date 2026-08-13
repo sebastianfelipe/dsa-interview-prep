@@ -190,5 +190,13 @@ export const api = {
     slug: string,
     mode: AiExplainMode = 'full',
     language: CodeLanguage = 'typescript',
-  ) => post<AiExplainResult>('/api/ai/explain', { topic, slug, mode, language }),
+    guidance?: string,
+  ) =>
+    post<AiExplainResult>('/api/ai/explain', {
+      topic,
+      slug,
+      mode,
+      language,
+      ...(guidance?.trim() ? { guidance: guidance.trim() } : {}),
+    }),
 };

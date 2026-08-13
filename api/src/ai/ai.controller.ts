@@ -7,6 +7,8 @@ class ExplainBodyDto {
   slug!: string;
   mode?: AiExplainMode;
   language?: string;
+  /** Optional user direction for the approach (patterns, constraints, style). */
+  guidance?: string;
 }
 
 @ApiTags('ai')
@@ -38,11 +40,17 @@ export class AiController {
           default: 'typescript',
           description: 'Language for code illustrations (hint mode still omits code)',
         },
+        guidance: {
+          type: 'string',
+          description:
+            'Optional learner direction for the approach (e.g. prefer two pointers, O(1) space, no hash map)',
+          example: 'Solve with two pointers in O(1) extra space; avoid hashing.',
+        },
       },
     },
   })
   explain(@Body() body: ExplainBodyDto) {
     const mode: AiExplainMode = body.mode === 'hint' ? 'hint' : 'full';
-    return this.ai.explain(body.topic, body.slug, mode, body.language);
+    return this.ai.explain(body.topic, body.slug, mode, body.language, body.guidance);
   }
 }

@@ -37,6 +37,7 @@ Rules:
 - Lead with the approach: pattern recognition, why it works, and how to talk through it in an interview.
 - Teach walkthroughs with the problem examples; do not dump trivia.
 - Language is secondary — reason in language-agnostic steps first. When code is requested, use clear interview-ready ${label} as a vehicle for the approach (not as the point of the lesson).
+- If the learner provides approach guidance, follow it when it is valid for the problem. Prefer their requested pattern, constraints, or style; if it is a poor fit, say so briefly and still honor it as far as practical, or explain the tradeoff.
 - Format code with real newlines and indentation (never put an entire function on one line; never escape newlines as \\n inside the JSON string value beyond normal JSON encoding).
 - For time/space, prefer Unicode like the rest of the product: O(n²), O(2ⁿ), O(n · m), O(log₁₀ x) — not ASCII n^2 / log10 / *.
 - Do not claim affiliation with LeetCode or copy proprietary editorial text.
@@ -70,9 +71,11 @@ export class AiService {
     slug: string,
     mode: AiExplainMode = 'full',
     languageInput?: string,
+    guidanceInput?: string,
   ): Promise<AiExplainResult> {
     const language = normalizeCodeLanguage(languageInput);
     const label = LANGUAGE_LABELS[language];
+    const guidance = this.normalizeGuidance(guidanceInput);
     const apiKey = this.apiKey();
     if (!apiKey) {
       throw new ServiceUnavailableException('AI is not configured (missing OPENAI_API_KEY)');
@@ -93,10 +96,19 @@ export class AiService {
       `Difficulty: ${problem.difficulty}`,
       `Slug: ${slug}`,
       `Title: ${problem.title}`,
+      guidance
+        ? [
+            '',
+            'Learner approach guidance (honor this when designing the solution):',
+            guidance,
+          ].join('\n')
+        : '',
       '',
       'Problem README:',
       problem.readme,
-    ].join('\n');
+    ]
+      .filter(Boolean)
+      .join('\n');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -165,6 +177,14 @@ export class AiService {
       model,
       mode,
     };
+  }
+
+  private normalizeGuidance(guidanceInput?: string): string | undefined {
+    if (typeof guidanceInput !== 'string') return undefined;
+    const trimmed = guidanceInput.trim().replace(/\s+/g, ' ');
+    if (!trimmed) return undefined;
+    // Keep prompts bounded for cost/latency; UI mirrors this limit.
+    return trimmed.slice(0, 2000);
   }
 
   private apiKey(): string | undefined {
