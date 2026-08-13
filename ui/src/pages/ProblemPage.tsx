@@ -80,6 +80,15 @@ function chipTabForSource(source: string): ChipTab {
   return 'repo';
 }
 
+/** Editor session keys look like `${topic}/${slug}/${chipId}/${language}/…`. */
+function parseEditorSessionKey(
+  key: string,
+): { topic: string; slug: string; chipId: string } | null {
+  const parts = key.split('/');
+  if (parts.length < 4) return null;
+  return { topic: parts[0], slug: parts[1], chipId: parts[2] };
+}
+
 export function ProblemPage() {
   const { topic = '', slug = '' } = useParams();
   const [searchParams] = useSearchParams();
@@ -227,25 +236,41 @@ export function ProblemPage() {
   }, [listId]);
 
   useEffect(() => {
+    let cancelled = false;
+    setProblem(null);
+    setError(null);
     setSolution(null);
     setAiError(null);
     setJudgeResult(null);
     setJudgeError(null);
-    setCodeBuffer('');
-    setCodeSourceKey('');
     setAiGuidance('');
+    setCoachNotes(null);
+    setSelectedId(OWN_CODE_ID);
+    setChipTab('repo');
     refreshLocals();
     api
       .problem(topic, slug)
       .then((p) => {
+        if (cancelled) return;
         setProblem(p);
         // Default workspace: Your code first. Dig into solutions via Approach chips.
         const draft = createOwnCodeDraft(topic, slug, p.starterCode ?? '');
         refreshLocals();
         setSelectedId(OWN_CODE_ID);
         setChipTab('repo');
+        const key = `${topic}/${slug}/${OWN_CODE_ID}/typescript/local-draft`;
+        setCodeBuffer(draft.code);
+        setCodeSourceKey(key);
+        codeSourceKeyRef.current = key;
+        editableSessionRef.current = { chipId: OWN_CODE_ID, key };
+        setCoachNotes(draft.coachNotes ?? null);
       })
-      .catch((e) => setError(String(e)));
+      .catch((e) => {
+        if (!cancelled) setError(String(e));
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [topic, slug, refreshLocals]);
 
   const solutionGroups = useMemo(() => {
@@ -509,13 +534,13 @@ export function ProblemPage() {
   const editableSessionRef = useRef<{ chipId: string; key: string } | null>(null);
 
   const flushEditableLocal = useCallback(
-    (chipId: string, code: string) => {
-      const current = listLocalSolutions(topic, slug).find(
+    (chipId: string, code: string, forTopic = topic, forSlug = slug) => {
+      const current = listLocalSolutions(forTopic, forSlug).find(
         (s) => s.id === chipId || (chipId === OWN_CODE_ID && s.source === 'local'),
       );
       if (!current || current.code === code) return;
       if (chipId === OWN_CODE_ID && current.source !== 'local') return;
-      saveLocalSolution(topic, slug, {
+      saveLocalSolution(forTopic, forSlug, {
         ...current,
         id: current.source === 'local' ? OWN_CODE_ID : current.id,
         code,
@@ -525,24 +550,49 @@ export function ProblemPage() {
     [topic, slug],
   );
 
+  // On problem change: flush the previous problem's buffer to THAT problem, then reset.
+  useLayoutEffect(() => {
+    const prev = editableSessionRef.current;
+    if (prev && codeSourceKeyRef.current === prev.key) {
+      const parsed = parseEditorSessionKey(prev.key);
+      if (parsed && (parsed.topic !== topic || parsed.slug !== slug)) {
+        flushEditableLocal(prev.chipId, codeBufferRef.current, parsed.topic, parsed.slug);
+      }
+    }
+    editableSessionRef.current = null;
+    codeSourceKeyRef.current = '';
+    setCodeSourceKey('');
+    setCodeBuffer('');
+    setSelectedId(OWN_CODE_ID);
+    setLocalSolutions(listLocalSolutions(topic, slug));
+  }, [topic, slug, flushEditableLocal]);
+
   // Seed the editor before paint so autosave never sees a mismatched chip/buffer pair.
   useLayoutEffect(() => {
     if (language !== 'typescript') return;
 
+    // Read chips from storage for the active problem only — React state can briefly
+    // still hold the previous problem's locals (shared OWN_CODE_ID makes that easy).
+    const localsForProblem = listLocalSolutions(topic, slug);
+    const ownDraft = localsForProblem.find((s) => s.source === 'local') ?? null;
+    const activeLocal = localsForProblem.find((s) => s.id === selectedId) ?? null;
+
     let next: { chipId: string; key: string; code: string; coachNotes: string | null } | null =
       null;
-    if (isOwnCode && selectedLocal) {
+    if (selectedId === OWN_CODE_ID || activeLocal?.source === 'local') {
+      if (ownDraft) {
+        next = {
+          chipId: OWN_CODE_ID,
+          key: `${topic}/${slug}/${OWN_CODE_ID}/${language}/local-draft`,
+          code: ownDraft.code || '',
+          coachNotes: ownDraft.coachNotes ?? null,
+        };
+      }
+    } else if (activeLocal && activeLocal.code && canEditCode) {
       next = {
-        chipId: OWN_CODE_ID,
-        key: `${topic}/${slug}/${OWN_CODE_ID}/${language}/local-draft`,
-        code: selectedLocal.code || '',
-        coachNotes: selectedLocal.coachNotes ?? null,
-      };
-    } else if (selectedLocal && selectedLocal.code && canEditCode) {
-      next = {
-        chipId: selectedLocal.id,
-        key: `${topic}/${slug}/${selectedId}/${language}/local`,
-        code: selectedLocal.code,
+        chipId: activeLocal.id,
+        key: `${topic}/${slug}/${activeLocal.id}/${language}/local`,
+        code: activeLocal.code,
         coachNotes: null,
       };
     } else if (selectedRepo?.source === 'yours' && solution?.code && canEditCode) {
@@ -557,20 +607,39 @@ export function ProblemPage() {
     const prev = editableSessionRef.current;
     // Flush the previous editable chip before overwriting the buffer.
     if (prev && (!next || prev.key !== next.key) && codeSourceKeyRef.current === prev.key) {
-      flushEditableLocal(prev.chipId, codeBufferRef.current);
+      const parsed = parseEditorSessionKey(prev.key);
+      if (parsed) {
+        flushEditableLocal(prev.chipId, codeBufferRef.current, parsed.topic, parsed.slug);
+      }
     }
 
     if (!next) {
       editableSessionRef.current = null;
-      if (codeSourceKeyRef.current) setCodeSourceKey('');
+      if (codeSourceKeyRef.current) {
+        codeSourceKeyRef.current = '';
+        setCodeSourceKey('');
+      }
       return;
     }
 
     editableSessionRef.current = { chipId: next.chipId, key: next.key };
-    if (codeSourceKeyRef.current === next.key) return;
+    if (codeSourceKeyRef.current === next.key) {
+      // Same session, but storage may have gained a starter stub after problem load.
+      if (
+        next.chipId === OWN_CODE_ID &&
+        next.code !== codeBufferRef.current &&
+        !codeBufferRef.current.trim() &&
+        next.code.trim()
+      ) {
+        setCodeBuffer(next.code);
+        setCoachNotes(next.coachNotes);
+      }
+      return;
+    }
 
     setCodeBuffer(next.code);
     setCodeSourceKey(next.key);
+    codeSourceKeyRef.current = next.key;
     setCoachNotes(next.coachNotes);
     setJudgeResult(null);
     setJudgeError(null);
@@ -578,7 +647,6 @@ export function ProblemPage() {
     solution,
     language,
     canEditCode,
-    isOwnCode,
     selectedLocal,
     selectedRepo,
     topic,

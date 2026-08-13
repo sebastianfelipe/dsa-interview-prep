@@ -61,6 +61,70 @@ function normalizeCode(code: string) {
   return code.replace(/\s+/g, ' ').trim();
 }
 
+/** Top-level `export function/class/const Name` identifiers. */
+function exportedNames(code: string): string[] {
+  const names: string[] = [];
+  const re =
+    /export\s+(?:default\s+)?(?:async\s+)?(?:function|class|const|let|var)\s+([A-Za-z_$][\w$]*)/g;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(code)) !== null) {
+    names.push(match[1]);
+  }
+  return names;
+}
+
+/** Old class-stub bug turned `if (...)` bodies into fake empty methods. */
+function hasBrokenControlFlowMethods(code: string): boolean {
+  return /(?:^|\n)[ \t]*(?:if|for|while|switch)\s*\([^;]*\)\s*\{\s*\n[ \t]*\n[ \t]*\}/.test(
+    code,
+  );
+}
+
+/** True when code is only empty function/class shells (no real implementation). */
+function isEmptyishStub(code: string): boolean {
+  const residue = code
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\/\/.*$/gm, '')
+    .replace(/export\s+(?:default\s+)?(?:async\s+)?(?:function|class|const|let|var)\s+/g, '')
+    .replace(/\b(?:public|private|protected|readonly|static|async)\b/g, '')
+    .replace(/\bconstructor\b|[A-Za-z_$][\w$]*/g, '')
+    .replace(/[():=>{}\[\].,|&?<>=+\-*/%!~`;'"\s]/g, '')
+    .trim();
+  return residue.length === 0;
+}
+
+/**
+ * True when this draft clearly belongs to a different problem or a bad auto-stub:
+ * - identical to another problem's stored chip, or
+ * - exports none of the symbols from this problem's starter stub, or
+ * - contains the broken `if () { }` method stubs from an earlier generator bug.
+ */
+function isForeignDraft(
+  draftCode: string,
+  starterCode: string,
+  store: Store,
+  currentKey: string,
+): boolean {
+  const normalized = normalizeCode(draftCode);
+  if (!normalized) return false;
+
+  if (hasBrokenControlFlowMethods(draftCode)) return true;
+
+  for (const [key, solutions] of Object.entries(store)) {
+    if (key === currentKey) continue;
+    for (const s of solutions) {
+      if (s.code.trim() && normalizeCode(s.code) === normalized) return true;
+    }
+  }
+
+  if (!starterCode.trim()) return false;
+  const expected = exportedNames(starterCode);
+  if (expected.length === 0) return false;
+  const actual = exportedNames(draftCode);
+  if (actual.length === 0) return false;
+  return !expected.some((name) => actual.includes(name));
+}
+
 export function listLocalSolutions(topic: string, slug: string): LocalSolution[] {
   return readStore()[problemKey(topic, slug)] ?? [];
 }
@@ -104,7 +168,7 @@ export function createLocalSolutionId() {
 
 /**
  * Ensure a single permanent "Your code" draft exists for the problem.
- * Also repairs drafts that were accidentally overwritten with an AI solution chip.
+ * Repairs drafts contaminated by AI chips or another problem's code.
  */
 export function createOwnCodeDraft(
   topic: string,
@@ -124,7 +188,16 @@ export function createOwnCodeDraft(
 
   let draft = locals[0];
   if (draft) {
-    const contaminated = Boolean(draft.code.trim() && aiCodes.has(normalizeCode(draft.code)));
+    const contaminatedByAi = Boolean(
+      draft.code.trim() && aiCodes.has(normalizeCode(draft.code)),
+    );
+    const contaminatedByOtherProblem = isForeignDraft(draft.code, seed, store, key);
+    const staleEmptyStub =
+      Boolean(seed) &&
+      isEmptyishStub(draft.code) &&
+      normalizeCode(draft.code) !== normalizeCode(seed);
+    const reset =
+      contaminatedByAi || contaminatedByOtherProblem || staleEmptyStub;
     const empty = !draft.code.trim();
     draft = {
       ...draft,
@@ -132,7 +205,8 @@ export function createOwnCodeDraft(
       title: 'Your code',
       source: 'local',
       language: 'typescript',
-      code: contaminated ? seed : empty && seed ? seed : draft.code,
+      code: reset ? seed : empty && seed ? seed : draft.code,
+      ...(reset ? { coachNotes: undefined } : {}),
     };
   } else {
     draft = {
