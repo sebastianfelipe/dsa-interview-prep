@@ -967,8 +967,8 @@ html[data-theme='light'] .theme-toggle-icon {
 
 .problem-pane-head {
   flex-shrink: 0;
-  margin-bottom: 0.65rem;
-  padding: 0 0.15rem 0.65rem;
+  margin-bottom: 0;
+  padding: 0 0.15rem 0.55rem;
   border-bottom: 1px solid var(--line);
 }
 
@@ -1133,10 +1133,7 @@ html[data-theme='light'] .theme-toggle-icon {
   min-height: 0;
   display: flex;
   flex-direction: column;
-}
-
-.problem-pane-collapsed {
-  gap: 0.45rem;
+  gap: 0.55rem;
 }
 
 .problem-pane-head-actions {
@@ -1148,20 +1145,13 @@ html[data-theme='light'] .theme-toggle-icon {
 
 .problem-pane-body {
   position: relative;
-  flex: 1 1 auto;
+  flex: 1.15 1 0;
   min-height: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   margin: 0;
   padding: 0;
-}
-
-.problem-desc-collapse {
-  position: absolute;
-  top: 0.45rem;
-  right: 0.45rem;
-  z-index: 2;
 }
 
 .problem-pane-body .problem-readme {
@@ -1172,89 +1162,148 @@ html[data-theme='light'] .theme-toggle-icon {
   padding: 0.75rem 2.4rem 0.9rem 0.9rem;
 }
 
-.problem-desc-slot {
-  flex: 1 1 auto;
+.pane-section {
+  position: relative;
   min-height: 0;
-  display: flex;
-  align-items: stretch;
-  gap: 0.45rem;
 }
 
-.problem-desc-rail {
-  appearance: none;
-  flex: 0 0 2.55rem;
-  width: 2.55rem;
+.pane-section-problem {
+  view-transition-name: problem-pane;
+}
+
+.pane-section-approach {
+  view-transition-name: approach-pane;
+}
+
+.pane-section-toggle {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  z-index: 2;
+}
+
+.pane-section-open.problem-pane-body {
+  flex: 1.15 1 0;
+}
+
+.pane-section-open.solution-compare {
+  flex: 0.85 1 0;
   margin: 0;
-  padding: 0.75rem 0.2rem;
+}
+
+.pane-section-closed {
+  flex: 0 0 auto;
+}
+
+.problem-pane-collapsed > .pane-section-open.solution-compare.is-expanded {
+  flex: 1 1 auto;
+  max-height: none;
+}
+
+.problem-pane-collapsed > .pane-section-open.solution-compare.is-expanded .solution-compare-body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.solution-compare.pane-section-open .solution-compare-top {
+  padding-right: 2.2rem;
+}
+
+.section-collapse-bar {
+  appearance: none;
+  flex: 0 0 auto;
+  width: 100%;
+  margin: 0;
+  min-height: 2.15rem;
+  padding: 0.2rem 0.35rem 0.2rem 0.85rem;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface-strong);
   color: var(--ink);
+  font: inherit;
   cursor: pointer;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  gap: 0.55rem;
+  gap: 0.65rem;
   transition: background 160ms ease, border-color 160ms ease;
 }
 
-.problem-desc-rail:hover {
+.section-collapse-bar:hover {
   background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface-strong));
   border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
 }
 
-.problem-desc-rail-label {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  font-family: var(--font-display);
-  font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  line-height: 1.2;
-  max-height: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.section-collapse-bar-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
 }
 
-/* Approach fills the description slot when problem readme is collapsed. */
-.problem-desc-slot .solution-compare.is-docked {
-  flex: 1 1 auto;
-  max-height: none;
-  min-height: 0;
+.section-collapse-bar:hover .section-collapse-bar-label {
+  color: var(--ink);
 }
 
-.problem-desc-slot .solution-compare.is-docked .solution-compare-body {
-  flex: 1 1 auto;
-  min-height: 0;
+.section-collapse-bar .section-chevron {
+  margin-left: auto;
+  flex: 0 0 auto;
 }
 
-.problem-pane-collapsed .workspace-ai-panel {
-  margin-top: 0;
-}
-
-.problem-workspace.approach-docked .solution-block {
-  flex: 1 1 auto;
-}
-
-::view-transition-group(approach-panel) {
-  animation-duration: 360ms;
+::view-transition-group(problem-pane),
+::view-transition-group(approach-pane) {
+  animation-duration: 320ms;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-::view-transition-old(approach-panel),
-::view-transition-new(approach-panel) {
-  animation-duration: 360ms;
+::view-transition-old(problem-pane),
+::view-transition-new(problem-pane),
+::view-transition-old(approach-pane),
+::view-transition-new(approach-pane) {
+  animation-duration: 320ms;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   height: 100%;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(problem-pane),
+::view-transition-old(approach-pane) {
+  animation-name: pane-vt-fade-out;
+}
+
+::view-transition-new(problem-pane),
+::view-transition-new(approach-pane) {
+  animation-name: pane-vt-fade-in;
+}
+
+@keyframes pane-vt-fade-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, -6px, 0);
+  }
+}
+
+@keyframes pane-vt-fade-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @supports not (view-transition-name: none) {
-  @keyframes approach-slot-in {
+  @keyframes pane-section-in {
     from {
       opacity: 0;
-      transform: translate3d(0, 8px, 0);
+      transform: translate3d(0, -8px, 0);
     }
     to {
       opacity: 1;
@@ -1262,9 +1311,8 @@ html[data-theme='light'] .theme-toggle-icon {
     }
   }
 
-  .problem-desc-slot .solution-compare.is-docked,
-  .problem-workspace.problem-open .solution-panel > .solution-compare {
-    animation: approach-slot-in 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  .pane-section {
+    animation: pane-section-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 }
 
@@ -1274,6 +1322,27 @@ html[data-theme='light'] .theme-toggle-icon {
   ::view-transition-new(*) {
     animation: none !important;
   }
+
+  .pane-section {
+    animation: none;
+  }
+
+  .section-collapse-bar,
+  .section-chevron {
+    transition: none;
+  }
+}
+
+.workspace-main.solution-panel {
+  gap: 0.55rem;
+}
+
+.workspace-main .workspace-ai-panel {
+  margin-top: 0;
+}
+
+.workspace-main .solution-block {
+  flex: 1 1 auto;
 }
 
 .section-chevron {
@@ -1281,6 +1350,7 @@ html[data-theme='light'] .theme-toggle-icon {
   margin: 0;
   border: 1px solid transparent;
   border-radius: 8px;
+  box-sizing: border-box;
   width: 1.7rem;
   height: 1.7rem;
   padding: 0;
@@ -1289,13 +1359,15 @@ html[data-theme='light'] .theme-toggle-icon {
   justify-content: center;
   background: transparent;
   color: var(--ink-soft);
-  font: inherit;
-  font-size: 1.1rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
   line-height: 1;
   cursor: pointer;
   transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
 }
 
+.section-collapse-bar:hover .section-chevron,
 .section-chevron:hover {
   color: var(--ink);
   background: var(--accent-soft);
@@ -1304,7 +1376,6 @@ html[data-theme='light'] .theme-toggle-icon {
 
 .section-chevron-static {
   pointer-events: none;
-  border: none;
 }
 
 .solution-panel {
@@ -1327,7 +1398,10 @@ html[data-theme='light'] .theme-toggle-icon {
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--surface-strong);
-  view-transition-name: approach-panel;
+}
+
+.solution-compare.is-expanded {
+  max-height: none;
 }
 
 .solution-compare.is-collapsed {
@@ -1364,42 +1438,6 @@ html[data-theme='light'] .theme-toggle-icon {
   gap: 0.25rem 0.55rem;
 }
 
-.solution-compare-toggle {
-  appearance: none;
-  margin: 0;
-  margin-left: auto;
-  border: 0;
-  border-radius: 999px;
-  padding: 0.18rem 0.55rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  background: transparent;
-  color: var(--ink-soft);
-  font: inherit;
-  font-size: 0.72rem;
-  font-weight: 650;
-  cursor: pointer;
-}
-
-.solution-compare-toggle:hover {
-  color: var(--ink);
-  background: var(--accent-soft);
-}
-
-.solution-compare-toggle .section-chevron {
-  width: auto;
-  height: auto;
-  border: 0;
-  padding: 0;
-  font-size: 0.85rem;
-}
-
-.solution-compare-toggle .section-chevron:hover {
-  background: transparent;
-  border: 0;
-}
-
 .solution-compare-body {
   flex: 1 1 auto;
   min-height: 8rem;
@@ -1427,6 +1465,15 @@ html[data-theme='light'] .theme-toggle-icon {
   align-items: center;
   gap: 0.45rem 0.65rem;
   min-width: 0;
+}
+
+.solution-compare-title {
+  flex: 0 0 auto;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
 }
 
 .solution-chip-tabs {
@@ -2415,28 +2462,8 @@ html[data-theme='dark'] {
     overflow: visible;
   }
 
-  .problem-desc-slot {
-    flex-direction: column;
-    height: auto;
-  }
-
-  .problem-desc-rail {
-    flex: 0 0 auto;
-    width: 100%;
-    height: auto;
-    min-height: 2.75rem;
-    flex-direction: row;
-    justify-content: space-between;
-    padding: 0.55rem 0.75rem;
-  }
-
-  .problem-desc-rail-label {
-    writing-mode: horizontal-tb;
-    transform: none;
-    max-width: 80%;
-  }
-
-  .problem-desc-slot .solution-compare.is-docked {
+  .pane-section-open.problem-pane-body,
+  .pane-section-open.solution-compare {
     max-height: none;
     flex: none;
   }

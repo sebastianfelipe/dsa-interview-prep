@@ -100,15 +100,12 @@ export function ProblemPage() {
   const [problemOpen, setProblemOpen] = useState(() => readProblemPaneOpen());
   const [approachOpen, setApproachOpen] = useState(() => readApproachPaneOpen());
 
-  const setProblemPaneOpen = useCallback((open: boolean) => {
+  const runPaneTransition = useCallback((update: () => void) => {
     const apply = () => {
-      flushSync(() => {
-        setProblemOpen(open);
-      });
-      writeProblemPaneOpen(open);
+      flushSync(update);
     };
     const doc = document as Document & {
-      startViewTransition?: (update: () => void) => unknown;
+      startViewTransition?: (cb: () => void) => unknown;
     };
     if (typeof doc.startViewTransition === 'function') {
       doc.startViewTransition(apply);
@@ -117,10 +114,25 @@ export function ProblemPage() {
     apply();
   }, []);
 
-  const setApproachPaneOpen = useCallback((open: boolean) => {
-    setApproachOpen(open);
-    writeApproachPaneOpen(open);
-  }, []);
+  const setProblemPaneOpen = useCallback(
+    (open: boolean) => {
+      runPaneTransition(() => {
+        setProblemOpen(open);
+        writeProblemPaneOpen(open);
+      });
+    },
+    [runPaneTransition],
+  );
+
+  const setApproachPaneOpen = useCallback(
+    (open: boolean) => {
+      runPaneTransition(() => {
+        setApproachOpen(open);
+        writeApproachPaneOpen(open);
+      });
+    },
+    [runPaneTransition],
+  );
 
   const refreshLocals = useCallback(() => {
     setLocalSolutions(listLocalSolutions(topic, slug));
@@ -353,6 +365,7 @@ export function ProblemPage() {
       saveLocalSolution(topic, slug, entry);
       refreshLocals();
       setSelectedId(entry.id);
+      setApproachPaneOpen(true);
       // Full AI solutions include code — unlock so the new chip is readable immediately.
       if (entry.mode === 'full') setCodeUnlocked(true);
     } catch (e) {
@@ -462,15 +475,13 @@ export function ProblemPage() {
   const isHintView =
     selected?.source === 'hint' ||
     (selectedLocal != null && localSolutionKind(selectedLocal) === 'hint');
-  const approachDocked = !problemOpen;
-  const notesVisible = approachDocked || approachOpen;
+  const problemCollapsed = !problemOpen;
 
   const workspaceClass = [
     'problem-workspace',
     problemOpen ? 'problem-open' : 'problem-collapsed',
-    approachOpen || approachDocked ? 'approach-open' : 'approach-collapsed',
+    approachOpen ? 'approach-open' : 'approach-collapsed',
     isHintView ? 'hint-view' : '',
-    approachDocked ? 'approach-docked' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -548,20 +559,29 @@ export function ProblemPage() {
     </section>
   );
 
-  const approachPanel = (
+  const approachPanel = approachOpen ? (
     <div
       className={[
-        'solution-compare',
-        notesVisible ? '' : 'is-collapsed',
-        approachDocked || (isHintView && notesVisible) ? 'is-notes-focus' : '',
-        approachDocked ? 'is-docked' : '',
+        'solution-compare pane-section pane-section-approach pane-section-open',
+        problemCollapsed || isHintView ? 'is-notes-focus' : '',
+        problemCollapsed ? 'is-expanded' : '',
       ]
         .filter(Boolean)
         .join(' ')}
     >
+      <button
+        type="button"
+        className="section-chevron pane-section-toggle"
+        aria-expanded={true}
+        aria-label="Collapse approach"
+        title="Collapse approach"
+        onClick={() => setApproachPaneOpen(false)}
+      >
+        ▴
+      </button>
       <div className="solution-compare-top">
         <div className="solution-compare-picker">
-          {chipTabs.length > 1 && (
+          {chipTabs.length > 1 ? (
             <div className="solution-chip-tabs" role="tablist" aria-label="Solution groups">
               {chipTabs.map((tab) => (
                 <button
@@ -575,7 +595,6 @@ export function ProblemPage() {
                     if (!tab.items.some((s) => s.id === selectedId) && tab.items[0]) {
                       setSelectedId(tab.items[0].id);
                     }
-                    if (tab.key === 'hints' && problemOpen) setApproachPaneOpen(true);
                   }}
                 >
                   {tab.label}
@@ -583,6 +602,8 @@ export function ProblemPage() {
                 </button>
               ))}
             </div>
+          ) : (
+            <span className="solution-compare-title">Approach</span>
           )}
           <div
             className="solution-chip-rail-scroll"
@@ -605,10 +626,7 @@ export function ProblemPage() {
                     aria-selected={selectedId === s.id}
                     className={`chip ${selectedId === s.id ? 'active' : ''}`}
                     title={label}
-                    onClick={() => {
-                      setSelectedId(s.id);
-                      if (s.source === 'hint' && problemOpen) setApproachPaneOpen(true);
-                    }}
+                    onClick={() => setSelectedId(s.id)}
                   >
                     {label}
                   </button>
@@ -642,41 +660,40 @@ export function ProblemPage() {
               </span>
             )}
           </p>
-          {!approachDocked && (
-            <button
-              type="button"
-              className="solution-compare-toggle"
-              aria-expanded={approachOpen}
-              onClick={() => setApproachPaneOpen(!approachOpen)}
-            >
-              {approachOpen ? 'Hide notes' : 'Show notes'}
-              <span className="section-chevron" aria-hidden="true">
-                {approachOpen ? '▾' : '▸'}
-              </span>
-            </button>
-          )}
         </div>
       </div>
-      {notesVisible && (
-        <div className="solution-compare-body">
-          {notes && <p className="solution-compare-notes">{notes}</p>}
-          {description ? (
-            <Markdown source={description} />
-          ) : solutions.length === 0 ? (
-            <p className="muted">No writeup for this solution yet.</p>
-          ) : (
-            <p className="muted">No comparison notes for this solution yet.</p>
-          )}
-        </div>
-      )}
+      <div className="solution-compare-body">
+        {notes && <p className="solution-compare-notes">{notes}</p>}
+        {description ? (
+          <Markdown source={description} />
+        ) : solutions.length === 0 ? (
+          <p className="muted">No writeup for this solution yet.</p>
+        ) : (
+          <p className="muted">No comparison notes for this solution yet.</p>
+        )}
+      </div>
     </div>
+  ) : (
+    <button
+      type="button"
+      className="section-collapse-bar pane-section pane-section-approach pane-section-closed"
+      aria-expanded={false}
+      aria-label="Expand approach"
+      title="Expand approach"
+      onClick={() => setApproachPaneOpen(true)}
+    >
+      <span className="section-collapse-bar-label">Approach</span>
+      <span className="section-chevron section-chevron-static" aria-hidden="true">
+        ▾
+      </span>
+    </button>
   );
 
   return (
     <main className={`page page-problem${showSolutionPane ? ' page-problem-split' : ''}`}>
       <div className={workspaceClass}>
         <aside className="workspace-problem">
-          <div className={`problem-pane${approachDocked ? ' problem-pane-collapsed' : ''}`}>
+          <div className={`problem-pane${problemCollapsed ? ' problem-pane-collapsed' : ''}`}>
             <div className="problem-pane-head">
               <div className="problem-pane-title-row">
                 <h1 className="problem-pane-title">{problem.title}</h1>
@@ -694,47 +711,42 @@ export function ProblemPage() {
             </div>
 
             {problemOpen ? (
-              <div key="problem-readme" className="panel problem-pane-body">
+              <div className="panel problem-pane-body pane-section pane-section-problem pane-section-open">
                 <button
                   type="button"
-                  className="problem-desc-collapse section-chevron"
+                  className="section-chevron pane-section-toggle"
                   aria-expanded={true}
                   aria-label="Collapse problem description"
                   title="Collapse problem description"
                   onClick={() => setProblemPaneOpen(false)}
                 >
-                  ‹
+                  ▴
                 </button>
                 <div className="problem-readme">
                   <Markdown source={problem.readme} />
                 </div>
               </div>
             ) : (
-              <div key="problem-dock" className="problem-desc-slot">
-                <button
-                  type="button"
-                  className="problem-desc-rail"
-                  aria-expanded={false}
-                  aria-label={`Expand problem description: ${problem.title}`}
-                  title="Expand problem description"
-                  onClick={() => setProblemPaneOpen(true)}
-                >
-                  <span className="problem-desc-rail-label">{problem.title}</span>
-                  <span className="section-chevron section-chevron-static" aria-hidden="true">
-                    ›
-                  </span>
-                </button>
-                {approachPanel}
-              </div>
+              <button
+                type="button"
+                className="section-collapse-bar pane-section pane-section-problem pane-section-closed"
+                aria-expanded={false}
+                aria-label="Expand problem description"
+                title="Expand problem description"
+                onClick={() => setProblemPaneOpen(true)}
+              >
+                <span className="section-collapse-bar-label">Problem</span>
+                <span className="section-chevron section-chevron-static" aria-hidden="true">
+                  ▾
+                </span>
+              </button>
             )}
 
-            {askAiPanel}
+            {approachPanel}
           </div>
         </aside>
 
         <section className="workspace-main solution-panel">
-          {problemOpen && approachPanel}
-
           <div
             className={[
               'solution-block',
@@ -878,6 +890,8 @@ export function ProblemPage() {
               </div>
             )}
           </div>
+
+          {askAiPanel}
         </section>
       </div>
     </main>
