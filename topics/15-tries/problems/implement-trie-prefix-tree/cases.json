@@ -1,0 +1,190 @@
+{
+  "type": "class",
+  "exportName": "Trie",
+  "examples": [
+    {
+      "id": "example-1",
+      "ops": [
+        "Trie",
+        "insert",
+        "search",
+        "search",
+        "startsWith",
+        "insert",
+        "search"
+      ],
+      "args": [
+        [],
+        [
+          "apple"
+        ],
+        [
+          "apple"
+        ],
+        [
+          "app"
+        ],
+        [
+          "app"
+        ],
+        [
+          "app"
+        ],
+        [
+          "app"
+        ]
+      ],
+      "expected": [
+        null,
+        null,
+        true,
+        false,
+        true,
+        null,
+        true
+      ]
+    },
+    {
+      "id": "example-2",
+      "ops": [
+        "Trie",
+        "insert",
+        "startsWith",
+        "search"
+      ],
+      "args": [
+        [],
+        [
+          "hello"
+        ],
+        [
+          "hell"
+        ],
+        [
+          "hello"
+        ]
+      ],
+      "expected": [
+        null,
+        null,
+        true,
+        true
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "empty-search",
+      "ops": [
+        "Trie",
+        "search",
+        "startsWith"
+      ],
+      "args": [
+        [],
+        [
+          "a"
+        ],
+        [
+          "a"
+        ]
+      ],
+      "expected": [
+        null,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "prefix-not-word",
+      "ops": [
+        "Trie",
+        "insert",
+        "search",
+        "startsWith"
+      ],
+      "args": [
+        [],
+        [
+          "abc"
+        ],
+        [
+          "ab"
+        ],
+        [
+          "ab"
+        ]
+      ],
+      "expected": [
+        null,
+        null,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "shared-prefix",
+      "ops": [
+        "Trie",
+        "insert",
+        "insert",
+        "search",
+        "search",
+        "startsWith"
+      ],
+      "args": [
+        [],
+        [
+          "app"
+        ],
+        [
+          "apple"
+        ],
+        [
+          "app"
+        ],
+        [
+          "apple"
+        ],
+        [
+          "ap"
+        ]
+      ],
+      "expected": [
+        null,
+        null,
+        null,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "single-char",
+      "ops": [
+        "Trie",
+        "insert",
+        "search",
+        "startsWith"
+      ],
+      "args": [
+        [],
+        [
+          "z"
+        ],
+        [
+          "z"
+        ],
+        [
+          "z"
+        ]
+      ],
+      "expected": [
+        null,
+        null,
+        true,
+        true
+      ]
+    }
+  ]
+}

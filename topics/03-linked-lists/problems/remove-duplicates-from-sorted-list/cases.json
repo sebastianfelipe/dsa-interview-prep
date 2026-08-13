@@ -1,0 +1,108 @@
+{
+  "type": "function",
+  "exportName": "deleteDuplicates",
+  "argNames": [
+    "head"
+  ],
+  "argCodecs": [
+    "list"
+  ],
+  "resultCodec": "list",
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          1,
+          1,
+          2
+        ]
+      ],
+      "expected": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          1,
+          1,
+          2,
+          3,
+          3
+        ]
+      ],
+      "expected": [
+        1,
+        2,
+        3
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "empty",
+      "inputs": [
+        []
+      ],
+      "expected": []
+    },
+    {
+      "id": "single",
+      "inputs": [
+        [
+          1
+        ]
+      ],
+      "expected": [
+        1
+      ]
+    },
+    {
+      "id": "all-same",
+      "inputs": [
+        [
+          2,
+          2,
+          2,
+          2
+        ]
+      ],
+      "expected": [
+        2
+      ]
+    },
+    {
+      "id": "already-unique",
+      "inputs": [
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "expected": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "id": "long-run-then-unique",
+      "inputs": [
+        [
+          1,
+          1,
+          1,
+          2
+        ]
+      ],
+      "expected": [
+        1,
+        2
+      ]
+    }
+  ]
+}

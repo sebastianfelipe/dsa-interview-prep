@@ -1,12 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { treeFromArray } from '@lib/helpers';
-import { isSymmetric } from './solution';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import * as solution from './solution';
+import { testSolutionCases } from '@lib/cases-vitest';
 
-describe('Symmetric Tree', () => {
-  it('example 1', () => {
-    expect(isSymmetric(treeFromArray([1, 2, 2, 3, 4, 4, 3]))).toBe(true);
-  });
-  it('example 2', () => {
-    expect(isSymmetric(treeFromArray([1, 2, 2, null, 3, null, 3]))).toBe(false);
-  });
-});
+testSolutionCases(path.dirname(fileURLToPath(import.meta.url)), solution as Record<string, unknown>);

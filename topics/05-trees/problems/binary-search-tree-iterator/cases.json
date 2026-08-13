@@ -1,0 +1,114 @@
+{
+  "type": "class",
+  "exportName": "BSTIterator",
+  "ctorCodecs": ["tree"],
+  "examples": [
+    {
+      "id": "example-1",
+      "ops": [
+        "BSTIterator",
+        "next",
+        "next",
+        "hasNext",
+        "next",
+        "hasNext",
+        "next",
+        "hasNext",
+        "next",
+        "hasNext"
+      ],
+      "args": [
+        [
+          [
+            7,
+            3,
+            15,
+            null,
+            null,
+            9,
+            20
+          ]
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "expected": [
+        null,
+        3,
+        7,
+        true,
+        9,
+        true,
+        15,
+        true,
+        20,
+        false
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "single-node",
+      "ops": [
+        "BSTIterator",
+        "hasNext",
+        "next",
+        "hasNext"
+      ],
+      "args": [
+        [
+          [
+            1
+          ]
+        ],
+        [],
+        [],
+        []
+      ],
+      "expected": [
+        null,
+        true,
+        1,
+        false
+      ]
+    },
+    {
+      "id": "left-skewed",
+      "ops": [
+        "BSTIterator",
+        "next",
+        "next",
+        "next",
+        "hasNext"
+      ],
+      "args": [
+        [
+          [
+            3,
+            2,
+            null,
+            1
+          ]
+        ],
+        [],
+        [],
+        [],
+        []
+      ],
+      "expected": [
+        null,
+        1,
+        2,
+        3,
+        false
+      ]
+    }
+  ]
+}

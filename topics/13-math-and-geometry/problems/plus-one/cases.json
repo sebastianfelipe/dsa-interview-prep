@@ -1,0 +1,95 @@
+{
+  "type": "function",
+  "exportName": "plusOne",
+  "argNames": [
+    "digits"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "expected": [
+        1,
+        2,
+        4
+      ]
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          4,
+          3,
+          2,
+          1
+        ]
+      ],
+      "expected": [
+        4,
+        3,
+        2,
+        2
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "nine",
+      "inputs": [
+        [
+          9
+        ]
+      ],
+      "expected": [
+        1,
+        0
+      ]
+    },
+    {
+      "id": "nines",
+      "inputs": [
+        [
+          9,
+          9
+        ]
+      ],
+      "expected": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "zero",
+      "inputs": [
+        [
+          0
+        ]
+      ],
+      "expected": [
+        1
+      ]
+    },
+    {
+      "id": "mid-carry",
+      "inputs": [
+        [
+          1,
+          9,
+          9
+        ]
+      ],
+      "expected": [
+        2,
+        0,
+        0
+      ]
+    }
+  ]
+}

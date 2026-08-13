@@ -1,0 +1,79 @@
+{
+  "type": "function",
+  "exportName": "singleNumber",
+  "argNames": [
+    "nums"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          2,
+          2,
+          1
+        ]
+      ],
+      "expected": 1
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          4,
+          1,
+          2,
+          1,
+          2
+        ]
+      ],
+      "expected": 4
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "single",
+      "inputs": [
+        [
+          1
+        ]
+      ],
+      "expected": 1
+    },
+    {
+      "id": "with-zero",
+      "inputs": [
+        [
+          0,
+          1,
+          0
+        ]
+      ],
+      "expected": 1
+    },
+    {
+      "id": "negative",
+      "inputs": [
+        [
+          -1,
+          -1,
+          -2
+        ]
+      ],
+      "expected": -2
+    },
+    {
+      "id": "larger",
+      "inputs": [
+        [
+          7,
+          3,
+          7,
+          3,
+          9
+        ]
+      ],
+      "expected": 9
+    }
+  ]
+}

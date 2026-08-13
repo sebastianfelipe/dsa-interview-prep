@@ -1,0 +1,60 @@
+{
+  "type": "function",
+  "exportName": "lengthOfLongestSubstring",
+  "argNames": [
+    "s"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        "abcabcbb"
+      ],
+      "expected": 3
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        "bbbbb"
+      ],
+      "expected": 1
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "empty",
+      "inputs": [
+        ""
+      ],
+      "expected": 0
+    },
+    {
+      "id": "all-unique",
+      "inputs": [
+        "abcdef"
+      ],
+      "expected": 6
+    },
+    {
+      "id": "pwwkew",
+      "inputs": [
+        "pwwkew"
+      ],
+      "expected": 3
+    },
+    {
+      "id": "space-and-letters",
+      "inputs": [
+        "a b c"
+      ],
+      "expected": 3
+    },
+    {
+      "id": "dvdf",
+      "inputs": [
+        "dvdf"
+      ],
+      "expected": 3
+    }
+  ]
+}

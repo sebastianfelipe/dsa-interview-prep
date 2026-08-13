@@ -1,7 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { strStr } from './solution';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import * as solution from './solution';
+import { testSolutionCases } from '@lib/cases-vitest';
 
-describe('Find the Index of the First Occurrence in a String', () => {
-  it('example 1', () => expect(strStr('sadbutsad', 'sad')).toBe(0));
-  it('example 2', () => expect(strStr('leetcode', 'leeto')).toBe(-1));
-});
+testSolutionCases(path.dirname(fileURLToPath(import.meta.url)), solution as Record<string, unknown>);

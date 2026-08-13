@@ -1,0 +1,93 @@
+{
+  "type": "function",
+  "exportName": "maxSubArray",
+  "argNames": [
+    "nums"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          -2,
+          1,
+          -3,
+          4,
+          -1,
+          2,
+          1,
+          -5,
+          4
+        ]
+      ],
+      "expected": 6
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          1
+        ]
+      ],
+      "expected": 1
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "all-negative",
+      "inputs": [
+        [
+          -3,
+          -2,
+          -5
+        ]
+      ],
+      "expected": -2
+    },
+    {
+      "id": "all-positive",
+      "inputs": [
+        [
+          1,
+          2,
+          3,
+          4
+        ]
+      ],
+      "expected": 10
+    },
+    {
+      "id": "mix-restart",
+      "inputs": [
+        [
+          5,
+          4,
+          -1,
+          7,
+          8
+        ]
+      ],
+      "expected": 23
+    },
+    {
+      "id": "single-negative",
+      "inputs": [
+        [
+          -1
+        ]
+      ],
+      "expected": -1
+    },
+    {
+      "id": "zeros",
+      "inputs": [
+        [
+          0,
+          -1,
+          0
+        ]
+      ],
+      "expected": 0
+    }
+  ]
+}

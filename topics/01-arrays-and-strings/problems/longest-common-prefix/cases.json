@@ -1,0 +1,84 @@
+{
+  "type": "function",
+  "exportName": "longestCommonPrefix",
+  "argNames": [
+    "strs"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          "flower",
+          "flow",
+          "flight"
+        ]
+      ],
+      "expected": "fl"
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          "dog",
+          "racecar",
+          "car"
+        ]
+      ],
+      "expected": ""
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "single-string",
+      "inputs": [
+        [
+          "alone"
+        ]
+      ],
+      "expected": "alone"
+    },
+    {
+      "id": "identical",
+      "inputs": [
+        [
+          "ab",
+          "ab",
+          "ab"
+        ]
+      ],
+      "expected": "ab"
+    },
+    {
+      "id": "empty-string-in-list",
+      "inputs": [
+        [
+          "",
+          "b"
+        ]
+      ],
+      "expected": ""
+    },
+    {
+      "id": "prefix-is-shortest",
+      "inputs": [
+        [
+          "interspecies",
+          "interstellar",
+          "interstate"
+        ]
+      ],
+      "expected": "inters"
+    },
+    {
+      "id": "one-char-diverge",
+      "inputs": [
+        [
+          "a",
+          "b"
+        ]
+      ],
+      "expected": ""
+    }
+  ]
+}

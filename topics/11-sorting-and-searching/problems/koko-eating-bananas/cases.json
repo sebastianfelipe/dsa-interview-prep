@@ -1,0 +1,83 @@
+{
+  "type": "function",
+  "exportName": "minEatingSpeed",
+  "argNames": [
+    "piles",
+    "h"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          3,
+          6,
+          7,
+          11
+        ],
+        8
+      ],
+      "expected": 4
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          30,
+          11,
+          23,
+          4,
+          20
+        ],
+        5
+      ],
+      "expected": 30
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "example-3",
+      "inputs": [
+        [
+          30,
+          11,
+          23,
+          4,
+          20
+        ],
+        6
+      ],
+      "expected": 23
+    },
+    {
+      "id": "single-pile",
+      "inputs": [
+        [
+          1
+        ],
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "exact-hours",
+      "inputs": [
+        [
+          10
+        ],
+        10
+      ],
+      "expected": 1
+    },
+    {
+      "id": "tight",
+      "inputs": [
+        [
+          1000000000
+        ],
+        2
+      ],
+      "expected": 500000000
+    }
+  ]
+}

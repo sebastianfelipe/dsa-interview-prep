@@ -1,0 +1,107 @@
+{
+  "type": "function",
+  "exportName": "lowestCommonAncestor",
+  "argNames": [
+    "root",
+    "p",
+    "q"
+  ],
+  "argCodecs": [
+    "tree",
+    "treeVal",
+    "treeVal"
+  ],
+  "resultCodec": "treeVal",
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          6,
+          2,
+          8,
+          0,
+          4,
+          7,
+          9
+        ],
+        2,
+        8
+      ],
+      "expected": 6
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          6,
+          2,
+          8,
+          0,
+          4,
+          7,
+          9,
+          null,
+          null,
+          3,
+          5
+        ],
+        2,
+        4
+      ],
+      "expected": 2
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "lca-is-deeper",
+      "inputs": [
+        [
+          6,
+          2,
+          8,
+          0,
+          4,
+          7,
+          9,
+          null,
+          null,
+          3,
+          5
+        ],
+        3,
+        5
+      ],
+      "expected": 4
+    },
+    {
+      "id": "p-is-ancestor",
+      "inputs": [
+        [
+          6,
+          2,
+          8,
+          0,
+          4,
+          7,
+          9
+        ],
+        2,
+        0
+      ],
+      "expected": 2
+    },
+    {
+      "id": "single-path",
+      "inputs": [
+        [
+          2,
+          1
+        ],
+        2,
+        1
+      ],
+      "expected": 2
+    }
+  ]
+}

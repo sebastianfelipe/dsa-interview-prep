@@ -1,0 +1,106 @@
+{
+  "type": "function",
+  "exportName": "topKFrequent",
+  "argNames": [
+    "nums",
+    "k"
+  ],
+  "compare": "unordered",
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          1,
+          1,
+          1,
+          2,
+          2,
+          3
+        ],
+        2
+      ],
+      "expected": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          1
+        ],
+        1
+      ],
+      "expected": [
+        1
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "k-equals-n-unique",
+      "inputs": [
+        [
+          4,
+          1,
+          -1,
+          2,
+          -1,
+          2,
+          3
+        ],
+        2
+      ],
+      "expected": [
+        -1,
+        2
+      ]
+    },
+    {
+      "id": "all-same",
+      "inputs": [
+        [
+          5,
+          5,
+          5
+        ],
+        1
+      ],
+      "expected": [
+        5
+      ]
+    },
+    {
+      "id": "k-all",
+      "inputs": [
+        [
+          1,
+          2
+        ],
+        2
+      ],
+      "expected": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": "negatives",
+      "inputs": [
+        [
+          -1,
+          -1,
+          -2,
+          -2,
+          -2
+        ],
+        1
+      ],
+      "expected": [
+        -2
+      ]
+    }
+  ]
+}

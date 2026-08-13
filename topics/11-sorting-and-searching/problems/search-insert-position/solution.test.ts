@@ -1,8 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { searchInsert } from './solution';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import * as solution from './solution';
+import { testSolutionCases } from '@lib/cases-vitest';
 
-describe('Search Insert Position', () => {
-  it('example 1', () => expect(searchInsert([1, 3, 5, 6], 5)).toBe(2));
-  it('example 2', () => expect(searchInsert([1, 3, 5, 6], 2)).toBe(1));
-  it('example 3', () => expect(searchInsert([1, 3, 5, 6], 7)).toBe(4));
-});
+testSolutionCases(path.dirname(fileURLToPath(import.meta.url)), solution as Record<string, unknown>);

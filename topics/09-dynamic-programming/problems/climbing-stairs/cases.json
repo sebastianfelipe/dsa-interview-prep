@@ -1,0 +1,53 @@
+{
+  "type": "function",
+  "exportName": "climbStairs",
+  "argNames": [
+    "n"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        2
+      ],
+      "expected": 2
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        3
+      ],
+      "expected": 3
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "one-step",
+      "inputs": [
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "four",
+      "inputs": [
+        4
+      ],
+      "expected": 5
+    },
+    {
+      "id": "five",
+      "inputs": [
+        5
+      ],
+      "expected": 8
+    },
+    {
+      "id": "ten",
+      "inputs": [
+        10
+      ],
+      "expected": 89
+    }
+  ]
+}

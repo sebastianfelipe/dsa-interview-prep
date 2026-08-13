@@ -1,0 +1,108 @@
+{
+  "type": "function",
+  "exportName": "numIslands",
+  "argNames": [
+    "grid"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          [
+            "1",
+            "1",
+            "0",
+            "0",
+            "0"
+          ],
+          [
+            "1",
+            "1",
+            "0",
+            "0",
+            "0"
+          ],
+          [
+            "0",
+            "0",
+            "1",
+            "0",
+            "0"
+          ],
+          [
+            "0",
+            "0",
+            "0",
+            "1",
+            "1"
+          ]
+        ]
+      ],
+      "expected": 3
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "all-water",
+      "inputs": [
+        [
+          [
+            "0"
+          ]
+        ]
+      ],
+      "expected": 0
+    },
+    {
+      "id": "single-land",
+      "inputs": [
+        [
+          [
+            "1"
+          ]
+        ]
+      ],
+      "expected": 1
+    },
+    {
+      "id": "one-big-island",
+      "inputs": [
+        [
+          [
+            "1",
+            "1",
+            "1"
+          ],
+          [
+            "0",
+            "1",
+            "0"
+          ],
+          [
+            "1",
+            "1",
+            "1"
+          ]
+        ]
+      ],
+      "expected": 1
+    },
+    {
+      "id": "diagonal-not-connected",
+      "inputs": [
+        [
+          [
+            "1",
+            "0"
+          ],
+          [
+            "0",
+            "1"
+          ]
+        ]
+      ],
+      "expected": 2
+    }
+  ]
+}

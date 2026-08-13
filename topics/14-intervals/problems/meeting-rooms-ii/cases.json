@@ -1,0 +1,119 @@
+{
+  "type": "function",
+  "exportName": "minMeetingRooms",
+  "argNames": [
+    "intervals"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          [
+            0,
+            30
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            15,
+            20
+          ]
+        ]
+      ],
+      "expected": 2
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          [
+            7,
+            10
+          ],
+          [
+            2,
+            4
+          ]
+        ]
+      ],
+      "expected": 1
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "single",
+      "inputs": [
+        [
+          [
+            1,
+            5
+          ]
+        ]
+      ],
+      "expected": 1
+    },
+    {
+      "id": "three-overlap",
+      "inputs": [
+        [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            3,
+            5
+          ],
+          [
+            7,
+            9
+          ]
+        ]
+      ],
+      "expected": 3
+    },
+    {
+      "id": "touching-ok",
+      "inputs": [
+        [
+          [
+            1,
+            5
+          ],
+          [
+            5,
+            10
+          ]
+        ]
+      ],
+      "expected": 1
+    },
+    {
+      "id": "all-overlap",
+      "inputs": [
+        [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            12
+          ]
+        ]
+      ],
+      "expected": 3
+    }
+  ]
+}

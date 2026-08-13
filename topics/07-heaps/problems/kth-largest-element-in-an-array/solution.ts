@@ -1,5 +1,7 @@
+import { MinHeap } from '../../../../resources/templates/heap';
+
 export function findKthLargest(nums: number[], k: number): number {
-  const heap = new MinHeap<number>((a, b) => a - b); // from templates/heap.ts
+  const heap = new MinHeap<number>((a, b) => a - b);
   for (const num of nums) {
     heap.push(num);
     if (heap.size > k) {

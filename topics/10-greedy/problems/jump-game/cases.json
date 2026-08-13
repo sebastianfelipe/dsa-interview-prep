@@ -1,0 +1,90 @@
+{
+  "type": "function",
+  "exportName": "canJump",
+  "argNames": [
+    "nums"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          2,
+          3,
+          1,
+          1,
+          4
+        ]
+      ],
+      "expected": true
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          3,
+          2,
+          1,
+          0,
+          4
+        ]
+      ],
+      "expected": false
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "single-zero",
+      "inputs": [
+        [
+          0
+        ]
+      ],
+      "expected": true
+    },
+    {
+      "id": "two-reach",
+      "inputs": [
+        [
+          1,
+          0
+        ]
+      ],
+      "expected": true
+    },
+    {
+      "id": "zeros-reachable",
+      "inputs": [
+        [
+          2,
+          0,
+          0
+        ]
+      ],
+      "expected": true
+    },
+    {
+      "id": "stuck",
+      "inputs": [
+        [
+          1,
+          0,
+          1
+        ]
+      ],
+      "expected": false
+    },
+    {
+      "id": "all-ones",
+      "inputs": [
+        [
+          1,
+          1,
+          1,
+          1
+        ]
+      ],
+      "expected": true
+    }
+  ]
+}

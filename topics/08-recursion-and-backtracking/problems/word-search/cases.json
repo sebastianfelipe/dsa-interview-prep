@@ -1,0 +1,151 @@
+{
+  "type": "function",
+  "exportName": "exist",
+  "argNames": [
+    "board",
+    "word"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          [
+            "A",
+            "B",
+            "C",
+            "E"
+          ],
+          [
+            "S",
+            "F",
+            "C",
+            "S"
+          ],
+          [
+            "A",
+            "D",
+            "E",
+            "E"
+          ]
+        ],
+        "ABCCED"
+      ],
+      "expected": true
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          [
+            "A",
+            "B",
+            "C",
+            "E"
+          ],
+          [
+            "S",
+            "F",
+            "C",
+            "S"
+          ],
+          [
+            "A",
+            "D",
+            "E",
+            "E"
+          ]
+        ],
+        "SEE"
+      ],
+      "expected": true
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "not-found-reuse",
+      "inputs": [
+        [
+          [
+            "A",
+            "B",
+            "C",
+            "E"
+          ],
+          [
+            "S",
+            "F",
+            "C",
+            "S"
+          ],
+          [
+            "A",
+            "D",
+            "E",
+            "E"
+          ]
+        ],
+        "ABCB"
+      ],
+      "expected": false
+    },
+    {
+      "id": "single-cell",
+      "inputs": [
+        [
+          [
+            "A"
+          ]
+        ],
+        "A"
+      ],
+      "expected": true
+    },
+    {
+      "id": "single-cell-miss",
+      "inputs": [
+        [
+          [
+            "A"
+          ]
+        ],
+        "B"
+      ],
+      "expected": false
+    },
+    {
+      "id": "no-path",
+      "inputs": [
+        [
+          [
+            "A",
+            "B"
+          ],
+          [
+            "C",
+            "D"
+          ]
+        ],
+        "ABCD"
+      ],
+      "expected": false
+    },
+    {
+      "id": "full-path",
+      "inputs": [
+        [
+          [
+            "A",
+            "B"
+          ],
+          [
+            "C",
+            "D"
+          ]
+        ],
+        "ABDC"
+      ],
+      "expected": true
+    }
+  ]
+}

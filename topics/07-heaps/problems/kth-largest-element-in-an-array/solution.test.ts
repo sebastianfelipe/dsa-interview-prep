@@ -1,8 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { findKthLargest } from './solution';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import * as solution from './solution';
+import { testSolutionCases } from '@lib/cases-vitest';
 
-describe('Kth Largest Element in an Array', () => {
-  it('is defined', () => {
-    expect(findKthLargest).toBeTypeOf('function');
-  });
-});
+testSolutionCases(path.dirname(fileURLToPath(import.meta.url)), solution as Record<string, unknown>);

@@ -1,0 +1,176 @@
+{
+  "type": "class",
+  "exportName": "MyCalendar",
+  "examples": [
+    {
+      "id": "example-1",
+      "ops": [
+        "MyCalendar",
+        "book",
+        "book",
+        "book"
+      ],
+      "args": [
+        [],
+        [
+          10,
+          20
+        ],
+        [
+          15,
+          25
+        ],
+        [
+          20,
+          30
+        ]
+      ],
+      "expected": [
+        null,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "example-2",
+      "ops": [
+        "MyCalendar",
+        "book",
+        "book",
+        "book"
+      ],
+      "args": [
+        [],
+        [
+          10,
+          20
+        ],
+        [
+          20,
+          30
+        ],
+        [
+          30,
+          40
+        ]
+      ],
+      "expected": [
+        null,
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "overlap-start",
+      "ops": [
+        "MyCalendar",
+        "book",
+        "book"
+      ],
+      "args": [
+        [],
+        [
+          5,
+          10
+        ],
+        [
+          0,
+          6
+        ]
+      ],
+      "expected": [
+        null,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "contained",
+      "ops": [
+        "MyCalendar",
+        "book",
+        "book"
+      ],
+      "args": [
+        [],
+        [
+          10,
+          30
+        ],
+        [
+          15,
+          20
+        ]
+      ],
+      "expected": [
+        null,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "exact-same",
+      "ops": [
+        "MyCalendar",
+        "book",
+        "book"
+      ],
+      "args": [
+        [],
+        [
+          10,
+          20
+        ],
+        [
+          10,
+          20
+        ]
+      ],
+      "expected": [
+        null,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "multiple-ok",
+      "ops": [
+        "MyCalendar",
+        "book",
+        "book",
+        "book",
+        "book"
+      ],
+      "args": [
+        [],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "expected": [
+        null,
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  ]
+}

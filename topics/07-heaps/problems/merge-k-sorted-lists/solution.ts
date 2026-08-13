@@ -1,4 +1,6 @@
 import { ListNode } from '@lib/helpers';
+import { MinHeap } from '../../../../resources/templates/heap';
+
 export function mergeKLists(lists: Array<ListNode | null>): ListNode | null {
   const heap = new MinHeap<ListNode>((a, b) => a.val - b.val);
   for (const node of lists) {

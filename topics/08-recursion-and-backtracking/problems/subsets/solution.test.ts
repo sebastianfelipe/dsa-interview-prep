@@ -1,8 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { subsets } from './solution';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import * as solution from './solution';
+import { testSolutionCases } from '@lib/cases-vitest';
 
-describe('Subsets', () => {
-  it('is defined', () => {
-    expect(subsets).toBeTypeOf('function');
-  });
-});
+testSolutionCases(path.dirname(fileURLToPath(import.meta.url)), solution as Record<string, unknown>);

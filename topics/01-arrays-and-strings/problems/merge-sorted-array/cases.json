@@ -1,0 +1,148 @@
+{
+  "type": "function",
+  "exportName": "merge",
+  "argNames": [
+    "nums1",
+    "m",
+    "nums2",
+    "n"
+  ],
+  "compare": "inplace",
+  "inplaceArg": 0,
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          1,
+          2,
+          3,
+          0,
+          0,
+          0
+        ],
+        3,
+        [
+          2,
+          5,
+          6
+        ],
+        3
+      ],
+      "expected": [
+        1,
+        2,
+        2,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          1
+        ],
+        1,
+        [],
+        0
+      ],
+      "expected": [
+        1
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "nums1-empty",
+      "inputs": [
+        [
+          0
+        ],
+        0,
+        [
+          1
+        ],
+        1
+      ],
+      "expected": [
+        1
+      ]
+    },
+    {
+      "id": "interleaved",
+      "inputs": [
+        [
+          2,
+          0
+        ],
+        1,
+        [
+          1
+        ],
+        1
+      ],
+      "expected": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": "all-from-nums2-smaller",
+      "inputs": [
+        [
+          4,
+          5,
+          6,
+          0,
+          0,
+          0
+        ],
+        3,
+        [
+          1,
+          2,
+          3
+        ],
+        3
+      ],
+      "expected": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "duplicates",
+      "inputs": [
+        [
+          1,
+          2,
+          3,
+          0,
+          0,
+          0
+        ],
+        3,
+        [
+          1,
+          2,
+          3
+        ],
+        3
+      ],
+      "expected": [
+        1,
+        1,
+        2,
+        2,
+        3,
+        3
+      ]
+    }
+  ]
+}

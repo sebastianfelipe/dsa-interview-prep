@@ -1,0 +1,95 @@
+{
+  "type": "function",
+  "exportName": "cloneGraph",
+  "argNames": [
+    "node"
+  ],
+  "argCodecs": [
+    "graph"
+  ],
+  "resultCodec": "graph",
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          [
+            2,
+            4
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      ],
+      "expected": [
+        [
+          2,
+          4
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          1,
+          3
+        ]
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "empty",
+      "inputs": [
+        []
+      ],
+      "expected": []
+    },
+    {
+      "id": "single-no-neighbors",
+      "inputs": [
+        [
+          []
+        ]
+      ],
+      "expected": [
+        []
+      ]
+    },
+    {
+      "id": "two-nodes",
+      "inputs": [
+        [
+          [
+            2
+          ],
+          [
+            1
+          ]
+        ]
+      ],
+      "expected": [
+        [
+          2
+        ],
+        [
+          1
+        ]
+      ]
+    }
+  ]
+}

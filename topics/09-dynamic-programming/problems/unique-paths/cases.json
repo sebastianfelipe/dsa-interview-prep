@@ -1,0 +1,60 @@
+{
+  "type": "function",
+  "exportName": "uniquePaths",
+  "argNames": [
+    "m",
+    "n"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        3,
+        7
+      ],
+      "expected": 28
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        3,
+        2
+      ],
+      "expected": 3
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "one-by-one",
+      "inputs": [
+        1,
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "one-row",
+      "inputs": [
+        1,
+        10
+      ],
+      "expected": 1
+    },
+    {
+      "id": "one-col",
+      "inputs": [
+        10,
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "seven-by-three",
+      "inputs": [
+        7,
+        3
+      ],
+      "expected": 28
+    }
+  ]
+}

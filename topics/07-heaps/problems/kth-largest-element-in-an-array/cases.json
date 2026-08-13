@@ -1,0 +1,79 @@
+{
+  "type": "function",
+  "exportName": "findKthLargest",
+  "argNames": [
+    "nums",
+    "k"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          3,
+          2,
+          1,
+          5,
+          6,
+          4
+        ],
+        2
+      ],
+      "expected": 5
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          3,
+          2,
+          3,
+          1,
+          2,
+          4,
+          5,
+          5,
+          6
+        ],
+        4
+      ],
+      "expected": 4
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "single",
+      "inputs": [
+        [
+          1
+        ],
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "negatives",
+      "inputs": [
+        [
+          -1,
+          -2,
+          -3
+        ],
+        1
+      ],
+      "expected": -1
+    },
+    {
+      "id": "k-equals-n",
+      "inputs": [
+        [
+          7,
+          6,
+          5
+        ],
+        3
+      ],
+      "expected": 5
+    }
+  ]
+}

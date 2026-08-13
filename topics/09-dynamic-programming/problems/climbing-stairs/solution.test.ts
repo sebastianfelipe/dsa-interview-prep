@@ -1,8 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { climbStairs } from './solution';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import * as solution from './solution';
+import { testSolutionCases } from '@lib/cases-vitest';
 
-describe('Climbing Stairs', () => {
-  it('n=2', () => expect(climbStairs(2)).toBe(2));
-  it('n=3', () => expect(climbStairs(3)).toBe(3));
-  it('n=5', () => expect(climbStairs(5)).toBe(8));
-});
+testSolutionCases(path.dirname(fileURLToPath(import.meta.url)), solution as Record<string, unknown>);

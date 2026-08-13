@@ -1,0 +1,60 @@
+{
+  "type": "function",
+  "exportName": "addBinary",
+  "argNames": [
+    "a",
+    "b"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        "11",
+        "1"
+      ],
+      "expected": "100"
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        "1010",
+        "1011"
+      ],
+      "expected": "10101"
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "zeros",
+      "inputs": [
+        "0",
+        "0"
+      ],
+      "expected": "0"
+    },
+    {
+      "id": "carry-chain",
+      "inputs": [
+        "1",
+        "111"
+      ],
+      "expected": "1000"
+    },
+    {
+      "id": "same-length",
+      "inputs": [
+        "111",
+        "111"
+      ],
+      "expected": "1110"
+    },
+    {
+      "id": "leading-ones",
+      "inputs": [
+        "1",
+        "0"
+      ],
+      "expected": "1"
+    }
+  ]
+}

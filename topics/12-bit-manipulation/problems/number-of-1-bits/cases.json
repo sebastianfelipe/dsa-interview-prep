@@ -1,0 +1,60 @@
+{
+  "type": "function",
+  "exportName": "hammingWeight",
+  "argNames": [
+    "n"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        11
+      ],
+      "expected": 3
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        128
+      ],
+      "expected": 1
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "zero",
+      "inputs": [
+        0
+      ],
+      "expected": 0
+    },
+    {
+      "id": "one",
+      "inputs": [
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "power-of-two",
+      "inputs": [
+        16
+      ],
+      "expected": 1
+    },
+    {
+      "id": "all-low-bits",
+      "inputs": [
+        15
+      ],
+      "expected": 4
+    },
+    {
+      "id": "max-31",
+      "inputs": [
+        2147483647
+      ],
+      "expected": 31
+    }
+  ]
+}

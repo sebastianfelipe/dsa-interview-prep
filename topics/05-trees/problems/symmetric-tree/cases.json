@@ -1,0 +1,82 @@
+{
+  "type": "function",
+  "exportName": "isSymmetric",
+  "argNames": [
+    "root"
+  ],
+  "argCodecs": [
+    "tree"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          1,
+          2,
+          2,
+          3,
+          4,
+          4,
+          3
+        ]
+      ],
+      "expected": true
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          1,
+          2,
+          2,
+          null,
+          3,
+          null,
+          3
+        ]
+      ],
+      "expected": false
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "empty",
+      "inputs": [
+        []
+      ],
+      "expected": true
+    },
+    {
+      "id": "single",
+      "inputs": [
+        [
+          1
+        ]
+      ],
+      "expected": true
+    },
+    {
+      "id": "two-children-same",
+      "inputs": [
+        [
+          1,
+          2,
+          2
+        ]
+      ],
+      "expected": true
+    },
+    {
+      "id": "two-children-diff",
+      "inputs": [
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "expected": false
+    }
+  ]
+}

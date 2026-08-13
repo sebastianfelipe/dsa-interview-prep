@@ -1,7 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { longestCommonPrefix } from './solution';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import * as solution from './solution';
+import { testSolutionCases } from '@lib/cases-vitest';
 
-describe('Longest Common Prefix', () => {
-  it('example 1', () => expect(longestCommonPrefix(['flower', 'flow', 'flight'])).toBe('fl'));
-  it('example 2', () => expect(longestCommonPrefix(['dog', 'racecar', 'car'])).toBe(''));
-});
+testSolutionCases(path.dirname(fileURLToPath(import.meta.url)), solution as Record<string, unknown>);

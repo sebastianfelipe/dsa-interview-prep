@@ -1,8 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { lengthOfLastWord } from './solution';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import * as solution from './solution';
+import { testSolutionCases } from '@lib/cases-vitest';
 
-describe('Length of Last Word', () => {
-  it('example 1', () => expect(lengthOfLastWord('Hello World')).toBe(5));
-  it('example 2', () => expect(lengthOfLastWord('   fly me   to   the moon  ')).toBe(4));
-  it('example 3', () => expect(lengthOfLastWord('luffy is still joyboy')).toBe(6));
-});
+testSolutionCases(path.dirname(fileURLToPath(import.meta.url)), solution as Record<string, unknown>);

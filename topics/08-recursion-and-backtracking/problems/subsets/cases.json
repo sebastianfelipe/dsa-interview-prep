@@ -1,0 +1,123 @@
+{
+  "type": "function",
+  "exportName": "subsets",
+  "argNames": [
+    "nums"
+  ],
+  "compare": "unorderedNested",
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "expected": [
+        [],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          1,
+          2,
+          3
+        ]
+      ]
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          0
+        ]
+      ],
+      "expected": [
+        [],
+        [
+          0
+        ]
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "two-elements",
+      "inputs": [
+        [
+          1,
+          2
+        ]
+      ],
+      "expected": [
+        [],
+        [
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2
+        ]
+      ]
+    },
+    {
+      "id": "negatives",
+      "inputs": [
+        [
+          -1,
+          1
+        ]
+      ],
+      "expected": [
+        [],
+        [
+          -1
+        ],
+        [
+          -1,
+          1
+        ],
+        [
+          1
+        ]
+      ]
+    },
+    {
+      "id": "single-nonzero",
+      "inputs": [
+        [
+          5
+        ]
+      ],
+      "expected": [
+        [],
+        [
+          5
+        ]
+      ]
+    }
+  ]
+}

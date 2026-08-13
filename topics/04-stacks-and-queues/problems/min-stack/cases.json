@@ -1,0 +1,207 @@
+{
+  "type": "class",
+  "exportName": "MinStack",
+  "examples": [
+    {
+      "id": "example-1",
+      "ops": [
+        "MinStack",
+        "push",
+        "push",
+        "push",
+        "getMin",
+        "pop",
+        "top",
+        "getMin"
+      ],
+      "args": [
+        [],
+        [
+          -2
+        ],
+        [
+          0
+        ],
+        [
+          -3
+        ],
+        [],
+        [],
+        [],
+        []
+      ],
+      "expected": [
+        null,
+        null,
+        null,
+        null,
+        -3,
+        null,
+        0,
+        -2
+      ]
+    },
+    {
+      "id": "example-2",
+      "ops": [
+        "MinStack",
+        "push",
+        "push",
+        "top",
+        "getMin"
+      ],
+      "args": [
+        [],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [],
+        []
+      ],
+      "expected": [
+        null,
+        null,
+        null,
+        2,
+        1
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "decreasing",
+      "ops": [
+        "MinStack",
+        "push",
+        "push",
+        "push",
+        "getMin",
+        "pop",
+        "getMin",
+        "pop",
+        "getMin"
+      ],
+      "args": [
+        [],
+        [
+          3
+        ],
+        [
+          2
+        ],
+        [
+          1
+        ],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "expected": [
+        null,
+        null,
+        null,
+        null,
+        1,
+        null,
+        2,
+        null,
+        3
+      ]
+    },
+    {
+      "id": "duplicate-mins",
+      "ops": [
+        "MinStack",
+        "push",
+        "push",
+        "push",
+        "getMin",
+        "pop",
+        "getMin"
+      ],
+      "args": [
+        [],
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          0
+        ],
+        [],
+        [],
+        []
+      ],
+      "expected": [
+        null,
+        null,
+        null,
+        null,
+        0,
+        null,
+        0
+      ]
+    },
+    {
+      "id": "single-element",
+      "ops": [
+        "MinStack",
+        "push",
+        "top",
+        "getMin",
+        "pop"
+      ],
+      "args": [
+        [],
+        [
+          42
+        ],
+        [],
+        [],
+        []
+      ],
+      "expected": [
+        null,
+        null,
+        42,
+        42,
+        null
+      ]
+    },
+    {
+      "id": "increasing",
+      "ops": [
+        "MinStack",
+        "push",
+        "push",
+        "getMin",
+        "top"
+      ],
+      "args": [
+        [],
+        [
+          -5
+        ],
+        [
+          10
+        ],
+        [],
+        []
+      ],
+      "expected": [
+        null,
+        null,
+        null,
+        -5,
+        10
+      ]
+    }
+  ]
+}

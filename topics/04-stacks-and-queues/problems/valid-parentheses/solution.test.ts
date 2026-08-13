@@ -1,7 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { isValid } from './solution';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import * as solution from './solution';
+import { testSolutionCases } from '@lib/cases-vitest';
 
-describe('Valid Parentheses', () => {
-  it('valid', () => expect(isValid('()[]{}')).toBe(true));
-  it('invalid', () => expect(isValid('(]')).toBe(false));
-});
+testSolutionCases(path.dirname(fileURLToPath(import.meta.url)), solution as Record<string, unknown>);

@@ -20,3 +20,7 @@ ui/.env.local
 **/solutions/yours.js
 **/solutions/yours.tsx
 **/solutions/yours.jsx
+
+# Ephemeral judge scratch files
+**/.judge-solution.ts
+**/.judge-work/

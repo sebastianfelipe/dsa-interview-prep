@@ -1,8 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { shipWithinDays } from './solution';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import * as solution from './solution';
+import { testSolutionCases } from '@lib/cases-vitest';
 
-describe('Capacity To Ship Packages Within D Days', () => {
-  it('is defined', () => {
-    expect(shipWithinDays).toBeTypeOf('function');
-  });
-});
+testSolutionCases(path.dirname(fileURLToPath(import.meta.url)), solution as Record<string, unknown>);

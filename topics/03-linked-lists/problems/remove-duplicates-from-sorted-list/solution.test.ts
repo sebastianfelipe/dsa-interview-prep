@@ -1,12 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { listFromArray, listToArray } from '@lib/helpers';
-import { deleteDuplicates } from './solution';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import * as solution from './solution';
+import { testSolutionCases } from '@lib/cases-vitest';
 
-describe('Remove Duplicates from Sorted List', () => {
-  it('example 1', () => {
-    expect(listToArray(deleteDuplicates(listFromArray([1, 1, 2])))).toEqual([1, 2]);
-  });
-  it('example 2', () => {
-    expect(listToArray(deleteDuplicates(listFromArray([1, 1, 2, 3, 3])))).toEqual([1, 2, 3]);
-  });
-});
+testSolutionCases(path.dirname(fileURLToPath(import.meta.url)), solution as Record<string, unknown>);

@@ -1,0 +1,60 @@
+{
+  "type": "function",
+  "exportName": "isPalindrome",
+  "argNames": [
+    "x"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        121
+      ],
+      "expected": true
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        -121
+      ],
+      "expected": false
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "trailing-zero",
+      "inputs": [
+        10
+      ],
+      "expected": false
+    },
+    {
+      "id": "zero",
+      "inputs": [
+        0
+      ],
+      "expected": true
+    },
+    {
+      "id": "single-digit",
+      "inputs": [
+        7
+      ],
+      "expected": true
+    },
+    {
+      "id": "even-digits",
+      "inputs": [
+        1221
+      ],
+      "expected": true
+    },
+    {
+      "id": "not-palindrome",
+      "inputs": [
+        123
+      ],
+      "expected": false
+    }
+  ]
+}

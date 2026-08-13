@@ -1,0 +1,134 @@
+{
+  "type": "function",
+  "exportName": "combinationSum",
+  "argNames": [
+    "candidates",
+    "target"
+  ],
+  "compare": "unorderedNested",
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          2,
+          3,
+          6,
+          7
+        ],
+        7
+      ],
+      "expected": [
+        [
+          2,
+          2,
+          3
+        ],
+        [
+          7
+        ]
+      ]
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          2,
+          3,
+          5
+        ],
+        8
+      ],
+      "expected": [
+        [
+          2,
+          2,
+          2,
+          2
+        ],
+        [
+          2,
+          3,
+          3
+        ],
+        [
+          3,
+          5
+        ]
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "impossible",
+      "inputs": [
+        [
+          2
+        ],
+        1
+      ],
+      "expected": []
+    },
+    {
+      "id": "exact-one",
+      "inputs": [
+        [
+          1
+        ],
+        1
+      ],
+      "expected": [
+        [
+          1
+        ]
+      ]
+    },
+    {
+      "id": "reuse-same",
+      "inputs": [
+        [
+          2
+        ],
+        4
+      ],
+      "expected": [
+        [
+          2,
+          2
+        ]
+      ]
+    },
+    {
+      "id": "only-larger",
+      "inputs": [
+        [
+          8,
+          9
+        ],
+        7
+      ],
+      "expected": []
+    },
+    {
+      "id": "unsorted-input",
+      "inputs": [
+        [
+          7,
+          3,
+          2
+        ],
+        7
+      ],
+      "expected": [
+        [
+          2,
+          2,
+          3
+        ],
+        [
+          7
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "type": "function",
+  "exportName": "maxDepth",
+  "argNames": [
+    "root"
+  ],
+  "argCodecs": [
+    "tree"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          3,
+          9,
+          20,
+          null,
+          null,
+          15,
+          7
+        ]
+      ],
+      "expected": 3
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "empty",
+      "inputs": [
+        []
+      ],
+      "expected": 0
+    },
+    {
+      "id": "single",
+      "inputs": [
+        [
+          1
+        ]
+      ],
+      "expected": 1
+    },
+    {
+      "id": "right-child",
+      "inputs": [
+        [
+          1,
+          null,
+          2
+        ]
+      ],
+      "expected": 2
+    }
+  ]
+}

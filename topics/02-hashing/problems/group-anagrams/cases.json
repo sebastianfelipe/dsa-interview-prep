@@ -1,0 +1,133 @@
+{
+  "type": "function",
+  "exportName": "groupAnagrams",
+  "argNames": [
+    "strs"
+  ],
+  "compare": "unorderedNested",
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          "eat",
+          "tea",
+          "tan",
+          "ate",
+          "nat",
+          "bat"
+        ]
+      ],
+      "expected": [
+        [
+          "bat"
+        ],
+        [
+          "nat",
+          "tan"
+        ],
+        [
+          "ate",
+          "eat",
+          "tea"
+        ]
+      ]
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          ""
+        ]
+      ],
+      "expected": [
+        [
+          ""
+        ]
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "single-chars",
+      "inputs": [
+        [
+          "a"
+        ]
+      ],
+      "expected": [
+        [
+          "a"
+        ]
+      ]
+    },
+    {
+      "id": "no-anagrams",
+      "inputs": [
+        [
+          "abc",
+          "def",
+          "ghi"
+        ]
+      ],
+      "expected": [
+        [
+          "abc"
+        ],
+        [
+          "def"
+        ],
+        [
+          "ghi"
+        ]
+      ]
+    },
+    {
+      "id": "all-same-group",
+      "inputs": [
+        [
+          "ab",
+          "ba",
+          "ab"
+        ]
+      ],
+      "expected": [
+        [
+          "ab",
+          "ba",
+          "ab"
+        ]
+      ]
+    },
+    {
+      "id": "mixed-lengths",
+      "inputs": [
+        [
+          "a",
+          "b",
+          "ab",
+          "ba"
+        ]
+      ],
+      "expected": [
+        [
+          "a"
+        ],
+        [
+          "b"
+        ],
+        [
+          "ab",
+          "ba"
+        ]
+      ]
+    },
+    {
+      "id": "empty-list",
+      "inputs": [
+        []
+      ],
+      "expected": []
+    }
+  ]
+}

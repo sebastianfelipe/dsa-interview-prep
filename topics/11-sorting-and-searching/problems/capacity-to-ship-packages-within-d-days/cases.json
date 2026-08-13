@@ -1,0 +1,97 @@
+{
+  "type": "function",
+  "exportName": "shipWithinDays",
+  "argNames": [
+    "weights",
+    "days"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        5
+      ],
+      "expected": 15
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          3,
+          2,
+          2,
+          4,
+          1,
+          4
+        ],
+        3
+      ],
+      "expected": 6
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "example-3",
+      "inputs": [
+        [
+          1,
+          2,
+          3,
+          1,
+          1
+        ],
+        4
+      ],
+      "expected": 3
+    },
+    {
+      "id": "one-day",
+      "inputs": [
+        [
+          1,
+          2,
+          3,
+          4
+        ],
+        1
+      ],
+      "expected": 10
+    },
+    {
+      "id": "one-package",
+      "inputs": [
+        [
+          10
+        ],
+        1
+      ],
+      "expected": 10
+    },
+    {
+      "id": "days-equals-count",
+      "inputs": [
+        [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        5
+      ],
+      "expected": 5
+    }
+  ]
+}

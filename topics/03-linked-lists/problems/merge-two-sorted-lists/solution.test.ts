@@ -1,8 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { mergeTwoLists } from './solution';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import * as solution from './solution';
+import { testSolutionCases } from '@lib/cases-vitest';
 
-describe('Merge Two Sorted Lists', () => {
-  it('is defined', () => {
-    expect(mergeTwoLists).toBeTypeOf('function');
-  });
-});
+testSolutionCases(path.dirname(fileURLToPath(import.meta.url)), solution as Record<string, unknown>);

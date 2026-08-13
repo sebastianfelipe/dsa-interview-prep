@@ -1,0 +1,103 @@
+{
+  "type": "function",
+  "exportName": "twoSum",
+  "argNames": [
+    "nums",
+    "target"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          2,
+          7,
+          11,
+          15
+        ],
+        9
+      ],
+      "expected": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          3,
+          2,
+          4
+        ],
+        6
+      ],
+      "expected": [
+        1,
+        2
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "two-elements",
+      "inputs": [
+        [
+          1,
+          2
+        ],
+        3
+      ],
+      "expected": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "negatives",
+      "inputs": [
+        [
+          -3,
+          4,
+          3,
+          90
+        ],
+        0
+      ],
+      "expected": [
+        0,
+        2
+      ]
+    },
+    {
+      "id": "duplicates",
+      "inputs": [
+        [
+          3,
+          3
+        ],
+        6
+      ],
+      "expected": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "later-pair",
+      "inputs": [
+        [
+          1,
+          5,
+          3,
+          7
+        ],
+        10
+      ],
+      "expected": [
+        2,
+        3
+      ]
+    }
+  ]
+}

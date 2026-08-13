@@ -1,0 +1,124 @@
+{
+  "type": "function",
+  "exportName": "dailyTemperatures",
+  "argNames": [
+    "temperatures"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          73,
+          74,
+          75,
+          71,
+          69,
+          72,
+          76,
+          73
+        ]
+      ],
+      "expected": [
+        1,
+        1,
+        4,
+        2,
+        1,
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          30,
+          40,
+          50,
+          60
+        ]
+      ],
+      "expected": [
+        1,
+        1,
+        1,
+        0
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "strictly-decreasing",
+      "inputs": [
+        [
+          90,
+          80,
+          70
+        ]
+      ],
+      "expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "single-day",
+      "inputs": [
+        [
+          55
+        ]
+      ],
+      "expected": [
+        0
+      ]
+    },
+    {
+      "id": "equal-temps",
+      "inputs": [
+        [
+          70,
+          70,
+          70
+        ]
+      ],
+      "expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "jump-at-end",
+      "inputs": [
+        [
+          30,
+          60,
+          90
+        ]
+      ],
+      "expected": [
+        1,
+        1,
+        0
+      ]
+    },
+    {
+      "id": "plateau-then-warmer",
+      "inputs": [
+        [
+          55,
+          55,
+          56
+        ]
+      ],
+      "expected": [
+        2,
+        1,
+        0
+      ]
+    }
+  ]
+}

@@ -11,6 +11,7 @@
     "dev": "concurrently -n api,ui -c teal,cyan \"yarn workspace api dev\" \"yarn workspace ui dev\"",
     "build": "yarn workspace api build && yarn workspace ui build",
     "test:solutions": "vitest run --config vitest.solutions.config.ts",
+    "validate:cases": "tsx scripts/validate-all-cases.ts",
     "migrate:problems": "tsx scripts/migrate-problems.ts",
     "check": "tsc --noEmit -p api && tsc --noEmit -p ui"
   },

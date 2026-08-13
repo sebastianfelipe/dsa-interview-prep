@@ -1,0 +1,67 @@
+{
+  "type": "function",
+  "exportName": "isValid",
+  "argNames": [
+    "s"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        "()"
+      ],
+      "expected": true
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        "(]"
+      ],
+      "expected": false
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "nested-mixed",
+      "inputs": [
+        "()[]{}"
+      ],
+      "expected": true
+    },
+    {
+      "id": "nested-valid",
+      "inputs": [
+        "{[]}"
+      ],
+      "expected": true
+    },
+    {
+      "id": "wrong-order",
+      "inputs": [
+        "([)]"
+      ],
+      "expected": false
+    },
+    {
+      "id": "only-open",
+      "inputs": [
+        "((("
+      ],
+      "expected": false
+    },
+    {
+      "id": "only-close",
+      "inputs": [
+        ")"
+      ],
+      "expected": false
+    },
+    {
+      "id": "empty",
+      "inputs": [
+        ""
+      ],
+      "expected": true
+    }
+  ]
+}

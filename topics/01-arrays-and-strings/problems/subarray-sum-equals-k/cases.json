@@ -1,0 +1,92 @@
+{
+  "type": "function",
+  "exportName": "subarraySum",
+  "argNames": [
+    "nums",
+    "k"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          1,
+          1,
+          1
+        ],
+        2
+      ],
+      "expected": 2
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          1,
+          2,
+          3
+        ],
+        3
+      ],
+      "expected": 2
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "single-match",
+      "inputs": [
+        [
+          1
+        ],
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "single-miss",
+      "inputs": [
+        [
+          1
+        ],
+        0
+      ],
+      "expected": 0
+    },
+    {
+      "id": "with-negatives",
+      "inputs": [
+        [
+          1,
+          -1,
+          0
+        ],
+        0
+      ],
+      "expected": 3
+    },
+    {
+      "id": "zeros-k-zero",
+      "inputs": [
+        [
+          0,
+          0,
+          0
+        ],
+        0
+      ],
+      "expected": 6
+    },
+    {
+      "id": "no-subarray",
+      "inputs": [
+        [
+          1,
+          2,
+          3
+        ],
+        7
+      ],
+      "expected": 0
+    }
+  ]
+}

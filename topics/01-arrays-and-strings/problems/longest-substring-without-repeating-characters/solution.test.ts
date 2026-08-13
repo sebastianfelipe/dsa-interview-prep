@@ -1,7 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { lengthOfLongestSubstring } from './solution';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import * as solution from './solution';
+import { testSolutionCases } from '@lib/cases-vitest';
 
-describe('Longest Substring Without Repeating', () => {
-  it('abcabcbb', () => expect(lengthOfLongestSubstring('abcabcbb')).toBe(3));
-  it('bbbbb', () => expect(lengthOfLongestSubstring('bbbbb')).toBe(1));
-});
+testSolutionCases(path.dirname(fileURLToPath(import.meta.url)), solution as Record<string, unknown>);

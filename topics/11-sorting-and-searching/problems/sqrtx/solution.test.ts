@@ -1,8 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { mySqrt } from './solution';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import * as solution from './solution';
+import { testSolutionCases } from '@lib/cases-vitest';
 
-describe('Sqrt(x)', () => {
-  it('example 1', () => expect(mySqrt(4)).toBe(2));
-  it('example 2', () => expect(mySqrt(8)).toBe(2));
-  it('zero', () => expect(mySqrt(0)).toBe(0));
-});
+testSolutionCases(path.dirname(fileURLToPath(import.meta.url)), solution as Record<string, unknown>);

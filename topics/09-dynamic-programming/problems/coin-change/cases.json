@@ -1,0 +1,87 @@
+{
+  "type": "function",
+  "exportName": "coinChange",
+  "argNames": [
+    "coins",
+    "amount"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          1,
+          2,
+          5
+        ],
+        11
+      ],
+      "expected": 3
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          2
+        ],
+        3
+      ],
+      "expected": -1
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "zero-amount",
+      "inputs": [
+        [
+          1
+        ],
+        0
+      ],
+      "expected": 0
+    },
+    {
+      "id": "exact-one",
+      "inputs": [
+        [
+          1
+        ],
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "mixed",
+      "inputs": [
+        [
+          2,
+          5,
+          10,
+          1
+        ],
+        27
+      ],
+      "expected": 4
+    },
+    {
+      "id": "large-coin-only",
+      "inputs": [
+        [
+          5
+        ],
+        3
+      ],
+      "expected": -1
+    },
+    {
+      "id": "single-coin-multiple",
+      "inputs": [
+        [
+          3
+        ],
+        9
+      ],
+      "expected": 3
+    }
+  ]
+}

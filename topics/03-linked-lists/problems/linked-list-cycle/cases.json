@@ -1,0 +1,105 @@
+{
+  "type": "function",
+  "exportName": "hasCycle",
+  "argNames": [
+    "head"
+  ],
+  "argCodecs": [
+    "listWithCycle"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          [
+            3,
+            2,
+            0,
+            -4
+          ],
+          1
+        ]
+      ],
+      "expected": true
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          [
+            1,
+            2
+          ],
+          0
+        ]
+      ],
+      "expected": true
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "no-cycle",
+      "inputs": [
+        [
+          [
+            1,
+            2,
+            3,
+            4
+          ],
+          -1
+        ]
+      ],
+      "expected": false
+    },
+    {
+      "id": "single-no-cycle",
+      "inputs": [
+        [
+          [
+            1
+          ],
+          -1
+        ]
+      ],
+      "expected": false
+    },
+    {
+      "id": "single-self-cycle",
+      "inputs": [
+        [
+          [
+            1
+          ],
+          0
+        ]
+      ],
+      "expected": true
+    },
+    {
+      "id": "empty",
+      "inputs": [
+        [
+          [],
+          -1
+        ]
+      ],
+      "expected": false
+    },
+    {
+      "id": "cycle-at-head",
+      "inputs": [
+        [
+          [
+            1,
+            2,
+            3
+          ],
+          0
+        ]
+      ],
+      "expected": true
+    }
+  ]
+}

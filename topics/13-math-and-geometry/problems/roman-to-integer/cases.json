@@ -1,0 +1,60 @@
+{
+  "type": "function",
+  "exportName": "romanToInt",
+  "argNames": [
+    "s"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        "III"
+      ],
+      "expected": 3
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        "MCMXCIV"
+      ],
+      "expected": 1994
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "lviii",
+      "inputs": [
+        "LVIII"
+      ],
+      "expected": 58
+    },
+    {
+      "id": "nine",
+      "inputs": [
+        "IX"
+      ],
+      "expected": 9
+    },
+    {
+      "id": "forty",
+      "inputs": [
+        "XL"
+      ],
+      "expected": 40
+    },
+    {
+      "id": "nine-hundred",
+      "inputs": [
+        "CM"
+      ],
+      "expected": 900
+    },
+    {
+      "id": "one",
+      "inputs": [
+        "I"
+      ],
+      "expected": 1
+    }
+  ]
+}

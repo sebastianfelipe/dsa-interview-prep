@@ -1,8 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { romanToInt } from './solution';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import * as solution from './solution';
+import { testSolutionCases } from '@lib/cases-vitest';
 
-describe('Roman to Integer', () => {
-  it('example 1', () => expect(romanToInt('III')).toBe(3));
-  it('example 2', () => expect(romanToInt('LVIII')).toBe(58));
-  it('example 3', () => expect(romanToInt('MCMXCIV')).toBe(1994));
-});
+testSolutionCases(path.dirname(fileURLToPath(import.meta.url)), solution as Record<string, unknown>);

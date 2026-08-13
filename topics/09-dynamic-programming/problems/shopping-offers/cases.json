@@ -1,0 +1,171 @@
+{
+  "type": "function",
+  "exportName": "shoppingOffers",
+  "argNames": [
+    "price",
+    "special",
+    "needs"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          2,
+          5
+        ],
+        [
+          [
+            3,
+            0,
+            5
+          ],
+          [
+            1,
+            2,
+            10
+          ]
+        ],
+        [
+          3,
+          2
+        ]
+      ],
+      "expected": 14
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          2,
+          3,
+          4
+        ],
+        [
+          [
+            1,
+            1,
+            0,
+            4
+          ],
+          [
+            2,
+            2,
+            1,
+            9
+          ]
+        ],
+        [
+          1,
+          2,
+          1
+        ]
+      ],
+      "expected": 11
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "no-specials",
+      "inputs": [
+        [
+          2,
+          3
+        ],
+        [],
+        [
+          1,
+          1
+        ]
+      ],
+      "expected": 5
+    },
+    {
+      "id": "useless-special",
+      "inputs": [
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          [
+            1,
+            1,
+            0,
+            0
+          ]
+        ],
+        [
+          1,
+          1,
+          1
+        ]
+      ],
+      "expected": 1
+    },
+    {
+      "id": "cheap-special",
+      "inputs": [
+        [
+          9,
+          9
+        ],
+        [
+          [
+            1,
+            1,
+            1
+          ]
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "expected": 1
+    },
+    {
+      "id": "zero-needs",
+      "inputs": [
+        [
+          2,
+          5
+        ],
+        [
+          [
+            3,
+            0,
+            5
+          ]
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "expected": 0
+    },
+    {
+      "id": "special-exceeds",
+      "inputs": [
+        [
+          2,
+          5
+        ],
+        [
+          [
+            3,
+            0,
+            5
+          ]
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "expected": 7
+    }
+  ]
+}

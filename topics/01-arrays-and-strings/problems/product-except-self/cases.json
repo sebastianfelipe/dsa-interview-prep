@@ -1,0 +1,101 @@
+{
+  "type": "function",
+  "exportName": "productExceptSelf",
+  "argNames": [
+    "nums"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          1,
+          2,
+          3,
+          4
+        ]
+      ],
+      "expected": [
+        24,
+        12,
+        8,
+        6
+      ]
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          2,
+          3,
+          4,
+          5
+        ]
+      ],
+      "expected": [
+        60,
+        40,
+        30,
+        24
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "two-elements",
+      "inputs": [
+        [
+          2,
+          3
+        ]
+      ],
+      "expected": [
+        3,
+        2
+      ]
+    },
+    {
+      "id": "one-zero",
+      "inputs": [
+        [
+          1,
+          0,
+          2
+        ]
+      ],
+      "expected": [
+        0,
+        2,
+        0
+      ]
+    },
+    {
+      "id": "two-zeros",
+      "inputs": [
+        [
+          0,
+          0
+        ]
+      ],
+      "expected": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "negatives",
+      "inputs": [
+        [
+          -1,
+          -2,
+          -3
+        ]
+      ],
+      "expected": [
+        6,
+        3,
+        2
+      ]
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "type": "function",
+  "exportName": "canFinish",
+  "argNames": [
+    "numCourses",
+    "prerequisites"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        2,
+        [
+          [
+            1,
+            0
+          ]
+        ]
+      ],
+      "expected": true
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        2,
+        [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            1
+          ]
+        ]
+      ],
+      "expected": false
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "no-prereqs",
+      "inputs": [
+        1,
+        []
+      ],
+      "expected": true
+    },
+    {
+      "id": "chain",
+      "inputs": [
+        3,
+        [
+          [
+            1,
+            0
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      ],
+      "expected": true
+    },
+    {
+      "id": "self-cycle-via-two",
+      "inputs": [
+        3,
+        [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            0
+          ]
+        ]
+      ],
+      "expected": false
+    },
+    {
+      "id": "disconnected-ok",
+      "inputs": [
+        4,
+        [
+          [
+            1,
+            0
+          ]
+        ]
+      ],
+      "expected": true
+    }
+  ]
+}

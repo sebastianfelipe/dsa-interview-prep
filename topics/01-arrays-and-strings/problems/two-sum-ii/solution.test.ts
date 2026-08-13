@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { twoSum } from './solution';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import * as solution from './solution';
+import { testSolutionCases } from '@lib/cases-vitest';
 
-describe('Two Sum II', () => {
-  it('example', () => expect(twoSum([2, 7, 11, 15], 9)).toEqual([1, 2]));
-});
+testSolutionCases(path.dirname(fileURLToPath(import.meta.url)), solution as Record<string, unknown>);

@@ -1,0 +1,116 @@
+{
+  "type": "function",
+  "exportName": "allPossibleFBT",
+  "argNames": [
+    "n"
+  ],
+  "resultCodec": "treeList",
+  "compare": "unorderedNested",
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        3
+      ],
+      "expected": [
+        [
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        2
+      ],
+      "expected": []
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "n-1",
+      "inputs": [
+        1
+      ],
+      "expected": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "id": "n-7",
+      "inputs": [
+        7
+      ],
+      "expected": [
+        [
+          0,
+          0,
+          0,
+          null,
+          null,
+          0,
+          0,
+          null,
+          null,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          null,
+          null,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          null,
+          null,
+          null,
+          null,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          null,
+          null,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "id": "n-4",
+      "inputs": [
+        4
+      ],
+      "expected": []
+    }
+  ]
+}

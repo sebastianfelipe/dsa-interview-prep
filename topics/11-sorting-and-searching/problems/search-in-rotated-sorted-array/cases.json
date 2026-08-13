@@ -1,0 +1,104 @@
+{
+  "type": "function",
+  "exportName": "search",
+  "argNames": [
+    "nums",
+    "target"
+  ],
+  "examples": [
+    {
+      "id": "example-1",
+      "inputs": [
+        [
+          4,
+          5,
+          6,
+          7,
+          0,
+          1,
+          2
+        ],
+        0
+      ],
+      "expected": 4
+    },
+    {
+      "id": "example-2",
+      "inputs": [
+        [
+          4,
+          5,
+          6,
+          7,
+          0,
+          1,
+          2
+        ],
+        3
+      ],
+      "expected": -1
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "single-miss",
+      "inputs": [
+        [
+          1
+        ],
+        0
+      ],
+      "expected": -1
+    },
+    {
+      "id": "single-hit",
+      "inputs": [
+        [
+          1
+        ],
+        1
+      ],
+      "expected": 0
+    },
+    {
+      "id": "two-rotated",
+      "inputs": [
+        [
+          3,
+          1
+        ],
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "id": "no-rotation",
+      "inputs": [
+        [
+          1,
+          2,
+          3,
+          4
+        ],
+        3
+      ],
+      "expected": 2
+    },
+    {
+      "id": "last",
+      "inputs": [
+        [
+          6,
+          7,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        5
+      ],
+      "expected": 6
+    }
+  ]
+}

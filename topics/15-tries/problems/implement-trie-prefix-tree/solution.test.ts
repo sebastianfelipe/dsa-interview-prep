@@ -1,14 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { Trie } from './solution';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import * as solution from './solution';
+import { testSolutionCases } from '@lib/cases-vitest';
 
-describe('Implement Trie', () => {
-  it('example', () => {
-    const trie = new Trie();
-    trie.insert('apple');
-    expect(trie.search('apple')).toBe(true);
-    expect(trie.search('app')).toBe(false);
-    expect(trie.startsWith('app')).toBe(true);
-    trie.insert('app');
-    expect(trie.search('app')).toBe(true);
-  });
-});
+testSolutionCases(path.dirname(fileURLToPath(import.meta.url)), solution as Record<string, unknown>);
