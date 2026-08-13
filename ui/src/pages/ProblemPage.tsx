@@ -11,6 +11,7 @@ import {
   type SolutionDetail,
   type SolutionEntry,
 } from '../api';
+import { CodeEditor } from '../components/CodeEditor';
 import { JudgePanel } from '../components/JudgePanel';
 import { Markdown } from '../components/Markdown';
 import { ProblemNav } from '../components/ProblemNav';
@@ -36,6 +37,12 @@ import {
   flattenCatalogProblems,
   flattenListProblems,
 } from '../problem-sequence';
+import {
+  readApproachPaneOpen,
+  readProblemPaneOpen,
+  writeApproachPaneOpen,
+  writeProblemPaneOpen,
+} from '../workspace-layout';
 
 function chipLabel(s: SolutionEntry) {
   if (s.source === 'ai') return `AI · ${s.title}`;
@@ -67,6 +74,23 @@ export function ProblemPage() {
   const [judgeMode, setJudgeMode] = useState<RunMode | null>(null);
   const [judgeResult, setJudgeResult] = useState<RunResult | null>(null);
   const [judgeError, setJudgeError] = useState<string | null>(null);
+  const [problemOpen, setProblemOpen] = useState(() => readProblemPaneOpen());
+  const [approachOpen, setApproachOpen] = useState(() => readApproachPaneOpen());
+
+  const setProblemPaneOpen = useCallback((open: boolean) => {
+    setProblemOpen(open);
+    writeProblemPaneOpen(open);
+  }, []);
+
+  const setApproachPaneOpen = useCallback((open: boolean) => {
+    setApproachOpen(open);
+    writeApproachPaneOpen(open);
+  }, []);
+
+  const focusCode = useCallback(() => {
+    setProblemPaneOpen(false);
+    setApproachPaneOpen(false);
+  }, [setProblemPaneOpen, setApproachPaneOpen]);
 
   const refreshLocals = useCallback(() => {
     setLocalSolutions(listLocalSolutions(topic, slug));
@@ -347,242 +371,326 @@ export function ProblemPage() {
     !languageAvailableForSelection &&
     Boolean(description || notes);
 
-  const problemPane = (
-    <div className="problem-pane">
-      <div className="problem-pane-head">
-        <div className="problem-pane-title-row">
-          <h1 className="problem-pane-title">{problem.title}</h1>
-          <ProblemNav {...navProps} />
-        </div>
-        <div className="problem-pane-meta">
-          <Link className="problem-pane-back muted" to={backTo.to}>
-            ← {backTo.label}
-          </Link>
-          <span className={`badge ${problem.difficulty}`}>{problem.difficulty}</span>
-          {problem.leetcodeId != null && <span className="muted">LC {problem.leetcodeId}</span>}
-        </div>
-      </div>
-
-      <div className="panel problem-pane-body">
-        <div className="problem-readme">
-          <Markdown source={problem.readme} />
-        </div>
-      </div>
-    </div>
-  );
-
-  const solutionPane = (
-    <section className="solution-panel">
-      <div className="solution-compare">
-        <div className="solution-compare-switch">
-          <div className="solution-compare-chips" role="tablist" aria-label="Solutions">
-            {solutions.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                role="tab"
-                aria-selected={selectedId === s.id}
-                className={`chip ${selectedId === s.id ? 'active' : ''}`}
-                onClick={() => setSelectedId(s.id)}
-              >
-                {chipLabel(s)}
-              </button>
-            ))}
-          </div>
-          <div className="solution-compare-meta">
-            <p className="solution-complexity">
-              {time && (
-                <span>
-                  <span className="solution-complexity-label">Time</span> {time}
-                </span>
-              )}
-              {space && (
-                <span>
-                  <span className="solution-complexity-label">Space</span> {space}
-                </span>
-              )}
-            </p>
-            <div
-              className={`solution-ai${aiConfigured ? '' : ' is-locked'}`}
-              title={
-                aiConfigured
-                  ? 'Saved only in this browser — not added to the project'
-                  : 'Add an OpenAI API key to unlock AI hints and solutions'
-              }
-            >
-              <button
-                type="button"
-                className="solution-ai-btn solution-ai-btn-hint"
-                disabled={!aiConfigured || aiBusy}
-                aria-label={
-                  aiConfigured
-                    ? 'Ask AI for a hint'
-                    : 'Ask AI hint (locked — add an OpenAI API key to unlock)'
-                }
-                onClick={() => askAi('hint')}
-              >
-                {aiBusyMode === 'hint' ? 'Working…' : 'Hint'}
-              </button>
-              <button
-                type="button"
-                className="solution-ai-btn solution-ai-btn-ask"
-                disabled={!aiConfigured || aiBusy}
-                aria-label={
-                  aiConfigured
-                    ? `Ask AI for a full ${LANGUAGE_LABELS[language]} solution`
-                    : 'Ask AI solution (locked — add an OpenAI API key to unlock)'
-                }
-                onClick={() => askAi('full')}
-              >
-                {aiBusyMode === 'full' ? 'Working…' : 'Ask AI'}
-              </button>
-              {selectedLocal && (
-                <button
-                  type="button"
-                  className="solution-ai-btn solution-ai-btn-discard"
-                  disabled={aiBusy}
-                  title="Remove this local AI solution"
-                  onClick={discardSelectedLocal}
-                >
-                  Discard
-                </button>
-              )}
-            </div>
-          </div>
-          {aiError && <p className="solution-ai-error">{aiError}</p>}
-        </div>
-
-        {notes && <p className="solution-compare-notes">{notes}</p>}
-        {description ? (
-          <Markdown source={description} />
-        ) : solutions.length === 0 ? (
-          <p className="muted">No solutions yet — use Ask AI when unlocked.</p>
-        ) : (
-          <p className="muted">No comparison notes for this solution yet.</p>
-        )}
-      </div>
-
-      <div className={`solution-block${canEditCode || !solution?.code ? '' : ' is-locked'}`}>
-        <div className="solution-meta">
-          <strong>Code</strong>
-          <div className="solution-meta-actions">
-            <div className="language-switch" role="tablist" aria-label="Code language">
-              {CODE_LANGUAGES.map((lang) => (
-                <button
-                  key={lang}
-                  type="button"
-                  role="tab"
-                  aria-selected={language === lang}
-                  className={`language-chip ${language === lang ? 'active' : ''}`}
-                  onClick={() => setPreferredLanguage(lang)}
-                >
-                  {LANGUAGE_LABELS[lang]}
-                </button>
-              ))}
-            </div>
-            <div className="judge-actions">
-              {selectedLocal && language === 'typescript' && (
-                <button
-                  type="button"
-                  className="judge-btn judge-btn-ghost"
-                  disabled={judgeBusy || !codeBuffer.trim()}
-                  onClick={saveBufferToLocalChip}
-                >
-                  Save
-                </button>
-              )}
-              <button
-                type="button"
-                className="judge-btn"
-                disabled={judgeBusy || language !== 'typescript' || !codeBuffer.trim() || !problem.hasTests}
-                title={
-                  language !== 'typescript'
-                    ? 'Judging is TypeScript-only for now'
-                    : !problem.hasTests
-                      ? 'No I/O cases for this problem'
-                      : 'Run against example cases'
-                }
-                onClick={() => runJudge('run')}
-              >
-                {judgeBusy && judgeMode === 'run' ? 'Running…' : 'Run'}
-              </button>
-              <button
-                type="button"
-                className="judge-btn judge-btn-submit"
-                disabled={judgeBusy || language !== 'typescript' || !codeBuffer.trim() || !problem.hasTests}
-                title={
-                  language !== 'typescript'
-                    ? 'Judging is TypeScript-only for now'
-                    : !problem.hasTests
-                      ? 'No I/O cases for this problem'
-                      : 'Submit against examples + edge cases'
-                }
-                onClick={() => runJudge('submit')}
-              >
-                {judgeBusy && judgeMode === 'submit' ? 'Submitting…' : 'Submit'}
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="solution-code-wrap">
-          {canEditCode ? (
-            <textarea
-              className="solution-code solution-console"
-              spellCheck={false}
-              value={codeBuffer}
-              onChange={(e) => {
-                setCodeBuffer(e.target.value);
-                setJudgeResult(null);
-              }}
-              aria-label="Solution code console"
-            />
-          ) : selectedLocal && languageAvailableForSelection && !selectedLocal.code ? (
-            <pre className="solution-code">
-              <code>Hint only — no code for this chip.</code>
-            </pre>
-          ) : showMissingLanguage || (selectedLocal && !languageAvailableForSelection) ? (
-            <pre className="solution-code">
-              <code>
-                {selectedLocal
-                  ? `This AI chip is ${LANGUAGE_LABELS[selectedLocal.language === 'python' ? 'python' : 'typescript']} — switch language or Ask AI for ${missingLangLabel}.`
-                  : `No ${missingLangLabel} yet for this approach — Ask AI to generate one, or add solution${language === 'python' ? '.py' : '.ts'}.`}
-              </code>
-            </pre>
-          ) : problem.hasSolution && languageAvailableForSelection && language === 'typescript' && !revealed ? (
-            <pre className="solution-code">
-              <code>Unlock solutions in the header to edit and run this chip, or use Ask AI / Yours.</code>
-            </pre>
-          ) : problem.hasSolution && languageAvailableForSelection ? (
-            <pre className="solution-code">
-              <code>Loading…</code>
-            </pre>
-          ) : (
-            <pre className="solution-code">
-              <code>No code yet.</code>
-            </pre>
-          )}
-          {!revealed && solution?.code && !canEditCode && (
-            <div className="solution-code-lock">
-              <span>Code is locked — unlock from the header to read it</span>
-            </div>
-          )}
-        </div>
-        {judgeError && <p className="judge-error-banner">{judgeError}</p>}
-        <JudgePanel result={judgeResult} busy={judgeBusy} mode={judgeMode} />
-      </div>
-    </section>
-  );
+  const workspaceClass = [
+    'problem-workspace',
+    problemOpen ? 'problem-open' : 'problem-collapsed',
+    approachOpen ? 'approach-open' : 'approach-collapsed',
+  ].join(' ');
 
   return (
     <main className={`page page-problem${showSolutionPane ? ' page-problem-split' : ''}`}>
-      {showSolutionPane ? (
-        <div className="problem-solution-split">
-          <div className="problem-pane-scroll">{problemPane}</div>
-          <div className="solution-pane-scroll">{solutionPane}</div>
-        </div>
-      ) : (
-        problemPane
-      )}
+      <div className={workspaceClass}>
+        <aside className={`workspace-problem${problemOpen ? '' : ' is-collapsed'}`}>
+          {problemOpen ? (
+            <div className="problem-pane">
+              <div className="problem-pane-head">
+                <div className="problem-pane-title-row">
+                  <h1 className="problem-pane-title">{problem.title}</h1>
+                  <div className="problem-pane-head-actions">
+                    <ProblemNav {...navProps} />
+                    <button
+                      type="button"
+                      className="pane-toggle"
+                      aria-expanded={true}
+                      title="Collapse problem"
+                      onClick={() => setProblemPaneOpen(false)}
+                    >
+                      ⟨ Hide
+                    </button>
+                  </div>
+                </div>
+                <div className="problem-pane-meta">
+                  <Link className="problem-pane-back muted" to={backTo.to}>
+                    ← {backTo.label}
+                  </Link>
+                  <span className={`badge ${problem.difficulty}`}>{problem.difficulty}</span>
+                  {problem.leetcodeId != null && <span className="muted">LC {problem.leetcodeId}</span>}
+                </div>
+              </div>
+
+              <div className="panel problem-pane-body">
+                <div className="problem-readme">
+                  <Markdown source={problem.readme} />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="workspace-problem-rail"
+              title="Show problem"
+              aria-expanded={false}
+              onClick={() => setProblemPaneOpen(true)}
+            >
+              <span className="workspace-problem-rail-label">{problem.title}</span>
+              <span className="workspace-problem-rail-meta">
+                <span className={`badge ${problem.difficulty}`}>{problem.difficulty}</span>
+                Problem
+              </span>
+            </button>
+          )}
+        </aside>
+
+        <section className="workspace-main solution-panel">
+          <div className="workspace-toolbar">
+            <div className="workspace-toolbar-row">
+              <div className="solution-compare-chips" role="tablist" aria-label="Solutions">
+                {solutions.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={selectedId === s.id}
+                    className={`chip ${selectedId === s.id ? 'active' : ''}`}
+                    onClick={() => setSelectedId(s.id)}
+                  >
+                    {chipLabel(s)}
+                  </button>
+                ))}
+              </div>
+              <div className="workspace-toolbar-actions">
+                {!problemOpen && (
+                  <button
+                    type="button"
+                    className="pane-toggle"
+                    onClick={() => setProblemPaneOpen(true)}
+                    title="Show problem statement"
+                  >
+                    Problem
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="pane-toggle"
+                  aria-expanded={approachOpen}
+                  onClick={() => setApproachPaneOpen(!approachOpen)}
+                  title={approachOpen ? 'Collapse approach' : 'Expand approach'}
+                >
+                  {approachOpen ? 'Hide approach' : 'Approach'}
+                </button>
+                <button
+                  type="button"
+                  className="pane-toggle pane-toggle-accent"
+                  onClick={focusCode}
+                  title="Collapse problem and approach for more code space"
+                >
+                  Focus code
+                </button>
+              </div>
+            </div>
+
+            <div className="workspace-toolbar-meta">
+              <p className="solution-complexity">
+                {time && (
+                  <span>
+                    <span className="solution-complexity-label">Time</span> {time}
+                  </span>
+                )}
+                {space && (
+                  <span>
+                    <span className="solution-complexity-label">Space</span> {space}
+                  </span>
+                )}
+              </p>
+              <div
+                className={`solution-ai${aiConfigured ? '' : ' is-locked'}`}
+                title={
+                  aiConfigured
+                    ? 'Saved only in this browser — not added to the project'
+                    : 'Add an OpenAI API key to unlock AI hints and solutions'
+                }
+              >
+                <button
+                  type="button"
+                  className="solution-ai-btn solution-ai-btn-hint"
+                  disabled={!aiConfigured || aiBusy}
+                  aria-label={
+                    aiConfigured
+                      ? 'Ask AI for a hint'
+                      : 'Ask AI hint (locked — add an OpenAI API key to unlock)'
+                  }
+                  onClick={() => askAi('hint')}
+                >
+                  {aiBusyMode === 'hint' ? 'Working…' : 'Hint'}
+                </button>
+                <button
+                  type="button"
+                  className="solution-ai-btn solution-ai-btn-ask"
+                  disabled={!aiConfigured || aiBusy}
+                  aria-label={
+                    aiConfigured
+                      ? `Ask AI for a full ${LANGUAGE_LABELS[language]} solution`
+                      : 'Ask AI solution (locked — add an OpenAI API key to unlock)'
+                  }
+                  onClick={() => askAi('full')}
+                >
+                  {aiBusyMode === 'full' ? 'Working…' : 'Ask AI'}
+                </button>
+                {selectedLocal && (
+                  <button
+                    type="button"
+                    className="solution-ai-btn solution-ai-btn-discard"
+                    disabled={aiBusy}
+                    title="Remove this local AI solution"
+                    onClick={discardSelectedLocal}
+                  >
+                    Discard
+                  </button>
+                )}
+              </div>
+            </div>
+            {aiError && <p className="solution-ai-error">{aiError}</p>}
+          </div>
+
+          {approachOpen && (
+            <div className="solution-compare">
+              <div className="solution-compare-head">
+                <strong>Approach</strong>
+                <button
+                  type="button"
+                  className="pane-toggle"
+                  aria-expanded={true}
+                  onClick={() => setApproachPaneOpen(false)}
+                >
+                  Collapse
+                </button>
+              </div>
+              {notes && <p className="solution-compare-notes">{notes}</p>}
+              {description ? (
+                <Markdown source={description} />
+              ) : solutions.length === 0 ? (
+                <p className="muted">No solutions yet — use Ask AI when unlocked.</p>
+              ) : (
+                <p className="muted">No comparison notes for this solution yet.</p>
+              )}
+            </div>
+          )}
+
+          <div className={`solution-block${canEditCode || !solution?.code ? '' : ' is-locked'}`}>
+            <div className="solution-meta">
+              <strong>Code</strong>
+              <div className="solution-meta-actions">
+                <div className="language-switch" role="tablist" aria-label="Code language">
+                  {CODE_LANGUAGES.map((lang) => (
+                    <button
+                      key={lang}
+                      type="button"
+                      role="tab"
+                      aria-selected={language === lang}
+                      className={`language-chip ${language === lang ? 'active' : ''}`}
+                      onClick={() => setPreferredLanguage(lang)}
+                    >
+                      {LANGUAGE_LABELS[lang]}
+                    </button>
+                  ))}
+                </div>
+                <div className="judge-actions">
+                  {selectedLocal && language === 'typescript' && (
+                    <button
+                      type="button"
+                      className="judge-btn judge-btn-ghost"
+                      disabled={judgeBusy || !codeBuffer.trim()}
+                      onClick={saveBufferToLocalChip}
+                    >
+                      Save
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="judge-btn"
+                    disabled={
+                      judgeBusy || language !== 'typescript' || !codeBuffer.trim() || !problem.hasTests
+                    }
+                    title={
+                      language !== 'typescript'
+                        ? 'Judging is TypeScript-only for now'
+                        : !problem.hasTests
+                          ? 'No I/O cases for this problem'
+                          : 'Run against example cases'
+                    }
+                    onClick={() => runJudge('run')}
+                  >
+                    {judgeBusy && judgeMode === 'run' ? 'Running…' : 'Run'}
+                  </button>
+                  <button
+                    type="button"
+                    className="judge-btn judge-btn-submit"
+                    disabled={
+                      judgeBusy || language !== 'typescript' || !codeBuffer.trim() || !problem.hasTests
+                    }
+                    title={
+                      language !== 'typescript'
+                        ? 'Judging is TypeScript-only for now'
+                        : !problem.hasTests
+                          ? 'No I/O cases for this problem'
+                          : 'Submit against examples + edge cases'
+                    }
+                    onClick={() => runJudge('submit')}
+                  >
+                    {judgeBusy && judgeMode === 'submit' ? 'Submitting…' : 'Submit'}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="solution-code-wrap">
+              {canEditCode ? (
+                <CodeEditor
+                  className="solution-code"
+                  language={language}
+                  value={codeBuffer}
+                  onChange={(next) => {
+                    setCodeBuffer(next);
+                    setJudgeResult(null);
+                  }}
+                  aria-label="Solution code console"
+                />
+              ) : selectedLocal && languageAvailableForSelection && !selectedLocal.code ? (
+                <pre className="solution-code">
+                  <code>Hint only — no code for this chip.</code>
+                </pre>
+              ) : showMissingLanguage || (selectedLocal && !languageAvailableForSelection) ? (
+                <pre className="solution-code">
+                  <code>
+                    {selectedLocal
+                      ? `This AI chip is ${LANGUAGE_LABELS[selectedLocal.language === 'python' ? 'python' : 'typescript']} — switch language or Ask AI for ${missingLangLabel}.`
+                      : `No ${missingLangLabel} yet for this approach — Ask AI to generate one, or add solution${language === 'python' ? '.py' : '.ts'}.`}
+                  </code>
+                </pre>
+              ) : problem.hasSolution &&
+                languageAvailableForSelection &&
+                language === 'typescript' &&
+                !revealed ? (
+                <pre className="solution-code">
+                  <code>
+                    Unlock solutions in the header to edit and run this chip, or use Ask AI / Yours.
+                  </code>
+                </pre>
+              ) : problem.hasSolution && languageAvailableForSelection ? (
+                <pre className="solution-code">
+                  <code>Loading…</code>
+                </pre>
+              ) : (
+                <pre className="solution-code">
+                  <code>No code yet.</code>
+                </pre>
+              )}
+              {!revealed && solution?.code && !canEditCode && (
+                <div className="solution-code-lock">
+                  <span>Code is locked — unlock from the header to read it</span>
+                </div>
+              )}
+            </div>
+            {(judgeError || judgeResult || judgeBusy) && (
+              <div className="judge-footer">
+                {judgeError && !judgeBusy && (
+                  <p className="judge-error-banner judge-error-banner-footer">{judgeError}</p>
+                )}
+                <JudgePanel result={judgeResult} busy={judgeBusy} mode={judgeMode} />
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
