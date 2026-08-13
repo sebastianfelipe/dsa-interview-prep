@@ -44,6 +44,8 @@ export interface ProblemDetail extends ProblemSummary {
   readme: string;
   solutions: SolutionEntry[];
   languages?: CodeLanguage[];
+  /** Empty TypeScript function/class stub for "Your code" drafts. */
+  starterCode?: string;
 }
 
 export interface SolutionDetail {
@@ -113,7 +115,7 @@ export interface AiStatus {
   model: string | null;
 }
 
-export type AiExplainMode = 'hint' | 'full';
+export type AiExplainMode = 'hint' | 'full' | 'coach';
 
 export interface AiExplainResult {
   title: string;
@@ -191,6 +193,7 @@ export const api = {
     mode: AiExplainMode = 'full',
     language: CodeLanguage = 'typescript',
     guidance?: string,
+    code?: string,
   ) =>
     post<AiExplainResult>('/api/ai/explain', {
       topic,
@@ -198,5 +201,6 @@ export const api = {
       mode,
       language,
       ...(guidance?.trim() ? { guidance: guidance.trim() } : {}),
+      ...(typeof code === 'string' ? { code } : {}),
     }),
 };
