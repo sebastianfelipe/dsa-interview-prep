@@ -39,7 +39,12 @@ import {
   flattenCatalogProblems,
   flattenListProblems,
 } from '../problem-sequence';
-import { readWorkspacePanes, writeWorkspacePanes } from '../workspace-layout';
+import {
+  readWorkspacePanesForProblem,
+  releaseProblemVisit,
+  rememberProblemVisit,
+  writeWorkspacePanes,
+} from '../workspace-layout';
 
 function chipLabel(s: SolutionEntry) {
   if (s.source === 'yours') return `Yours · ${s.title}`;
@@ -92,10 +97,21 @@ export function ProblemPage() {
   const [judgeMode, setJudgeMode] = useState<RunMode | null>(null);
   const [judgeResult, setJudgeResult] = useState<RunResult | null>(null);
   const [judgeError, setJudgeError] = useState<string | null>(null);
-  const [problemOpen, setProblemOpen] = useState(() => readWorkspacePanes().problemOpen);
-  const [approachOpen, setApproachOpen] = useState(() => readWorkspacePanes().approachOpen);
+  const [problemOpen, setProblemOpen] = useState(
+    () => readWorkspacePanesForProblem(topic, slug).problemOpen,
+  );
+  const [approachOpen, setApproachOpen] = useState(
+    () => readWorkspacePanesForProblem(topic, slug).approachOpen,
+  );
   const panesRef = useRef({ problemOpen, approachOpen });
   panesRef.current = { problemOpen, approachOpen };
+
+  useEffect(() => {
+    const next = rememberProblemVisit(topic, slug);
+    setProblemOpen(next.problemOpen);
+    setApproachOpen(next.approachOpen);
+    return () => releaseProblemVisit(topic, slug);
+  }, [topic, slug]);
 
   const runPaneTransition = useCallback((update: () => void) => {
     const apply = () => {
