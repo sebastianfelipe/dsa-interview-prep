@@ -1159,7 +1159,11 @@ html[data-theme='light'] .theme-toggle-icon {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 0.75rem 2.4rem 0.9rem 0.9rem;
+  padding: 0.75rem 0.9rem 0.9rem;
+}
+
+.problem-pane-body:has(.pane-section-toggle) .problem-readme {
+  padding-right: 2.4rem;
 }
 
 .pane-section {
@@ -1205,7 +1209,7 @@ html[data-theme='light'] .theme-toggle-icon {
   min-height: 0;
 }
 
-.solution-compare.pane-section-open .solution-compare-top {
+.solution-compare.pane-section-open:has(.pane-section-toggle) .solution-compare-top {
   padding-right: 2.2rem;
 }
 
@@ -1368,7 +1372,7 @@ html[data-theme='light'] .theme-toggle-icon {
 }
 
 .section-collapse-bar:hover .section-chevron,
-.section-chevron:hover {
+.section-chevron:hover:not(:disabled) {
   color: var(--ink);
   background: var(--accent-soft);
   border-color: color-mix(in srgb, var(--accent) 22%, var(--line));

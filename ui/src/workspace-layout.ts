@@ -19,8 +19,20 @@ function writeBool(key: string, value: boolean) {
   }
 }
 
+/** At least one of Problem or Approach must stay open. */
+export function normalizeWorkspacePanes(problemOpen: boolean, approachOpen: boolean) {
+  if (!problemOpen && !approachOpen) {
+    return { problemOpen: true, approachOpen: false };
+  }
+  return { problemOpen, approachOpen };
+}
+
+export function readWorkspacePanes() {
+  return normalizeWorkspacePanes(readBool(PROBLEM_KEY, true), readBool(APPROACH_KEY, true));
+}
+
 export function readProblemPaneOpen(): boolean {
-  return readBool(PROBLEM_KEY, true);
+  return readWorkspacePanes().problemOpen;
 }
 
 export function writeProblemPaneOpen(open: boolean) {
@@ -28,9 +40,16 @@ export function writeProblemPaneOpen(open: boolean) {
 }
 
 export function readApproachPaneOpen(): boolean {
-  return readBool(APPROACH_KEY, true);
+  return readWorkspacePanes().approachOpen;
 }
 
 export function writeApproachPaneOpen(open: boolean) {
   writeBool(APPROACH_KEY, open);
+}
+
+export function writeWorkspacePanes(problemOpen: boolean, approachOpen: boolean) {
+  const next = normalizeWorkspacePanes(problemOpen, approachOpen);
+  writeBool(PROBLEM_KEY, next.problemOpen);
+  writeBool(APPROACH_KEY, next.approachOpen);
+  return next;
 }

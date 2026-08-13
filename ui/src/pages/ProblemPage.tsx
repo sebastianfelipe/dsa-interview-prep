@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import {
@@ -39,12 +39,7 @@ import {
   flattenCatalogProblems,
   flattenListProblems,
 } from '../problem-sequence';
-import {
-  readApproachPaneOpen,
-  readProblemPaneOpen,
-  writeApproachPaneOpen,
-  writeProblemPaneOpen,
-} from '../workspace-layout';
+import { readWorkspacePanes, writeWorkspacePanes } from '../workspace-layout';
 
 function chipLabel(s: SolutionEntry) {
   if (s.source === 'yours') return `Yours · ${s.title}`;
@@ -97,8 +92,10 @@ export function ProblemPage() {
   const [judgeMode, setJudgeMode] = useState<RunMode | null>(null);
   const [judgeResult, setJudgeResult] = useState<RunResult | null>(null);
   const [judgeError, setJudgeError] = useState<string | null>(null);
-  const [problemOpen, setProblemOpen] = useState(() => readProblemPaneOpen());
-  const [approachOpen, setApproachOpen] = useState(() => readApproachPaneOpen());
+  const [problemOpen, setProblemOpen] = useState(() => readWorkspacePanes().problemOpen);
+  const [approachOpen, setApproachOpen] = useState(() => readWorkspacePanes().approachOpen);
+  const panesRef = useRef({ problemOpen, approachOpen });
+  panesRef.current = { problemOpen, approachOpen };
 
   const runPaneTransition = useCallback((update: () => void) => {
     const apply = () => {
@@ -114,25 +111,39 @@ export function ProblemPage() {
     apply();
   }, []);
 
-  const setProblemPaneOpen = useCallback(
-    (open: boolean) => {
+  const applyWorkspacePanes = useCallback(
+    (nextProblem: boolean, nextApproach: boolean) => {
       runPaneTransition(() => {
-        setProblemOpen(open);
-        writeProblemPaneOpen(open);
+        const next = writeWorkspacePanes(nextProblem, nextApproach);
+        setProblemOpen(next.problemOpen);
+        setApproachOpen(next.approachOpen);
       });
     },
     [runPaneTransition],
   );
 
-  const setApproachPaneOpen = useCallback(
-    (open: boolean) => {
-      runPaneTransition(() => {
-        setApproachOpen(open);
-        writeApproachPaneOpen(open);
-      });
-    },
-    [runPaneTransition],
-  );
+  // Each control only expands its own section toward a maximum.
+  // Collapsing the other section is a side effect of maximizing this one.
+  // States: approach-only → both → problem-only (via Problem), and the reverse (via Approach).
+  const expandProblemPane = useCallback(() => {
+    const { problemOpen: problemIsOpen, approachOpen: approachIsOpen } = panesRef.current;
+    if (problemIsOpen && !approachIsOpen) return; // already maximized
+    if (!problemIsOpen && approachIsOpen) {
+      applyWorkspacePanes(true, true); // approach-only → both
+      return;
+    }
+    applyWorkspacePanes(true, false); // both → problem-only
+  }, [applyWorkspacePanes]);
+
+  const expandApproachPane = useCallback(() => {
+    const { problemOpen: problemIsOpen, approachOpen: approachIsOpen } = panesRef.current;
+    if (approachIsOpen && !problemIsOpen) return; // already maximized
+    if (!approachIsOpen && problemIsOpen) {
+      applyWorkspacePanes(true, true); // problem-only → both
+      return;
+    }
+    applyWorkspacePanes(false, true); // both → approach-only
+  }, [applyWorkspacePanes]);
 
   const refreshLocals = useCallback(() => {
     setLocalSolutions(listLocalSolutions(topic, slug));
@@ -365,7 +376,7 @@ export function ProblemPage() {
       saveLocalSolution(topic, slug, entry);
       refreshLocals();
       setSelectedId(entry.id);
-      setApproachPaneOpen(true);
+      applyWorkspacePanes(panesRef.current.problemOpen, true);
       // Full AI solutions include code — unlock so the new chip is readable immediately.
       if (entry.mode === 'full') setCodeUnlocked(true);
     } catch (e) {
@@ -559,6 +570,9 @@ export function ProblemPage() {
     </section>
   );
 
+  const approachMaximized = approachOpen && !problemOpen;
+  const problemMaximized = problemOpen && !approachOpen;
+
   const approachPanel = approachOpen ? (
     <div
       className={[
@@ -569,16 +583,18 @@ export function ProblemPage() {
         .filter(Boolean)
         .join(' ')}
     >
-      <button
-        type="button"
-        className="section-chevron pane-section-toggle"
-        aria-expanded={true}
-        aria-label="Collapse approach"
-        title="Collapse approach"
-        onClick={() => setApproachPaneOpen(false)}
-      >
-        ▴
-      </button>
+      {!approachMaximized && (
+        <button
+          type="button"
+          className="section-chevron pane-section-toggle"
+          aria-expanded={false}
+          aria-label="Expand approach"
+          title="Expand approach"
+          onClick={() => expandApproachPane()}
+        >
+          ▴
+        </button>
+      )}
       <div className="solution-compare-top">
         <div className="solution-compare-picker">
           {chipTabs.length > 1 ? (
@@ -680,11 +696,11 @@ export function ProblemPage() {
       aria-expanded={false}
       aria-label="Expand approach"
       title="Expand approach"
-      onClick={() => setApproachPaneOpen(true)}
+      onClick={() => expandApproachPane()}
     >
       <span className="section-collapse-bar-label">Approach</span>
       <span className="section-chevron section-chevron-static" aria-hidden="true">
-        ▾
+        ▴
       </span>
     </button>
   );
@@ -712,16 +728,18 @@ export function ProblemPage() {
 
             {problemOpen ? (
               <div className="panel problem-pane-body pane-section pane-section-problem pane-section-open">
-                <button
-                  type="button"
-                  className="section-chevron pane-section-toggle"
-                  aria-expanded={true}
-                  aria-label="Collapse problem description"
-                  title="Collapse problem description"
-                  onClick={() => setProblemPaneOpen(false)}
-                >
-                  ▴
-                </button>
+                {!problemMaximized && (
+                  <button
+                    type="button"
+                    className="section-chevron pane-section-toggle"
+                    aria-expanded={false}
+                    aria-label="Expand problem description"
+                    title="Expand problem description"
+                    onClick={() => expandProblemPane()}
+                  >
+                    ▾
+                  </button>
+                )}
                 <div className="problem-readme">
                   <Markdown source={problem.readme} />
                 </div>
@@ -733,7 +751,7 @@ export function ProblemPage() {
                 aria-expanded={false}
                 aria-label="Expand problem description"
                 title="Expand problem description"
-                onClick={() => setProblemPaneOpen(true)}
+                onClick={() => expandProblemPane()}
               >
                 <span className="section-collapse-bar-label">Problem</span>
                 <span className="section-chevron section-chevron-static" aria-hidden="true">
