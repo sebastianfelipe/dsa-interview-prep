@@ -123,6 +123,12 @@ export function ProblemPage() {
   const [judgeResult, setJudgeResult] = useState<RunResult | null>(null);
   const [progressStatus, setProgressStatus] = useState<ProblemProgressStatus | null>(null);
   const [judgeError, setJudgeError] = useState<string | null>(null);
+  /** Last successful judge for this page — used so coach can respect Passed/Failed. */
+  const lastJudgedRef = useRef<{
+    code: string;
+    passed: boolean;
+    summary: string;
+  } | null>(null);
   const [problemOpen, setProblemOpen] = useState(
     () => readWorkspacePanesForProblem(topic, slug).problemOpen,
   );
@@ -245,6 +251,7 @@ export function ProblemPage() {
     setJudgeError(null);
     setAiGuidance('');
     setCoachNotes(null);
+    lastJudgedRef.current = null;
     setSelectedId(OWN_CODE_ID);
     setChipTab('repo');
     refreshLocals();
@@ -466,6 +473,16 @@ export function ProblemPage() {
     }
     const guidance = aiGuidanceRef.current.trim();
     const code = codeBufferRef.current;
+    const judged =
+      lastJudgedRef.current && lastJudgedRef.current.code === code
+        ? lastJudgedRef.current
+        : null;
+    const judge = judged
+      ? {
+          status: (judged.passed ? 'passed' : 'failed') as 'passed' | 'failed',
+          summary: judged.summary,
+        }
+      : { status: 'unknown' as const };
     setAiBusy(true);
     setAiBusyMode('coach');
     setAiError(null);
@@ -478,6 +495,7 @@ export function ProblemPage() {
         'typescript',
         guidance || undefined,
         code,
+        judge,
       );
       const nextNotes = result.description.trim();
       setCoachNotes(nextNotes);
@@ -699,6 +717,13 @@ export function ProblemPage() {
           ? await api.submit(topic, slug, code)
           : await api.run(topic, slug, code, 'run');
       setJudgeResult(result);
+      lastJudgedRef.current = {
+        code,
+        passed: result.passed,
+        summary: `${result.summary.passed}/${result.summary.total} cases ${
+          result.passed ? 'passed' : 'failed'
+        }`,
+      };
       // Progress tracks your own work only — not curated/read-only approaches.
       if (canEditCode) {
         const progress = recordProblemAttempt(topic, slug, {

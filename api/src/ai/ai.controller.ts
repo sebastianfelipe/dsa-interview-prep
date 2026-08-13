@@ -11,6 +11,10 @@ class ExplainBodyDto {
   guidance?: string;
   /** Learner code for coach mode (ignored for hint/full). */
   code?: string;
+  /** Optional studio judge result for this exact code buffer (coach mode). */
+  judgeStatus?: 'passed' | 'failed' | 'unknown';
+  /** Optional short judge summary, e.g. "3/3 cases". */
+  judgeSummary?: string;
 }
 
 function normalizeMode(mode?: string): AiExplainMode {
@@ -58,6 +62,16 @@ export class AiController {
           type: 'string',
           description: 'Current learner code for coach mode',
         },
+        judgeStatus: {
+          type: 'string',
+          enum: ['passed', 'failed', 'unknown'],
+          description: 'Studio judge result for this exact learner code buffer (coach mode)',
+        },
+        judgeSummary: {
+          type: 'string',
+          description: 'Optional short judge summary for the coach prompt',
+          example: '3/3 cases passed',
+        },
       },
     },
   })
@@ -70,6 +84,8 @@ export class AiController {
       body.language,
       body.guidance,
       body.code,
+      body.judgeStatus,
+      body.judgeSummary,
     );
   }
 }

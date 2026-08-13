@@ -37,10 +37,16 @@ The learner is writing their own ${label} solution. Coach them in place — do n
 
 Rules:
 - Review the learner's current code and optional question.
-- Give targeted guidance: what looks right, likely bugs, a small next step, complexity or edge-case tips.
+- Lead with what is already correct before any critique.
+- Do NOT invent bugs, edge-case failures, or "likely issues" without concrete evidence in their code.
+- If their approach is sound and the implementation looks correct, say so clearly. Offer at most light interview polish (naming, clarity, complexity callout) — not a fault-finding mission.
+- When JUDGE STATUS says their code PASSED the studio tests for this exact buffer, treat the solution as working. Congratulate them; do not claim it is wrong or still broken. Optional: brief complexity / interview talking points only.
+- When JUDGE STATUS says FAILED, focus on the failure pattern and a small next debug step — still no full rewrite.
+- When judge status is unknown, be conservative: prefer "possible concern" wording over asserting bugs.
+- Give targeted guidance: what looks right, real issues only if evidenced, a small next step, complexity or edge-case tips.
 - Do NOT provide a complete working solution or a drop-in replacement implementation.
 - Do NOT dump a full rewrite of their function. Short illustrative snippets (a few lines) are OK only when needed to clarify a point.
-- Prefer questions and nudges that keep them thinking.
+- Prefer questions and nudges that keep them thinking — unless the code already works, then prefer affirmation.
 - If their code is empty, help them start (signature, approach sketch, first step) without writing the full algorithm.
 - Language is secondary — reason clearly; refer to ${label} only when discussing their code.
 - For time/space, prefer Unicode like the rest of the product: O(n²), O(2ⁿ), O(n · m), O(log₁₀ x).
@@ -53,7 +59,7 @@ JSON shape:
   "notes": "one-line tip",
   "time": "optional complexity note or empty",
   "space": "optional complexity note or empty",
-  "description": "markdown coaching: what's working, what to check next, hints — no full solution",
+  "description": "markdown coaching: what's working first; real issues only if evidenced; no full solution",
   "code": ""
 }`;
   }
@@ -110,11 +116,15 @@ export class AiService {
     languageInput?: string,
     guidanceInput?: string,
     codeInput?: string,
+    judgeStatusInput?: string,
+    judgeSummaryInput?: string,
   ): Promise<AiExplainResult> {
     const language = normalizeCodeLanguage(languageInput);
     const label = LANGUAGE_LABELS[language];
     const guidance = this.normalizeGuidance(guidanceInput);
     const learnerCode = this.normalizeCode(codeInput);
+    const judgeStatus = this.normalizeJudgeStatus(judgeStatusInput);
+    const judgeSummary = this.normalizeGuidance(judgeSummaryInput);
     const apiKey = this.apiKey();
     if (!apiKey) {
       throw new ServiceUnavailableException('AI is not configured (missing OPENAI_API_KEY)');
@@ -132,7 +142,9 @@ export class AiService {
       mode === 'hint'
         ? 'HINT ONLY — explain the approach and walk an example in language-agnostic terms; do not include solution code (set code to "").'
         : mode === 'coach'
-          ? 'COACH ONLY — guide the learner on their current code; do not solve the whole problem; set code to "".'
+          ? judgeStatus === 'passed'
+            ? 'COACH ONLY — their current code PASSED studio tests; affirm what works; light polish only; do not invent bugs; set code to "".'
+            : 'COACH ONLY — guide the learner on their current code; do not invent bugs; do not solve the whole problem; set code to "".'
           : `FULL — teach the approach first, then include a complete ${label} illustration of that approach in code.`;
 
     const userPrompt = [
@@ -151,6 +163,14 @@ export class AiService {
             '=== LEARNER CODE (coach on this; do not replace it) ===',
             learnerCode?.trim() ? learnerCode : '(empty — help them get started)',
             '=== END LEARNER CODE ===',
+            '',
+            '=== JUDGE STATUS ===',
+            judgeStatus === 'passed'
+              ? `PASSED — this exact code buffer already passed the studio judge${judgeSummary ? ` (${judgeSummary})` : ''}. Treat it as a working solution. Do not claim it fails or invent bugs.`
+              : judgeStatus === 'failed'
+                ? `FAILED — this exact code buffer failed the studio judge${judgeSummary ? ` (${judgeSummary})` : ''}. Help them debug; do not rewrite the full solution.`
+                : 'UNKNOWN — no matching judge result for this exact buffer. Do not invent failures; only flag issues you can justify from the code.',
+            '=== END JUDGE STATUS ===',
           ].join('\n')
         : '',
       guidance
@@ -183,7 +203,8 @@ export class AiService {
       },
       body: JSON.stringify({
         model,
-        temperature: mode === 'coach' ? 0.35 : guidance ? 0.2 : 0.4,
+        temperature:
+          mode === 'coach' ? (judgeStatus === 'passed' ? 0.2 : 0.3) : guidance ? 0.2 : 0.4,
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: systemPrompt(language, mode, Boolean(guidance)) },
@@ -258,6 +279,15 @@ export class AiService {
     if (typeof codeInput !== 'string') return undefined;
     // Bound payload size for cost/latency.
     return codeInput.slice(0, 40_000);
+  }
+
+  private normalizeJudgeStatus(
+    statusInput?: string,
+  ): 'passed' | 'failed' | 'unknown' | undefined {
+    if (statusInput === 'passed' || statusInput === 'failed' || statusInput === 'unknown') {
+      return statusInput;
+    }
+    return undefined;
   }
 
   private apiKey(): string | undefined {

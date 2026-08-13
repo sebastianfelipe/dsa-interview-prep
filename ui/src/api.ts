@@ -194,6 +194,7 @@ export const api = {
     language: CodeLanguage = 'typescript',
     guidance?: string,
     code?: string,
+    judge?: { status: 'passed' | 'failed' | 'unknown'; summary?: string },
   ) =>
     post<AiExplainResult>('/api/ai/explain', {
       topic,
@@ -202,5 +203,7 @@ export const api = {
       language,
       ...(guidance?.trim() ? { guidance: guidance.trim() } : {}),
       ...(typeof code === 'string' ? { code } : {}),
+      ...(judge?.status ? { judgeStatus: judge.status } : {}),
+      ...(judge?.summary?.trim() ? { judgeSummary: judge.summary.trim() } : {}),
     }),
 };
