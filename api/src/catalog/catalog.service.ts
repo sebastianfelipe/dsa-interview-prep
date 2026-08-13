@@ -83,7 +83,9 @@ export class CatalogService {
             topic: topicId,
             topicTitle: this.titleFromReadme(topicPath),
             hasSolution: fs.existsSync(path.join(problemPath, 'solution.ts')),
-            hasTests: fs.existsSync(path.join(problemPath, 'solution.test.ts')),
+            hasTests:
+              fs.existsSync(path.join(problemPath, 'cases.json')) ||
+              fs.existsSync(path.join(problemPath, 'solution.test.ts')),
             path: path.relative(this.root, problemPath),
           });
         }

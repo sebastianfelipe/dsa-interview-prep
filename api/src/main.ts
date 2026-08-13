@@ -15,7 +15,7 @@ async function bootstrap() {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('DSA Studio AI API')
     .setDescription(
-      'NestJS backend for DSA Studio AI — catalog, problem content, prep lists, reference docs, and optional OpenAI guidance.',
+      'NestJS backend for DSA Studio AI — catalog, problem content, I/O Run/Submit judge, prep lists, reference docs, and optional OpenAI guidance.',
     )
     .setVersion('1.0')
     .addTag('catalog', 'Topic and problem catalog')

@@ -1,6 +1,7 @@
-import { Controller, Get, Inject, Param, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Inject, Param, Post, Query } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ProblemsService } from './problems.service';
+import type { RunBody } from './run-dto';
 
 @ApiTags('problems')
 @Controller('problems')
@@ -13,6 +14,16 @@ export class ProblemsController {
   @ApiParam({ name: 'slug', example: 'two-sum' })
   getProblem(@Param('topic') topic: string, @Param('slug') slug: string) {
     return this.problems.getProblem(topic, slug);
+  }
+
+  @Get(':topic/:slug/cases')
+  @ApiOperation({
+    summary: 'Public example I/O cases (edge cases are hidden; count only)',
+  })
+  @ApiParam({ name: 'topic', example: '02-hashing' })
+  @ApiParam({ name: 'slug', example: 'two-sum' })
+  getCases(@Param('topic') topic: string, @Param('slug') slug: string) {
+    return this.problems.getCases(topic, slug);
   }
 
   @Get(':topic/:slug/solutions')
@@ -49,10 +60,51 @@ export class ProblemsController {
   }
 
   @Post(':topic/:slug/run')
-  @ApiOperation({ summary: 'Run Vitest suite for the recommended solution.ts' })
+  @ApiOperation({
+    summary: 'Run chip TypeScript against example I/O cases (LeetCode-style Run)',
+  })
   @ApiParam({ name: 'topic', example: '02-hashing' })
   @ApiParam({ name: 'slug', example: 'two-sum' })
-  runTests(@Param('topic') topic: string, @Param('slug') slug: string) {
-    return this.problems.runTests(topic, slug);
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['code'],
+      properties: {
+        code: { type: 'string' },
+        language: { type: 'string', example: 'typescript' },
+        mode: { type: 'string', enum: ['run', 'submit'], default: 'run' },
+      },
+    },
+  })
+  runTests(
+    @Param('topic') topic: string,
+    @Param('slug') slug: string,
+    @Body() body: RunBody,
+  ) {
+    return this.problems.runTests(topic, slug, { ...body, mode: body.mode ?? 'run' });
+  }
+
+  @Post(':topic/:slug/submit')
+  @ApiOperation({
+    summary: 'Submit chip TypeScript against examples + edge cases (LeetCode-style Submit)',
+  })
+  @ApiParam({ name: 'topic', example: '02-hashing' })
+  @ApiParam({ name: 'slug', example: 'two-sum' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['code'],
+      properties: {
+        code: { type: 'string' },
+        language: { type: 'string', example: 'typescript' },
+      },
+    },
+  })
+  submit(
+    @Param('topic') topic: string,
+    @Param('slug') slug: string,
+    @Body() body: RunBody,
+  ) {
+    return this.problems.runTests(topic, slug, { ...body, mode: 'submit' });
   }
 }

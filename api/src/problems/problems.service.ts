@@ -1,5 +1,11 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { spawn } from 'child_process';
 import { CatalogService } from '../catalog/catalog.service';
@@ -10,6 +16,30 @@ import {
   normalizeCodeLanguage,
   swapLanguageExtension,
 } from '../code-language';
+import type { RunBody, RunMode, RunResultDto } from './run-dto';
+
+/** Parse judge CLI stdout. npm noise goes to stderr; never slice from the last `{`. */
+function parseJudgeStdout(stdout: string, stderr: string): unknown {
+  const trimmed = stdout.trim();
+  if (!trimmed) {
+    throw new Error(stderr.trim() || 'Judge produced no JSON output');
+  }
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    // Rare: leading non-JSON on stdout — take the first top-level object.
+    const start = trimmed.indexOf('{');
+    if (start < 0) {
+      throw new Error(stderr.trim() || 'Judge produced no JSON output');
+    }
+    const slice = trimmed.slice(start);
+    try {
+      return JSON.parse(slice);
+    } catch {
+      throw new Error(stderr.trim() || `Invalid judge JSON: ${trimmed.slice(0, 400)}`);
+    }
+  }
+}
 
 interface RawSolutionEntry {
   id: string;
@@ -124,24 +154,117 @@ export class ProblemsService {
     };
   }
 
-  async runTests(topic: string, slug: string): Promise<{
-    passed: boolean;
-    exitCode: number;
-    stdout: string;
-    stderr: string;
-    durationMs: number;
-  }> {
+  getCases(topic: string, slug: string) {
     const dir = this.catalog.problemDir(topic, slug);
-    const testFile = path.join(dir, 'solution.test.ts');
-    if (!fs.existsSync(testFile)) throw new NotFoundException('No tests for this problem');
+    const casesPath = path.join(dir, 'cases.json');
+    if (!fs.existsSync(casesPath)) throw new NotFoundException('No cases for this problem');
+    const file = JSON.parse(fs.readFileSync(casesPath, 'utf8')) as {
+      type: string;
+      exportName: string;
+      argNames?: string[];
+      examples: unknown[];
+      edgeCases: unknown[];
+    };
+    return {
+      type: file.type,
+      exportName: file.exportName,
+      argNames: file.argNames,
+      examples: file.examples,
+      edgeCaseCount: Array.isArray(file.edgeCases) ? file.edgeCases.length : 0,
+    };
+  }
 
-    const configPath = path.join(this.catalog.root, 'vitest.solutions.config.ts');
+  async runTests(topic: string, slug: string, body: RunBody): Promise<RunResultDto> {
+    const mode: RunMode = body.mode === 'submit' ? 'submit' : 'run';
+    const language = normalizeCodeLanguage(body.language, 'typescript');
+    if (language !== 'typescript') {
+      throw new BadRequestException('Only TypeScript can be judged right now');
+    }
+    if (typeof body.code !== 'string' || !body.code.trim()) {
+      throw new BadRequestException('code is required');
+    }
+
+    const dir = this.catalog.problemDir(topic, slug);
+    if (!fs.existsSync(dir)) throw new NotFoundException(`Problem ${topic}/${slug} not found`);
+    const casesPath = path.join(dir, 'cases.json');
+    if (!fs.existsSync(casesPath)) throw new NotFoundException('No cases for this problem');
+
+    const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dsa-judge-'));
+    const solutionPath = path.join(dir, '.judge-solution.ts');
     const started = Date.now();
 
-    return new Promise((resolve) => {
+    try {
+      fs.writeFileSync(solutionPath, body.code, 'utf8');
+      const scriptPath = path.join(this.catalog.root, 'scripts/run-io-cases.ts');
+      const raw = await this.spawnJson(scriptPath, solutionPath, casesPath, mode);
+      if (raw && typeof raw === 'object' && 'summary' in raw) {
+        return { ...(raw as RunResultDto), durationMs: Date.now() - started };
+      }
+      return {
+        passed: false,
+        mode,
+        summary: { total: 0, passed: 0, failed: 1 },
+        cases: [
+          {
+            id: 'runner',
+            status: 'error',
+            inputs: null,
+            expected: null,
+            error: 'Judge returned no result',
+          },
+        ],
+        durationMs: Date.now() - started,
+        stdout: typeof raw === 'string' ? raw : undefined,
+      };
+    } catch (err) {
+      return {
+        passed: false,
+        mode,
+        summary: { total: 1, passed: 0, failed: 1 },
+        cases: [
+          {
+            id: 'runner',
+            status: 'error',
+            inputs: null,
+            expected: null,
+            error: err instanceof Error ? err.message : String(err),
+          },
+        ],
+        durationMs: Date.now() - started,
+      };
+    } finally {
+      try {
+        if (fs.existsSync(solutionPath)) fs.unlinkSync(solutionPath);
+      } catch {
+        /* ignore */
+      }
+      try {
+        fs.rmSync(workDir, { recursive: true, force: true });
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  private spawnJson(
+    scriptPath: string,
+    solutionPath: string,
+    casesPath: string,
+    mode: RunMode,
+  ): Promise<unknown> {
+    return new Promise((resolve, reject) => {
       const child = spawn(
         process.platform === 'win32' ? 'npx.cmd' : 'npx',
-        ['vitest', 'run', '--config', configPath, testFile],
+        [
+          'tsx',
+          scriptPath,
+          '--solution',
+          solutionPath,
+          '--cases',
+          casesPath,
+          '--mode',
+          mode,
+        ],
         {
           cwd: this.catalog.root,
           env: { ...process.env, FORCE_COLOR: '0' },
@@ -153,23 +276,13 @@ export class ProblemsService {
       let stderr = '';
       child.stdout.on('data', (d) => (stdout += d.toString()));
       child.stderr.on('data', (d) => (stderr += d.toString()));
-      child.on('close', (code) => {
-        resolve({
-          passed: code === 0,
-          exitCode: code ?? 1,
-          stdout,
-          stderr,
-          durationMs: Date.now() - started,
-        });
-      });
-      child.on('error', (err) => {
-        resolve({
-          passed: false,
-          exitCode: 1,
-          stdout,
-          stderr: stderr + '\n' + String(err),
-          durationMs: Date.now() - started,
-        });
+      child.on('error', reject);
+      child.on('close', () => {
+        try {
+          resolve(parseJudgeStdout(stdout, stderr));
+        } catch (err) {
+          reject(err instanceof Error ? err : new Error(String(err)));
+        }
       });
     });
   }
