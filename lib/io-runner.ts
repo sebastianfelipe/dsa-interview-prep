@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import {
   ListNode,
   Node,
@@ -18,6 +20,7 @@ import type {
   IoCase,
   JudgeResult,
 } from './cases';
+import { ensureNamedExport } from './ensure-export';
 
 function deepEqual(a: unknown, b: unknown): boolean {
   if (Object.is(a, b)) return true;
@@ -372,13 +375,36 @@ export async function loadModule(solutionPath: string): Promise<Record<string, u
   return mod as Record<string, unknown>;
 }
 
+function resolveExport(
+  mod: Record<string, unknown>,
+  exportName: string,
+): Record<string, unknown> {
+  if (typeof mod[exportName] === 'function') return mod;
+  if (typeof mod.default === 'function') {
+    return { ...mod, [exportName]: mod.default };
+  }
+  const def = mod.default;
+  if (def && typeof def === 'object' && typeof (def as Record<string, unknown>)[exportName] === 'function') {
+    return { ...mod, [exportName]: (def as Record<string, unknown>)[exportName] };
+  }
+  return mod;
+}
+
 export async function judgeSolution(
   solutionPath: string,
   file: CaseFile,
   mode: 'run' | 'submit',
 ): Promise<JudgeResult> {
+  // Keep prepared file beside the original so `@lib/*` path aliases still resolve.
+  const preparedPath = path.join(
+    path.dirname(solutionPath),
+    `.judge-prepared-${Date.now()}-${Math.random().toString(36).slice(2)}.ts`,
+  );
   try {
-    const mod = await loadModule(solutionPath);
+    const source = fs.readFileSync(solutionPath, 'utf8');
+    const prepared = ensureNamedExport(source, file.exportName);
+    fs.writeFileSync(preparedPath, prepared, 'utf8');
+    const mod = resolveExport(await loadModule(preparedPath), file.exportName);
     return runCaseFile(mod, file, mode);
   } catch (err) {
     return {
@@ -396,5 +422,11 @@ export async function judgeSolution(
       ],
       durationMs: 0,
     };
+  } finally {
+    try {
+      if (fs.existsSync(preparedPath)) fs.unlinkSync(preparedPath);
+    } catch {
+      /* ignore */
+    }
   }
 }
