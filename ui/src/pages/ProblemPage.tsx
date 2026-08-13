@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import {
   api,
@@ -46,10 +46,7 @@ import {
 } from '../workspace-layout';
 
 function chipLabel(s: SolutionEntry) {
-  if (s.source === 'hint') return `Hint · ${s.title}`;
-  if (s.source === 'ai') return `AI · ${s.title}`;
   if (s.source === 'yours') return `Yours · ${s.title}`;
-  if (s.source === 'local') return `Local · ${s.title}`;
   return s.title;
 }
 
@@ -63,11 +60,23 @@ function sortRepoSolutions(repo: SolutionEntry[]): SolutionEntry[] {
   });
 }
 
+type ChipTab = 'repo' | 'ai' | 'hints' | 'local';
+
+const CHIP_TAB_ORDER: ChipTab[] = ['repo', 'ai', 'hints', 'local'];
+
+function chipTabForSource(source: string): ChipTab {
+  if (source === 'ai') return 'ai';
+  if (source === 'hint') return 'hints';
+  if (source === 'local') return 'local';
+  return 'repo';
+}
+
 export function ProblemPage() {
   const { topic = '', slug = '' } = useParams();
   const [searchParams] = useSearchParams();
   const listId = searchParams.get('list');
   const [codeUnlocked, setCodeUnlocked] = useState(false);
+  const [chipTab, setChipTab] = useState<ChipTab>('repo');
   const [problem, setProblem] = useState<ProblemDetail | null>(null);
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [list, setList] = useState<ListDetail | null>(null);
@@ -111,7 +120,13 @@ export function ProblemPage() {
 
   useEffect(() => {
     setCodeUnlocked(false);
+    setChipTab('repo');
   }, [topic, slug]);
+
+  useEffect(() => {
+    const el = document.querySelector<HTMLElement>(`[data-solution-chip="${selectedId}"]`);
+    el?.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' });
+  }, [selectedId, chipTab]);
 
   useEffect(() => {
     api
@@ -190,6 +205,36 @@ export function ProblemPage() {
     const { repo, ai, hints, localExtra } = solutionGroups;
     return [...repo, ...ai, ...hints, ...localExtra];
   }, [solutionGroups]);
+
+  const chipTabs = useMemo(() => {
+    const labels: Record<ChipTab, string> = {
+      repo: 'Approach',
+      ai: 'AI',
+      hints: 'Hints',
+      local: 'Local',
+    };
+    const items: Record<ChipTab, SolutionEntry[]> = {
+      repo: solutionGroups.repo,
+      ai: solutionGroups.ai,
+      hints: solutionGroups.hints,
+      local: solutionGroups.localExtra,
+    };
+    return CHIP_TAB_ORDER.filter((key) => items[key].length > 0).map((key) => ({
+      key,
+      label: labels[key],
+      items: items[key],
+    }));
+  }, [solutionGroups]);
+
+  const activeChipTab = chipTabs.some((t) => t.key === chipTab) ? chipTab : (chipTabs[0]?.key ?? 'repo');
+  const activeChipItems = chipTabs.find((t) => t.key === activeChipTab)?.items ?? [];
+
+  useEffect(() => {
+    const selected = solutions.find((s) => s.id === selectedId);
+    if (!selected) return;
+    const next = chipTabForSource(selected.source);
+    if (chipTabs.some((t) => t.key === next)) setChipTab(next);
+  }, [selectedId, solutions, chipTabs]);
 
   const selectedLocal = useMemo(
     () => localSolutions.find((s) => s.id === selectedId) ?? null,
@@ -295,6 +340,8 @@ export function ProblemPage() {
       saveLocalSolution(topic, slug, entry);
       refreshLocals();
       setSelectedId(entry.id);
+      // Full AI solutions include code — unlock so the new chip is readable immediately.
+      if (entry.mode === 'full') setCodeUnlocked(true);
     } catch (e) {
       setAiError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -316,10 +363,11 @@ export function ProblemPage() {
     setSelectedId(next);
   }
 
+  // Lock applies to repo + AI code chips. "Yours" stays editable; hints have no code.
   const canEditCode =
     language === 'typescript' &&
     Boolean(solution?.hasCode && solution.code) &&
-    (Boolean(selectedLocal) || codeUnlocked || selectedRepo?.source === 'yours');
+    (codeUnlocked || selectedRepo?.source === 'yours');
 
   useEffect(() => {
     if (!solution?.hasCode || !solution.code || language !== 'typescript') return;
@@ -398,12 +446,18 @@ export function ProblemPage() {
     selectedRepo &&
     !languageAvailableForSelection &&
     Boolean(description || notes);
+  const isHintView =
+    selected?.source === 'hint' ||
+    (selectedLocal != null && localSolutionKind(selectedLocal) === 'hint');
 
   const workspaceClass = [
     'problem-workspace',
     problemOpen ? 'problem-open' : 'problem-collapsed',
     approachOpen ? 'approach-open' : 'approach-collapsed',
-  ].join(' ');
+    isHintView ? 'hint-view' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <main className={`page page-problem${showSolutionPane ? ' page-problem-split' : ''}`}>
@@ -532,36 +586,55 @@ export function ProblemPage() {
         </aside>
 
         <section className="workspace-main solution-panel">
-          <div className={`solution-compare${approachOpen ? '' : ' is-collapsed'}`}>
+          <div
+            className={[
+              'solution-compare',
+              approachOpen ? '' : 'is-collapsed',
+              isHintView && approachOpen ? 'is-notes-focus' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          >
             <div className="solution-compare-top">
-              <div className="solution-compare-chips" role="tablist" aria-label="Solutions">
-                {(
-                  [
-                    { key: 'repo', items: solutionGroups.repo, label: null },
-                    { key: 'ai', items: solutionGroups.ai, label: 'AI' },
-                    { key: 'hints', items: solutionGroups.hints, label: 'Hints' },
-                    { key: 'local', items: solutionGroups.localExtra, label: 'Local' },
-                  ] as const
-                ).flatMap((group, index, groups) => {
-                  if (group.items.length === 0) return [];
-                  const prevHasItems = groups.slice(0, index).some((g) => g.items.length > 0);
-                  const nodes: ReactNode[] = [];
-                  if (prevHasItems) {
-                    nodes.push(
-                      <span
-                        key={`${group.key}-sep`}
-                        className="chip-group-sep"
-                        role="separator"
-                        aria-label={group.label ? `${group.label} solutions` : 'More solutions'}
-                      />,
-                    );
-                  }
-                  for (const s of group.items) {
+              <div className="solution-compare-picker">
+                {chipTabs.length > 1 && (
+                  <div className="solution-chip-tabs" role="tablist" aria-label="Solution groups">
+                    {chipTabs.map((tab) => (
+                      <button
+                        key={tab.key}
+                        type="button"
+                        role="tab"
+                        aria-selected={activeChipTab === tab.key}
+                        className={`solution-chip-tab${activeChipTab === tab.key ? ' is-active' : ''}`}
+                        onClick={() => {
+                          setChipTab(tab.key);
+                          if (!tab.items.some((s) => s.id === selectedId) && tab.items[0]) {
+                            setSelectedId(tab.items[0].id);
+                          }
+                          if (tab.key === 'hints') setApproachPaneOpen(true);
+                        }}
+                      >
+                        {tab.label}
+                        <span className="solution-chip-tab-count">{tab.items.length}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <div
+                  className="solution-chip-rail-scroll"
+                  role="tablist"
+                  aria-label={`${chipTabs.find((t) => t.key === activeChipTab)?.label ?? 'Approach'} solutions`}
+                >
+                  {activeChipItems.map((s) => {
                     const removable =
                       s.source === 'ai' || s.source === 'hint' || s.source === 'local';
-                    nodes.push(
+                    const label = chipLabel(s);
+                    const groupLabel =
+                      chipTabs.find((t) => t.key === activeChipTab)?.label ?? 'Approach';
+                    return (
                       <div
                         key={s.id}
+                        data-solution-chip={s.id}
                         className={`chip-group chip-group-${s.source}${selectedId === s.id ? ' is-active' : ''}`}
                       >
                         <button
@@ -569,27 +642,30 @@ export function ProblemPage() {
                           role="tab"
                           aria-selected={selectedId === s.id}
                           className={`chip ${selectedId === s.id ? 'active' : ''}`}
-                          onClick={() => setSelectedId(s.id)}
+                          title={label}
+                          onClick={() => {
+                            setSelectedId(s.id);
+                            if (s.source === 'hint') setApproachPaneOpen(true);
+                          }}
                         >
-                          {chipLabel(s)}
+                          {label}
                         </button>
                         {removable && (
                           <button
                             type="button"
                             className="chip-remove"
                             disabled={aiBusy}
-                            title={`Remove ${chipLabel(s)}`}
-                            aria-label={`Remove ${chipLabel(s)}`}
+                            title={`Remove ${groupLabel} · ${label}`}
+                            aria-label={`Remove ${groupLabel} · ${label}`}
                             onClick={() => discardLocal(s.id)}
                           >
                             ×
                           </button>
                         )}
-                      </div>,
+                      </div>
                     );
-                  }
-                  return nodes;
-                })}
+                  })}
+                </div>
               </div>
               <div className="solution-compare-meta">
                 <p className="solution-complexity">
@@ -631,7 +707,15 @@ export function ProblemPage() {
             )}
           </div>
 
-          <div className={`solution-block${canEditCode || !solution?.code ? '' : ' is-locked'}`}>
+          <div
+            className={[
+              'solution-block',
+              canEditCode || !solution?.code ? '' : 'is-locked',
+              isHintView ? 'is-hint-only' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          >
             <div className="solution-meta">
               <strong>Code</strong>
               <div className="solution-meta-actions">
@@ -650,7 +734,7 @@ export function ProblemPage() {
                   ))}
                 </div>
                 <div className="judge-actions">
-                  {selectedLocal && language === 'typescript' && (
+                  {selectedLocal && language === 'typescript' && canEditCode && (
                     <button
                       type="button"
                       className="judge-btn judge-btn-ghost"
@@ -664,7 +748,11 @@ export function ProblemPage() {
                     type="button"
                     className="judge-btn"
                     disabled={
-                      judgeBusy || language !== 'typescript' || !codeBuffer.trim() || !problem.hasTests
+                      judgeBusy ||
+                      !canEditCode ||
+                      language !== 'typescript' ||
+                      !codeBuffer.trim() ||
+                      !problem.hasTests
                     }
                     title={
                       language !== 'typescript'
@@ -681,7 +769,11 @@ export function ProblemPage() {
                     type="button"
                     className="judge-btn judge-btn-submit"
                     disabled={
-                      judgeBusy || language !== 'typescript' || !codeBuffer.trim() || !problem.hasTests
+                      judgeBusy ||
+                      !canEditCode ||
+                      language !== 'typescript' ||
+                      !codeBuffer.trim() ||
+                      !problem.hasTests
                     }
                     title={
                       language !== 'typescript'
@@ -725,14 +817,16 @@ export function ProblemPage() {
                       : `No ${missingLangLabel} yet for this approach — Ask AI to generate one, or add solution${language === 'python' ? '.py' : '.ts'}.`}
                   </code>
                 </pre>
-              ) : problem.hasSolution &&
+              ) : language === 'typescript' &&
                 languageAvailableForSelection &&
-                language === 'typescript' &&
+                Boolean(solution?.code) &&
                 !codeUnlocked ? (
-                <pre className="solution-code">
-                  <code>Unlock code to edit and run this chip, or use Ask AI / Yours.</code>
+                <pre className="solution-code solution-code-locked-placeholder" aria-hidden="true">
+                  <code>{solution?.code}</code>
                 </pre>
-              ) : problem.hasSolution && languageAvailableForSelection ? (
+              ) : languageAvailableForSelection &&
+                (problem.hasSolution || Boolean(selectedLocal)) &&
+                language === 'typescript' ? (
                 <pre className="solution-code">
                   <code>Loading…</code>
                 </pre>
@@ -741,7 +835,7 @@ export function ProblemPage() {
                   <code>No code yet.</code>
                 </pre>
               )}
-              {!codeUnlocked && solution?.code && !canEditCode && (
+              {!codeUnlocked && Boolean(solution?.code) && !canEditCode && (
                 <div className="solution-code-lock">
                   <span>Code is locked — unlock to read it</span>
                 </div>
