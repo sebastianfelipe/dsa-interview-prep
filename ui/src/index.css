@@ -1343,18 +1343,18 @@ html[data-theme='light'] .theme-toggle-icon {
 
 .solution-compare-picker {
   display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
   min-width: 0;
 }
 
 .solution-chip-tabs {
   display: inline-flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
+  flex: 0 0 auto;
   gap: 0.2rem;
-  width: fit-content;
-  max-width: 100%;
   padding: 0.12rem;
   border-radius: 999px;
   background: color-mix(in srgb, var(--surface) 70%, var(--line));
@@ -1409,7 +1409,7 @@ html[data-theme='light'] .theme-toggle-icon {
   flex-wrap: nowrap;
   align-items: center;
   gap: 0.3rem;
-  width: 100%;
+  flex: 1 1 auto;
   min-width: 0;
   overflow-x: auto;
   overscroll-behavior-x: contain;
