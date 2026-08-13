@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import {
   api,
@@ -100,8 +101,20 @@ export function ProblemPage() {
   const [approachOpen, setApproachOpen] = useState(() => readApproachPaneOpen());
 
   const setProblemPaneOpen = useCallback((open: boolean) => {
-    setProblemOpen(open);
-    writeProblemPaneOpen(open);
+    const apply = () => {
+      flushSync(() => {
+        setProblemOpen(open);
+      });
+      writeProblemPaneOpen(open);
+    };
+    const doc = document as Document & {
+      startViewTransition?: (update: () => void) => unknown;
+    };
+    if (typeof doc.startViewTransition === 'function') {
+      doc.startViewTransition(apply);
+      return;
+    }
+    apply();
   }, []);
 
   const setApproachPaneOpen = useCallback((open: boolean) => {
@@ -449,263 +462,278 @@ export function ProblemPage() {
   const isHintView =
     selected?.source === 'hint' ||
     (selectedLocal != null && localSolutionKind(selectedLocal) === 'hint');
+  const approachDocked = !problemOpen;
+  const notesVisible = approachDocked || approachOpen;
 
   const workspaceClass = [
     'problem-workspace',
     problemOpen ? 'problem-open' : 'problem-collapsed',
-    approachOpen ? 'approach-open' : 'approach-collapsed',
+    approachOpen || approachDocked ? 'approach-open' : 'approach-collapsed',
     isHintView ? 'hint-view' : '',
+    approachDocked ? 'approach-docked' : '',
   ]
     .filter(Boolean)
     .join(' ');
 
+  const askAiPanel = (
+    <section
+      className={`workspace-ai-panel${aiConfigured ? '' : ' is-locked'}`}
+      aria-label="Ask AI"
+    >
+      <p className="workspace-ai-panel-desc muted">
+        {aiConfigured
+          ? 'Optional guidance · creates a separate AI chip'
+          : 'Add an OpenAI API key to unlock'}
+      </p>
+      <form
+        className="solution-ai-bar"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!aiConfigured || aiBusy) return;
+          void askAi('full');
+        }}
+      >
+        <input
+          id="ai-guidance"
+          className="solution-ai-bar-input"
+          type="text"
+          maxLength={2000}
+          disabled={!aiConfigured || aiBusy}
+          placeholder={
+            aiConfigured
+              ? 'Optional: two pointers, O(1) space…'
+              : 'Add an OpenAI API key to unlock'
+          }
+          value={aiGuidance}
+          onChange={(e) => setAiGuidance(e.target.value)}
+          aria-label="Guidance for Ask AI"
+        />
+        <button
+          type="button"
+          className="solution-ai-btn solution-ai-btn-hint"
+          disabled={!aiConfigured || aiBusy}
+          title={
+            aiConfigured
+              ? 'Ask AI for a hint using this guidance'
+              : 'Ask AI hint (locked — add an OpenAI API key to unlock)'
+          }
+          aria-label={
+            aiConfigured
+              ? 'Ask AI for a hint using this guidance'
+              : 'Ask AI hint (locked — add an OpenAI API key to unlock)'
+          }
+          onClick={() => askAi('hint')}
+        >
+          {aiBusyMode === 'hint' ? '…' : 'Hint'}
+        </button>
+        <button
+          type="submit"
+          className="solution-ai-btn solution-ai-btn-ask"
+          disabled={!aiConfigured || aiBusy}
+          title={
+            aiConfigured
+              ? `Ask AI for a full ${LANGUAGE_LABELS[language]} solution`
+              : 'Ask AI solution (locked — add an OpenAI API key to unlock)'
+          }
+          aria-label={
+            aiConfigured
+              ? `Ask AI for a full ${LANGUAGE_LABELS[language]} solution`
+              : 'Ask AI solution (locked — add an OpenAI API key to unlock)'
+          }
+        >
+          {aiBusyMode === 'full' ? 'Working…' : 'Ask AI'}
+        </button>
+      </form>
+      {aiError && <p className="solution-ai-error">{aiError}</p>}
+    </section>
+  );
+
+  const approachPanel = (
+    <div
+      className={[
+        'solution-compare',
+        notesVisible ? '' : 'is-collapsed',
+        approachDocked || (isHintView && notesVisible) ? 'is-notes-focus' : '',
+        approachDocked ? 'is-docked' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <div className="solution-compare-top">
+        <div className="solution-compare-picker">
+          {chipTabs.length > 1 && (
+            <div className="solution-chip-tabs" role="tablist" aria-label="Solution groups">
+              {chipTabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeChipTab === tab.key}
+                  className={`solution-chip-tab${activeChipTab === tab.key ? ' is-active' : ''}`}
+                  onClick={() => {
+                    setChipTab(tab.key);
+                    if (!tab.items.some((s) => s.id === selectedId) && tab.items[0]) {
+                      setSelectedId(tab.items[0].id);
+                    }
+                    if (tab.key === 'hints' && problemOpen) setApproachPaneOpen(true);
+                  }}
+                >
+                  {tab.label}
+                  <span className="solution-chip-tab-count">{tab.items.length}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          <div
+            className="solution-chip-rail-scroll"
+            role="tablist"
+            aria-label={`${chipTabs.find((t) => t.key === activeChipTab)?.label ?? 'Approach'} solutions`}
+          >
+            {activeChipItems.map((s) => {
+              const removable = s.source === 'ai' || s.source === 'hint' || s.source === 'local';
+              const label = chipLabel(s);
+              const groupLabel = chipTabs.find((t) => t.key === activeChipTab)?.label ?? 'Approach';
+              return (
+                <div
+                  key={s.id}
+                  data-solution-chip={s.id}
+                  className={`chip-group chip-group-${s.source}${selectedId === s.id ? ' is-active' : ''}`}
+                >
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={selectedId === s.id}
+                    className={`chip ${selectedId === s.id ? 'active' : ''}`}
+                    title={label}
+                    onClick={() => {
+                      setSelectedId(s.id);
+                      if (s.source === 'hint' && problemOpen) setApproachPaneOpen(true);
+                    }}
+                  >
+                    {label}
+                  </button>
+                  {removable && (
+                    <button
+                      type="button"
+                      className="chip-remove"
+                      disabled={aiBusy}
+                      title={`Remove ${groupLabel} · ${label}`}
+                      aria-label={`Remove ${groupLabel} · ${label}`}
+                      onClick={() => discardLocal(s.id)}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div className="solution-compare-meta">
+          <p className="solution-complexity">
+            {time && (
+              <span>
+                <span className="solution-complexity-label">Time</span> {time}
+              </span>
+            )}
+            {space && (
+              <span>
+                <span className="solution-complexity-label">Space</span> {space}
+              </span>
+            )}
+          </p>
+          {!approachDocked && (
+            <button
+              type="button"
+              className="solution-compare-toggle"
+              aria-expanded={approachOpen}
+              onClick={() => setApproachPaneOpen(!approachOpen)}
+            >
+              {approachOpen ? 'Hide notes' : 'Show notes'}
+              <span className="section-chevron" aria-hidden="true">
+                {approachOpen ? '▾' : '▸'}
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
+      {notesVisible && (
+        <div className="solution-compare-body">
+          {notes && <p className="solution-compare-notes">{notes}</p>}
+          {description ? (
+            <Markdown source={description} />
+          ) : solutions.length === 0 ? (
+            <p className="muted">No writeup for this solution yet.</p>
+          ) : (
+            <p className="muted">No comparison notes for this solution yet.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <main className={`page page-problem${showSolutionPane ? ' page-problem-split' : ''}`}>
       <div className={workspaceClass}>
-        <aside className={`workspace-problem${problemOpen ? '' : ' is-collapsed'}`}>
-          {problemOpen ? (
-            <div className="problem-pane">
-              <div className="problem-pane-head">
-                <div className="problem-pane-title-row">
-                  <h1 className="problem-pane-title">{problem.title}</h1>
-                  <div className="problem-pane-head-actions">
-                    <ProblemNav {...navProps} />
-                    <button
-                      type="button"
-                      className="section-chevron"
-                      aria-expanded={true}
-                      aria-label="Collapse problem panel"
-                      title="Collapse problem panel"
-                      onClick={() => setProblemPaneOpen(false)}
-                    >
-                      ‹
-                    </button>
-                  </div>
-                </div>
-                <div className="problem-pane-meta">
-                  <Link className="problem-pane-back muted" to={backTo.to}>
-                    ← {backTo.label}
-                  </Link>
-                  <span className={`badge ${problem.difficulty}`}>{problem.difficulty}</span>
-                  {problem.leetcodeId != null && <span className="muted">LC {problem.leetcodeId}</span>}
+        <aside className="workspace-problem">
+          <div className={`problem-pane${approachDocked ? ' problem-pane-collapsed' : ''}`}>
+            <div className="problem-pane-head">
+              <div className="problem-pane-title-row">
+                <h1 className="problem-pane-title">{problem.title}</h1>
+                <div className="problem-pane-head-actions">
+                  <ProblemNav {...navProps} />
                 </div>
               </div>
+              <div className="problem-pane-meta">
+                <Link className="problem-pane-back muted" to={backTo.to}>
+                  ← {backTo.label}
+                </Link>
+                <span className={`badge ${problem.difficulty}`}>{problem.difficulty}</span>
+                {problem.leetcodeId != null && <span className="muted">LC {problem.leetcodeId}</span>}
+              </div>
+            </div>
 
-              <div className="panel problem-pane-body">
+            {problemOpen ? (
+              <div key="problem-readme" className="panel problem-pane-body">
+                <button
+                  type="button"
+                  className="problem-desc-collapse section-chevron"
+                  aria-expanded={true}
+                  aria-label="Collapse problem description"
+                  title="Collapse problem description"
+                  onClick={() => setProblemPaneOpen(false)}
+                >
+                  ‹
+                </button>
                 <div className="problem-readme">
                   <Markdown source={problem.readme} />
                 </div>
               </div>
-
-              <section
-                className={`workspace-ai-panel${aiConfigured ? '' : ' is-locked'}`}
-                aria-label="Ask AI"
-              >
-                <p className="workspace-ai-panel-desc muted">
-                  {aiConfigured
-                    ? 'Optional guidance · creates a separate AI chip'
-                    : 'Add an OpenAI API key to unlock'}
-                </p>
-                <form
-                  className="solution-ai-bar"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    if (!aiConfigured || aiBusy) return;
-                    void askAi('full');
-                  }}
+            ) : (
+              <div key="problem-dock" className="problem-desc-slot">
+                <button
+                  type="button"
+                  className="problem-desc-rail"
+                  aria-expanded={false}
+                  aria-label={`Expand problem description: ${problem.title}`}
+                  title="Expand problem description"
+                  onClick={() => setProblemPaneOpen(true)}
                 >
-                  <input
-                    id="ai-guidance"
-                    className="solution-ai-bar-input"
-                    type="text"
-                    maxLength={2000}
-                    disabled={!aiConfigured || aiBusy}
-                    placeholder={
-                      aiConfigured
-                        ? 'Optional: two pointers, O(1) space…'
-                        : 'Add an OpenAI API key to unlock'
-                    }
-                    value={aiGuidance}
-                    onChange={(e) => setAiGuidance(e.target.value)}
-                    aria-label="Guidance for Ask AI"
-                  />
-                  <button
-                    type="button"
-                    className="solution-ai-btn solution-ai-btn-hint"
-                    disabled={!aiConfigured || aiBusy}
-                    title={
-                      aiConfigured
-                        ? 'Ask AI for a hint using this guidance'
-                        : 'Ask AI hint (locked — add an OpenAI API key to unlock)'
-                    }
-                    aria-label={
-                      aiConfigured
-                        ? 'Ask AI for a hint using this guidance'
-                        : 'Ask AI hint (locked — add an OpenAI API key to unlock)'
-                    }
-                    onClick={() => askAi('hint')}
-                  >
-                    {aiBusyMode === 'hint' ? '…' : 'Hint'}
-                  </button>
-                  <button
-                    type="submit"
-                    className="solution-ai-btn solution-ai-btn-ask"
-                    disabled={!aiConfigured || aiBusy}
-                    title={
-                      aiConfigured
-                        ? `Ask AI for a full ${LANGUAGE_LABELS[language]} solution`
-                        : 'Ask AI solution (locked — add an OpenAI API key to unlock)'
-                    }
-                    aria-label={
-                      aiConfigured
-                        ? `Ask AI for a full ${LANGUAGE_LABELS[language]} solution`
-                        : 'Ask AI solution (locked — add an OpenAI API key to unlock)'
-                    }
-                  >
-                    {aiBusyMode === 'full' ? 'Working…' : 'Ask AI'}
-                  </button>
-                </form>
-                {aiError && <p className="solution-ai-error">{aiError}</p>}
-              </section>
-            </div>
-          ) : (
-            <button
-              type="button"
-              className="workspace-problem-rail"
-              title="Expand problem panel"
-              aria-expanded={false}
-              aria-label={`Expand problem panel: ${problem.title}`}
-              onClick={() => setProblemPaneOpen(true)}
-            >
-              <span className="workspace-problem-rail-label">{problem.title}</span>
-              <span className="section-chevron section-chevron-static" aria-hidden="true">
-                ›
-              </span>
-            </button>
-          )}
+                  <span className="problem-desc-rail-label">{problem.title}</span>
+                  <span className="section-chevron section-chevron-static" aria-hidden="true">
+                    ›
+                  </span>
+                </button>
+                {approachPanel}
+              </div>
+            )}
+
+            {askAiPanel}
+          </div>
         </aside>
 
         <section className="workspace-main solution-panel">
-          <div
-            className={[
-              'solution-compare',
-              approachOpen ? '' : 'is-collapsed',
-              isHintView && approachOpen ? 'is-notes-focus' : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-          >
-            <div className="solution-compare-top">
-              <div className="solution-compare-picker">
-                {chipTabs.length > 1 && (
-                  <div className="solution-chip-tabs" role="tablist" aria-label="Solution groups">
-                    {chipTabs.map((tab) => (
-                      <button
-                        key={tab.key}
-                        type="button"
-                        role="tab"
-                        aria-selected={activeChipTab === tab.key}
-                        className={`solution-chip-tab${activeChipTab === tab.key ? ' is-active' : ''}`}
-                        onClick={() => {
-                          setChipTab(tab.key);
-                          if (!tab.items.some((s) => s.id === selectedId) && tab.items[0]) {
-                            setSelectedId(tab.items[0].id);
-                          }
-                          if (tab.key === 'hints') setApproachPaneOpen(true);
-                        }}
-                      >
-                        {tab.label}
-                        <span className="solution-chip-tab-count">{tab.items.length}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-                <div
-                  className="solution-chip-rail-scroll"
-                  role="tablist"
-                  aria-label={`${chipTabs.find((t) => t.key === activeChipTab)?.label ?? 'Approach'} solutions`}
-                >
-                  {activeChipItems.map((s) => {
-                    const removable =
-                      s.source === 'ai' || s.source === 'hint' || s.source === 'local';
-                    const label = chipLabel(s);
-                    const groupLabel =
-                      chipTabs.find((t) => t.key === activeChipTab)?.label ?? 'Approach';
-                    return (
-                      <div
-                        key={s.id}
-                        data-solution-chip={s.id}
-                        className={`chip-group chip-group-${s.source}${selectedId === s.id ? ' is-active' : ''}`}
-                      >
-                        <button
-                          type="button"
-                          role="tab"
-                          aria-selected={selectedId === s.id}
-                          className={`chip ${selectedId === s.id ? 'active' : ''}`}
-                          title={label}
-                          onClick={() => {
-                            setSelectedId(s.id);
-                            if (s.source === 'hint') setApproachPaneOpen(true);
-                          }}
-                        >
-                          {label}
-                        </button>
-                        {removable && (
-                          <button
-                            type="button"
-                            className="chip-remove"
-                            disabled={aiBusy}
-                            title={`Remove ${groupLabel} · ${label}`}
-                            aria-label={`Remove ${groupLabel} · ${label}`}
-                            onClick={() => discardLocal(s.id)}
-                          >
-                            ×
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="solution-compare-meta">
-                <p className="solution-complexity">
-                  {time && (
-                    <span>
-                      <span className="solution-complexity-label">Time</span> {time}
-                    </span>
-                  )}
-                  {space && (
-                    <span>
-                      <span className="solution-complexity-label">Space</span> {space}
-                    </span>
-                  )}
-                </p>
-                <button
-                  type="button"
-                  className="solution-compare-toggle"
-                  aria-expanded={approachOpen}
-                  onClick={() => setApproachPaneOpen(!approachOpen)}
-                >
-                  {approachOpen ? 'Hide notes' : 'Show notes'}
-                  <span className="section-chevron" aria-hidden="true">
-                    {approachOpen ? '▾' : '▸'}
-                  </span>
-                </button>
-              </div>
-            </div>
-            {approachOpen && (
-              <div className="solution-compare-body">
-                {notes && <p className="solution-compare-notes">{notes}</p>}
-                {description ? (
-                  <Markdown source={description} />
-                ) : solutions.length === 0 ? (
-                  <p className="muted">No writeup for this solution yet.</p>
-                ) : (
-                  <p className="muted">No comparison notes for this solution yet.</p>
-                )}
-              </div>
-            )}
-          </div>
+          {problemOpen && approachPanel}
 
           <div
             className={[
