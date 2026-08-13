@@ -67,6 +67,7 @@ export function ProblemPage() {
   const [aiBusy, setAiBusy] = useState(false);
   const [aiBusyMode, setAiBusyMode] = useState<AiExplainMode | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [aiGuidance, setAiGuidance] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [codeBuffer, setCodeBuffer] = useState('');
   const [codeSourceKey, setCodeSourceKey] = useState('');
@@ -86,11 +87,6 @@ export function ProblemPage() {
     setApproachOpen(open);
     writeApproachPaneOpen(open);
   }, []);
-
-  const focusCode = useCallback(() => {
-    setProblemPaneOpen(false);
-    setApproachPaneOpen(false);
-  }, [setProblemPaneOpen, setApproachPaneOpen]);
 
   const refreshLocals = useCallback(() => {
     setLocalSolutions(listLocalSolutions(topic, slug));
@@ -132,6 +128,7 @@ export function ProblemPage() {
     setJudgeError(null);
     setCodeBuffer('');
     setCodeSourceKey('');
+    setAiGuidance('');
     refreshLocals();
     api
       .problem(topic, slug)
@@ -250,7 +247,7 @@ export function ProblemPage() {
     setAiBusyMode(mode);
     setAiError(null);
     try {
-      const result = await api.aiExplain(topic, slug, mode, language);
+      const result = await api.aiExplain(topic, slug, mode, language, aiGuidance);
       const codeLang = result.language === 'python' ? 'python' : 'typescript';
       const entry: LocalSolution = {
         id: createAiSolutionId(),
@@ -390,12 +387,13 @@ export function ProblemPage() {
                     <ProblemNav {...navProps} />
                     <button
                       type="button"
-                      className="pane-toggle"
+                      className="section-chevron"
                       aria-expanded={true}
-                      title="Collapse problem"
+                      aria-label="Collapse problem panel"
+                      title="Collapse problem panel"
                       onClick={() => setProblemPaneOpen(false)}
                     >
-                      ⟨ Hide
+                      ‹
                     </button>
                   </div>
                 </div>
@@ -418,14 +416,14 @@ export function ProblemPage() {
             <button
               type="button"
               className="workspace-problem-rail"
-              title="Show problem"
+              title="Expand problem panel"
               aria-expanded={false}
+              aria-label={`Expand problem panel: ${problem.title}`}
               onClick={() => setProblemPaneOpen(true)}
             >
               <span className="workspace-problem-rail-label">{problem.title}</span>
-              <span className="workspace-problem-rail-meta">
-                <span className={`badge ${problem.difficulty}`}>{problem.difficulty}</span>
-                Problem
+              <span className="section-chevron section-chevron-static" aria-hidden="true">
+                ›
               </span>
             </button>
           )}
@@ -448,35 +446,6 @@ export function ProblemPage() {
                   </button>
                 ))}
               </div>
-              <div className="workspace-toolbar-actions">
-                {!problemOpen && (
-                  <button
-                    type="button"
-                    className="pane-toggle"
-                    onClick={() => setProblemPaneOpen(true)}
-                    title="Show problem statement"
-                  >
-                    Problem
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className="pane-toggle"
-                  aria-expanded={approachOpen}
-                  onClick={() => setApproachPaneOpen(!approachOpen)}
-                  title={approachOpen ? 'Collapse approach' : 'Expand approach'}
-                >
-                  {approachOpen ? 'Hide approach' : 'Approach'}
-                </button>
-                <button
-                  type="button"
-                  className="pane-toggle pane-toggle-accent"
-                  onClick={focusCode}
-                  title="Collapse problem and approach for more code space"
-                >
-                  Focus code
-                </button>
-              </div>
             </div>
 
             <div className="workspace-toolbar-meta">
@@ -492,79 +461,96 @@ export function ProblemPage() {
                   </span>
                 )}
               </p>
-              <div
-                className={`solution-ai${aiConfigured ? '' : ' is-locked'}`}
-                title={
+              {selectedLocal && (
+                <button
+                  type="button"
+                  className="solution-ai-btn solution-ai-btn-discard"
+                  disabled={aiBusy}
+                  title="Remove this local AI solution"
+                  onClick={discardSelectedLocal}
+                >
+                  Discard
+                </button>
+              )}
+            </div>
+            <form
+              className={`solution-ai-bar${aiConfigured ? '' : ' is-locked'}`}
+              title={
+                aiConfigured
+                  ? 'Describe the approach you want, then Ask AI'
+                  : 'Add an OpenAI API key to unlock Ask AI'
+              }
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!aiConfigured || aiBusy) return;
+                void askAi('full');
+              }}
+            >
+              <input
+                id="ai-guidance"
+                className="solution-ai-bar-input"
+                type="text"
+                maxLength={2000}
+                disabled={!aiConfigured || aiBusy}
+                placeholder="How should AI approach this? e.g. two pointers, O(1) space"
+                value={aiGuidance}
+                onChange={(e) => setAiGuidance(e.target.value)}
+                aria-label="Approach guidance for Ask AI"
+              />
+              <button
+                type="button"
+                className="solution-ai-btn solution-ai-btn-hint"
+                disabled={!aiConfigured || aiBusy}
+                aria-label={
                   aiConfigured
-                    ? 'Saved only in this browser — not added to the project'
-                    : 'Add an OpenAI API key to unlock AI hints and solutions'
+                    ? 'Ask AI for a hint using this guidance'
+                    : 'Ask AI hint (locked — add an OpenAI API key to unlock)'
+                }
+                onClick={() => askAi('hint')}
+              >
+                {aiBusyMode === 'hint' ? 'Working…' : 'Hint'}
+              </button>
+              <button
+                type="submit"
+                className="solution-ai-btn solution-ai-btn-ask"
+                disabled={!aiConfigured || aiBusy}
+                aria-label={
+                  aiConfigured
+                    ? `Ask AI for a full ${LANGUAGE_LABELS[language]} solution`
+                    : 'Ask AI solution (locked — add an OpenAI API key to unlock)'
                 }
               >
-                <button
-                  type="button"
-                  className="solution-ai-btn solution-ai-btn-hint"
-                  disabled={!aiConfigured || aiBusy}
-                  aria-label={
-                    aiConfigured
-                      ? 'Ask AI for a hint'
-                      : 'Ask AI hint (locked — add an OpenAI API key to unlock)'
-                  }
-                  onClick={() => askAi('hint')}
-                >
-                  {aiBusyMode === 'hint' ? 'Working…' : 'Hint'}
-                </button>
-                <button
-                  type="button"
-                  className="solution-ai-btn solution-ai-btn-ask"
-                  disabled={!aiConfigured || aiBusy}
-                  aria-label={
-                    aiConfigured
-                      ? `Ask AI for a full ${LANGUAGE_LABELS[language]} solution`
-                      : 'Ask AI solution (locked — add an OpenAI API key to unlock)'
-                  }
-                  onClick={() => askAi('full')}
-                >
-                  {aiBusyMode === 'full' ? 'Working…' : 'Ask AI'}
-                </button>
-                {selectedLocal && (
-                  <button
-                    type="button"
-                    className="solution-ai-btn solution-ai-btn-discard"
-                    disabled={aiBusy}
-                    title="Remove this local AI solution"
-                    onClick={discardSelectedLocal}
-                  >
-                    Discard
-                  </button>
-                )}
-              </div>
-            </div>
+                {aiBusyMode === 'full' ? 'Working…' : 'Ask AI'}
+              </button>
+            </form>
             {aiError && <p className="solution-ai-error">{aiError}</p>}
           </div>
 
-          {approachOpen && (
-            <div className="solution-compare">
-              <div className="solution-compare-head">
-                <strong>Approach</strong>
-                <button
-                  type="button"
-                  className="pane-toggle"
-                  aria-expanded={true}
-                  onClick={() => setApproachPaneOpen(false)}
-                >
-                  Collapse
-                </button>
+          <div className={`solution-compare${approachOpen ? '' : ' is-collapsed'}`}>
+            <button
+              type="button"
+              className="solution-compare-head"
+              aria-expanded={approachOpen}
+              onClick={() => setApproachPaneOpen(!approachOpen)}
+            >
+              <strong>Approach</strong>
+              <span className="section-chevron" aria-hidden="true">
+                {approachOpen ? '▾' : '▸'}
+              </span>
+            </button>
+            {approachOpen && (
+              <div className="solution-compare-body">
+                {notes && <p className="solution-compare-notes">{notes}</p>}
+                {description ? (
+                  <Markdown source={description} />
+                ) : solutions.length === 0 ? (
+                  <p className="muted">No solutions yet — use Ask AI when unlocked.</p>
+                ) : (
+                  <p className="muted">No comparison notes for this solution yet.</p>
+                )}
               </div>
-              {notes && <p className="solution-compare-notes">{notes}</p>}
-              {description ? (
-                <Markdown source={description} />
-              ) : solutions.length === 0 ? (
-                <p className="muted">No solutions yet — use Ask AI when unlocked.</p>
-              ) : (
-                <p className="muted">No comparison notes for this solution yet.</p>
-              )}
-            </div>
-          )}
+            )}
+          </div>
 
           <div className={`solution-block${canEditCode || !solution?.code ? '' : ' is-locked'}`}>
             <div className="solution-meta">
