@@ -6,6 +6,8 @@ export interface LocalSolution {
   source: 'ai' | 'local';
   /** Present on newer AI chips; older entries are inferred from code. */
   mode?: LocalSolutionMode;
+  /** Optional Ask AI guidance the learner typed when this chip was created. */
+  guidance?: string;
   notes?: string;
   description?: string;
   time?: string;

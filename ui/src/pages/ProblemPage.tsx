@@ -90,6 +90,8 @@ export function ProblemPage() {
   const [aiBusyMode, setAiBusyMode] = useState<AiExplainMode | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiGuidance, setAiGuidance] = useState('');
+  const aiGuidanceRef = useRef(aiGuidance);
+  aiGuidanceRef.current = aiGuidance;
   const [error, setError] = useState<string | null>(null);
   const [codeBuffer, setCodeBuffer] = useState('');
   const [codeSourceKey, setCodeSourceKey] = useState('');
@@ -370,17 +372,20 @@ export function ProblemPage() {
   }, [listId, list, catalog, topic, slug]);
 
   async function askAi(mode: AiExplainMode) {
+    const guidance = aiGuidanceRef.current.trim();
     setAiBusy(true);
     setAiBusyMode(mode);
     setAiError(null);
+    setAiGuidance('');
     try {
-      const result = await api.aiExplain(topic, slug, mode, language, aiGuidance);
+      const result = await api.aiExplain(topic, slug, mode, language, guidance || undefined);
       const codeLang = result.language === 'python' ? 'python' : 'typescript';
       const entry: LocalSolution = {
         id: createAiSolutionId(),
         title: result.title,
         source: 'ai',
         mode: result.mode === 'hint' ? 'hint' : 'full',
+        guidance: guidance || undefined,
         notes: result.notes,
         description: result.description,
         time: result.time ? formatComplexity(result.time) : undefined,
@@ -397,6 +402,8 @@ export function ProblemPage() {
       if (entry.mode === 'full') setCodeUnlocked(true);
     } catch (e) {
       setAiError(e instanceof Error ? e.message : String(e));
+      // Restore what they typed if the request fails.
+      if (guidance) setAiGuidance(guidance);
     } finally {
       setAiBusy(false);
       setAiBusyMode(null);
@@ -695,6 +702,11 @@ export function ProblemPage() {
         </div>
       </div>
       <div className="solution-compare-body">
+        {selectedLocal?.guidance && (
+          <p className="solution-compare-guidance">
+            <span className="solution-compare-guidance-label">Asked</span> {selectedLocal.guidance}
+          </p>
+        )}
         {notes && <p className="solution-compare-notes">{notes}</p>}
         {description ? (
           <Markdown source={description} />
