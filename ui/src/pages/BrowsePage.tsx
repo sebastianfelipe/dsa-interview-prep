@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api, type Catalog, type Difficulty } from '../api';
+import {
+  listProblemProgress,
+  subscribeProblemProgress,
+  type ProblemProgress,
+} from '../problem-progress';
 
 const ALL: Difficulty | 'All' = 'All';
 
@@ -10,6 +15,9 @@ export function BrowsePage() {
   const topicId = params.get('topic') ?? '';
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<Record<string, ProblemProgress>>(() =>
+    listProblemProgress(),
+  );
 
   useEffect(() => {
     api
@@ -17,6 +25,8 @@ export function BrowsePage() {
       .then(setCatalog)
       .catch((e) => setError(String(e)));
   }, []);
+
+  useEffect(() => subscribeProblemProgress(() => setProgress(listProblemProgress())), []);
 
   const topics = useMemo(
     () => (catalog?.topics ?? []).filter((t) => t.problems.length > 0),
@@ -86,16 +96,35 @@ export function BrowsePage() {
           </p>
 
           <div className="problem-list" style={{ marginTop: '1.25rem' }}>
-            {problems.map((p) => (
-              <Link key={p.slug} className="problem-row" to={`/problems/${p.topic}/${p.slug}`}>
-                <span className={`badge ${p.difficulty}`}>{p.difficulty}</span>
-                <span>
-                  <strong>{p.title}</strong>
-                  {p.leetcodeId != null && <span className="muted"> · LC {p.leetcodeId}</span>}
-                </span>
-                <span className="muted">{p.hasTests ? 'tests' : 'no tests'}</span>
-              </Link>
-            ))}
+            {problems.map((p) => {
+              const status = progress[`${p.topic}/${p.slug}`]?.status;
+              return (
+                <Link key={p.slug} className="problem-row" to={`/problems/${p.topic}/${p.slug}`}>
+                  <span className={`badge ${p.difficulty}`}>{p.difficulty}</span>
+                  <span>
+                    <strong>{p.title}</strong>
+                    {p.leetcodeId != null && <span className="muted"> · LC {p.leetcodeId}</span>}
+                  </span>
+                  <span
+                    className={
+                      status === 'passed'
+                        ? 'status-dot ok'
+                        : status === 'attempted'
+                          ? 'status-dot attempted'
+                          : 'muted'
+                    }
+                  >
+                    {status === 'passed'
+                      ? 'Passed'
+                      : status === 'attempted'
+                        ? 'Attempted'
+                        : p.hasTests
+                          ? 'tests'
+                          : 'no tests'}
+                  </span>
+                </Link>
+              );
+            })}
             {problems.length === 0 && <p className="muted">No problems for this filter.</p>}
           </div>
 
