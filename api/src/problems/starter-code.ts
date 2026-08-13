@@ -3,6 +3,16 @@
  * (function/class with opening braces), falling back to cases.json metadata.
  */
 
+const CONTROL_FLOW = new Set([
+  'if',
+  'for',
+  'while',
+  'switch',
+  'catch',
+  'function',
+  'with',
+]);
+
 function findMatchingBrace(source: string, openIndex: number): number {
   if (source[openIndex] !== '{') return -1;
   let depth = 0;
@@ -61,16 +71,21 @@ function extractClassStub(code: string, exportName: string): string | null {
   const body = code.slice(openIndex + 1, closeIndex);
   const methods: string[] = [];
 
-  // constructor(...) { ... } or name(...): Ret { ... }
+  // Line-start method declarations only. Skip private helpers and control-flow (`if (`).
   const methodRe =
-    /(?:^|\n)([ \t]*)(?:(?:public|private|protected|readonly|static|async)\s+)*((?:constructor|[A-Za-z_$][\w$]*))\s*\(([^)]*)\)\s*(?::\s*([^{]+))?\{/g;
+    /(?:^|\n)([ \t]*)((?:(?:public|private|protected|readonly|static|async)\s+)*)(constructor|[A-Za-z_$][\w$]*)\s*\(([^)]*)\)\s*(?::\s*([^{]+))?\{/g;
 
   let methodMatch: RegExpExecArray | null;
   while ((methodMatch = methodRe.exec(body)) !== null) {
+    const modifiers = methodMatch[2] ?? '';
+    const name = methodMatch[3];
+    const args = methodMatch[4].trim();
+    const ret = methodMatch[5]?.trim();
+
+    if (CONTROL_FLOW.has(name)) continue;
+    if (/\bprivate\b|\bprotected\b/.test(modifiers)) continue;
+
     const indent = '  ';
-    const name = methodMatch[2];
-    const args = methodMatch[3].trim();
-    const ret = methodMatch[4]?.trim();
     if (name === 'constructor') {
       methods.push(`${indent}constructor(${args}) {\n${indent}  \n${indent}}`);
     } else {
