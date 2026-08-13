@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import {
@@ -12,6 +12,7 @@ import {
   type SolutionDetail,
   type SolutionEntry,
 } from '../api';
+import { CodeBlock } from '../components/CodeBlock';
 import { CodeEditor } from '../components/CodeEditor';
 import { JudgePanel } from '../components/JudgePanel';
 import { Markdown } from '../components/Markdown';
@@ -26,14 +27,21 @@ import {
 import { formatSourceCode } from '../format-code';
 import { formatComplexity } from '../format-complexity';
 import {
+  OWN_CODE_ID,
   createAiSolutionId,
+  createOwnCodeDraft,
   listLocalSolutions,
   localSolutionKind,
   removeLocalSolution,
   saveLocalSolution,
   type LocalSolution,
 } from '../local-solutions';
-import { SolutionRevealToggle } from '../components/SolutionRevealToggle';
+import {
+  getProblemProgress,
+  recordProblemAttempt,
+  subscribeProblemProgress,
+  type ProblemProgressStatus,
+} from '../problem-progress';
 import {
   findProblemNeighbors,
   flattenCatalogProblems,
@@ -61,14 +69,14 @@ function sortRepoSolutions(repo: SolutionEntry[]): SolutionEntry[] {
   });
 }
 
-type ChipTab = 'repo' | 'ai' | 'hints' | 'local';
+type ChipTab = 'repo' | 'ai' | 'hints';
 
-const CHIP_TAB_ORDER: ChipTab[] = ['repo', 'ai', 'hints', 'local'];
+const CHIP_TAB_ORDER: ChipTab[] = ['repo', 'ai', 'hints'];
 
 function chipTabForSource(source: string): ChipTab {
   if (source === 'ai') return 'ai';
   if (source === 'hint') return 'hints';
-  if (source === 'local') return 'local';
+  // Your code stays on Approach so it is always one click away.
   return 'repo';
 }
 
@@ -76,12 +84,11 @@ export function ProblemPage() {
   const { topic = '', slug = '' } = useParams();
   const [searchParams] = useSearchParams();
   const listId = searchParams.get('list');
-  const [codeUnlocked, setCodeUnlocked] = useState(false);
   const [chipTab, setChipTab] = useState<ChipTab>('repo');
   const [problem, setProblem] = useState<ProblemDetail | null>(null);
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [list, setList] = useState<ListDetail | null>(null);
-  const [selectedId, setSelectedId] = useState('recommended');
+  const [selectedId, setSelectedId] = useState(OWN_CODE_ID);
   const [solution, setSolution] = useState<SolutionDetail | null>(null);
   const [localSolutions, setLocalSolutions] = useState<LocalSolution[]>([]);
   const [language, setLanguage] = useState<CodeLanguage>(() => readCodeLanguage());
@@ -92,12 +99,20 @@ export function ProblemPage() {
   const [aiGuidance, setAiGuidance] = useState('');
   const aiGuidanceRef = useRef(aiGuidance);
   aiGuidanceRef.current = aiGuidance;
+  const [coachNotes, setCoachNotes] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [codeBuffer, setCodeBuffer] = useState('');
+  const codeBufferRef = useRef(codeBuffer);
+  codeBufferRef.current = codeBuffer;
   const [codeSourceKey, setCodeSourceKey] = useState('');
+  const codeSourceKeyRef = useRef(codeSourceKey);
+  codeSourceKeyRef.current = codeSourceKey;
+  const selectedIdRef = useRef(selectedId);
+  selectedIdRef.current = selectedId;
   const [judgeBusy, setJudgeBusy] = useState(false);
   const [judgeMode, setJudgeMode] = useState<RunMode | null>(null);
   const [judgeResult, setJudgeResult] = useState<RunResult | null>(null);
+  const [progressStatus, setProgressStatus] = useState<ProblemProgressStatus | null>(null);
   const [judgeError, setJudgeError] = useState<string | null>(null);
   const [problemOpen, setProblemOpen] = useState(
     () => readWorkspacePanesForProblem(topic, slug).problemOpen,
@@ -173,8 +188,13 @@ export function ProblemPage() {
   }, []);
 
   useEffect(() => {
-    setCodeUnlocked(false);
     setChipTab('repo');
+  }, [topic, slug]);
+
+  useEffect(() => {
+    const sync = () => setProgressStatus(getProblemProgress(topic, slug)?.status ?? null);
+    sync();
+    return subscribeProblemProgress(sync);
   }, [topic, slug]);
 
   useEffect(() => {
@@ -219,11 +239,11 @@ export function ProblemPage() {
       .problem(topic, slug)
       .then((p) => {
         setProblem(p);
-        const preferred =
-          p.solutions.find((s) => s.id === 'recommended')?.id ??
-          p.solutions[0]?.id ??
-          'recommended';
-        setSelectedId(preferred);
+        // Default workspace: Your code first. Dig into solutions via Approach chips.
+        const draft = createOwnCodeDraft(topic, slug, p.starterCode ?? '');
+        refreshLocals();
+        setSelectedId(OWN_CODE_ID);
+        setChipTab('repo');
       })
       .catch((e) => setError(String(e)));
   }, [topic, slug, refreshLocals]);
@@ -265,15 +285,14 @@ export function ProblemPage() {
       repo: 'Approach',
       ai: 'AI',
       hints: 'Hints',
-      local: 'Local',
     };
+    // Your code always leads Approach — never tucked behind a separate Local tab.
     const items: Record<ChipTab, SolutionEntry[]> = {
-      repo: solutionGroups.repo,
+      repo: [...solutionGroups.localExtra, ...solutionGroups.repo],
       ai: solutionGroups.ai,
       hints: solutionGroups.hints,
-      local: solutionGroups.localExtra,
     };
-    return CHIP_TAB_ORDER.filter((key) => items[key].length > 0).map((key) => ({
+    return CHIP_TAB_ORDER.filter((key) => key === 'repo' || items[key].length > 0).map((key) => ({
       key,
       label: labels[key],
       items: items[key],
@@ -322,6 +341,7 @@ export function ProblemPage() {
         setSolution(null);
         return;
       }
+      const isOwn = selectedLocal.source === 'local';
       setSolution({
         id: selectedLocal.id,
         title: selectedLocal.title,
@@ -333,7 +353,8 @@ export function ProblemPage() {
         language: localLang,
         languages: [localLang],
         code: selectedLocal.code ? formatSourceCode(selectedLocal.code, localLang) : '',
-        hasCode: Boolean(selectedLocal.code),
+        // Local drafts stay editable even when empty.
+        hasCode: isOwn || Boolean(selectedLocal.code),
         path: 'localStorage',
       });
       return;
@@ -372,6 +393,10 @@ export function ProblemPage() {
   }, [listId, list, catalog, topic, slug]);
 
   async function askAi(mode: AiExplainMode) {
+    if (mode === 'coach') {
+      await askCoach();
+      return;
+    }
     const guidance = aiGuidanceRef.current.trim();
     setAiBusy(true);
     setAiBusyMode(mode);
@@ -398,8 +423,6 @@ export function ProblemPage() {
       refreshLocals();
       setSelectedId(entry.id);
       applyWorkspacePanes(panesRef.current.problemOpen, true);
-      // Full AI solutions include code — unlock so the new chip is readable immediately.
-      if (entry.mode === 'full') setCodeUnlocked(true);
     } catch (e) {
       setAiError(e instanceof Error ? e.message : String(e));
       // Restore what they typed if the request fails.
@@ -410,43 +433,193 @@ export function ProblemPage() {
     }
   }
 
+  async function askCoach() {
+    const draft = selectedLocal?.source === 'local' ? selectedLocal : null;
+    if (!draft) {
+      setAiError('Open Your code first to get coaching on your draft.');
+      return;
+    }
+    const guidance = aiGuidanceRef.current.trim();
+    const code = codeBufferRef.current;
+    setAiBusy(true);
+    setAiBusyMode('coach');
+    setAiError(null);
+    setAiGuidance('');
+    try {
+      const result = await api.aiExplain(
+        topic,
+        slug,
+        'coach',
+        'typescript',
+        guidance || undefined,
+        code,
+      );
+      const nextNotes = result.description.trim();
+      setCoachNotes(nextNotes);
+      saveLocalSolution(topic, slug, {
+        ...draft,
+        id: OWN_CODE_ID,
+        title: 'Your code',
+        source: 'local',
+        code,
+        language: 'typescript',
+        coachNotes: nextNotes,
+        notes: result.notes ?? draft.notes,
+      });
+      refreshLocals();
+    } catch (e) {
+      setAiError(e instanceof Error ? e.message : String(e));
+      if (guidance) setAiGuidance(guidance);
+    } finally {
+      setAiBusy(false);
+      setAiBusyMode(null);
+    }
+  }
+
   function discardLocal(id: string) {
+    const target = localSolutions.find((s) => s.id === id);
+    // Your code is permanent in Approach — only AI/hint chips can be removed.
+    if (!target || target.source === 'local') return;
     removeLocalSolution(topic, slug, id);
     const remaining = listLocalSolutions(topic, slug);
     setLocalSolutions(remaining);
     if (selectedId !== id) return;
-    const next =
-      remaining[0]?.id ??
-      problem?.solutions.find((s) => s.id === 'recommended')?.id ??
-      problem?.solutions[0]?.id ??
-      'recommended';
-    setSelectedId(next);
+    const draft = createOwnCodeDraft(topic, slug, problem?.starterCode ?? '');
+    setLocalSolutions(listLocalSolutions(topic, slug));
+    setSelectedId(draft.id);
+    setChipTab('repo');
   }
 
-  // Lock applies to repo + AI code chips. "Yours" stays editable; hints have no code.
+  const isOwnCode = selectedLocal?.source === 'local';
+
+  // Your code + AI chips are editable. Curated Approach solutions are read-only when selected.
   const canEditCode =
     language === 'typescript' &&
-    Boolean(solution?.hasCode && solution.code) &&
-    (codeUnlocked || selectedRepo?.source === 'yours');
+    (isOwnCode ||
+      (selectedLocal != null && Boolean(selectedLocal.code)) ||
+      selectedRepo?.source === 'yours');
 
-  useEffect(() => {
-    if (!solution?.hasCode || !solution.code || language !== 'typescript') return;
-    if (!canEditCode) return;
-    const key = `${topic}/${slug}/${selectedId}/${language}/${solution.path ?? 'local'}`;
-    if (key === codeSourceKey) return;
-    setCodeBuffer(solution.code);
-    setCodeSourceKey(key);
+  // Run/Submit uses the editor buffer when editable; otherwise the loaded approach code.
+  const runnableCode = (
+    canEditCode ? codeBuffer : solution?.code ?? ''
+  ).trim();
+  const canJudge =
+    language === 'typescript' && Boolean(runnableCode) && Boolean(problem?.hasTests);
+
+  const editableSessionRef = useRef<{ chipId: string; key: string } | null>(null);
+
+  const flushEditableLocal = useCallback(
+    (chipId: string, code: string) => {
+      const current = listLocalSolutions(topic, slug).find(
+        (s) => s.id === chipId || (chipId === OWN_CODE_ID && s.source === 'local'),
+      );
+      if (!current || current.code === code) return;
+      if (chipId === OWN_CODE_ID && current.source !== 'local') return;
+      saveLocalSolution(topic, slug, {
+        ...current,
+        id: current.source === 'local' ? OWN_CODE_ID : current.id,
+        code,
+        language: 'typescript',
+      });
+    },
+    [topic, slug],
+  );
+
+  // Seed the editor before paint so autosave never sees a mismatched chip/buffer pair.
+  useLayoutEffect(() => {
+    if (language !== 'typescript') return;
+
+    let next: { chipId: string; key: string; code: string; coachNotes: string | null } | null =
+      null;
+    if (isOwnCode && selectedLocal) {
+      next = {
+        chipId: OWN_CODE_ID,
+        key: `${topic}/${slug}/${OWN_CODE_ID}/${language}/local-draft`,
+        code: selectedLocal.code || '',
+        coachNotes: selectedLocal.coachNotes ?? null,
+      };
+    } else if (selectedLocal && selectedLocal.code && canEditCode) {
+      next = {
+        chipId: selectedLocal.id,
+        key: `${topic}/${slug}/${selectedId}/${language}/local`,
+        code: selectedLocal.code,
+        coachNotes: null,
+      };
+    } else if (selectedRepo?.source === 'yours' && solution?.code && canEditCode) {
+      next = {
+        chipId: selectedId,
+        key: `${topic}/${slug}/${selectedId}/${language}/${solution.path ?? 'yours'}`,
+        code: solution.code,
+        coachNotes: null,
+      };
+    }
+
+    const prev = editableSessionRef.current;
+    // Flush the previous editable chip before overwriting the buffer.
+    if (prev && (!next || prev.key !== next.key) && codeSourceKeyRef.current === prev.key) {
+      flushEditableLocal(prev.chipId, codeBufferRef.current);
+    }
+
+    if (!next) {
+      editableSessionRef.current = null;
+      if (codeSourceKeyRef.current) setCodeSourceKey('');
+      return;
+    }
+
+    editableSessionRef.current = { chipId: next.chipId, key: next.key };
+    if (codeSourceKeyRef.current === next.key) return;
+
+    setCodeBuffer(next.code);
+    setCodeSourceKey(next.key);
+    setCoachNotes(next.coachNotes);
     setJudgeResult(null);
     setJudgeError(null);
-  }, [solution, language, canEditCode, topic, slug, selectedId, codeSourceKey]);
+  }, [
+    solution,
+    language,
+    canEditCode,
+    isOwnCode,
+    selectedLocal,
+    selectedRepo,
+    topic,
+    slug,
+    selectedId,
+    flushEditableLocal,
+  ]);
+
+  useEffect(() => {
+    if (!isOwnCode) setCoachNotes(null);
+    else setCoachNotes(selectedLocal?.coachNotes ?? null);
+  }, [isOwnCode, selectedLocal?.id, selectedLocal?.coachNotes]);
+
+  function openOwnCodeDraft() {
+    const entry = createOwnCodeDraft(topic, slug, problem?.starterCode ?? '');
+    refreshLocals();
+    setSelectedId(OWN_CODE_ID);
+    setChipTab('repo');
+    setPreferredLanguage('typescript');
+    // Force the editor to pick up the stored draft (or repaired stub).
+    setCodeBuffer(entry.code);
+    setCodeSourceKey(`${topic}/${slug}/${OWN_CODE_ID}/typescript/local-draft`);
+    editableSessionRef.current = {
+      chipId: OWN_CODE_ID,
+      key: `${topic}/${slug}/${OWN_CODE_ID}/typescript/local-draft`,
+    };
+    applyWorkspacePanes(panesRef.current.problemOpen, true);
+  }
 
   async function runJudge(mode: RunMode) {
     if (language !== 'typescript') {
       setJudgeError('Only TypeScript can be judged right now');
       return;
     }
-    if (!codeBuffer.trim()) {
-      setJudgeError('Add TypeScript code in the console first');
+    const code = (canEditCode ? codeBuffer : solution?.code ?? '').trim();
+    if (!code) {
+      setJudgeError(
+        canEditCode
+          ? 'Add TypeScript code in the console first'
+          : 'No TypeScript code available for this approach',
+      );
       return;
     }
     setJudgeBusy(true);
@@ -455,28 +628,59 @@ export function ProblemPage() {
     try {
       const result =
         mode === 'submit'
-          ? await api.submit(topic, slug, codeBuffer)
-          : await api.run(topic, slug, codeBuffer, 'run');
+          ? await api.submit(topic, slug, code)
+          : await api.run(topic, slug, code, 'run');
       setJudgeResult(result);
+      // Progress tracks your own work only — not curated/read-only approaches.
+      if (canEditCode) {
+        const progress = recordProblemAttempt(topic, slug, {
+          mode,
+          passed: result.passed,
+        });
+        setProgressStatus(progress.status);
+      }
     } catch (e) {
       setJudgeResult(null);
       setJudgeError(e instanceof Error ? e.message : String(e));
+      if (canEditCode) {
+        const progress = recordProblemAttempt(topic, slug, { mode, passed: false });
+        setProgressStatus(progress.status);
+      }
     } finally {
       setJudgeBusy(false);
       setJudgeMode(null);
     }
   }
 
-  function saveBufferToLocalChip() {
-    if (!selectedLocal) return;
-    const entry: LocalSolution = {
-      ...selectedLocal,
-      code: codeBuffer,
-      language: 'typescript',
-    };
-    saveLocalSolution(topic, slug, entry);
-    refreshLocals();
-  }
+  // Autosave editable local chips (Your code / AI drafts) while typing.
+  useEffect(() => {
+    if (!selectedLocal || !canEditCode || language !== 'typescript') return;
+    if (selectedLocal.code === codeBuffer) return;
+    const chipId = selectedLocal.source === 'local' ? OWN_CODE_ID : selectedLocal.id;
+    const expectedKey =
+      selectedLocal.source === 'local'
+        ? `${topic}/${slug}/${OWN_CODE_ID}/${language}/local-draft`
+        : `${topic}/${slug}/${chipId}/${language}/local`;
+    // Buffer still belongs to another chip — wait for layout seeding.
+    if (codeSourceKeyRef.current !== expectedKey) return;
+
+    const timer = window.setTimeout(() => {
+      if (codeSourceKeyRef.current !== expectedKey) return;
+      if (selectedIdRef.current !== chipId) return;
+      flushEditableLocal(chipId, codeBufferRef.current);
+      refreshLocals();
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [
+    codeBuffer,
+    selectedLocal,
+    canEditCode,
+    language,
+    topic,
+    slug,
+    refreshLocals,
+    flushEditableLocal,
+  ]);
 
   if (error) return <main className="page">{error}</main>;
   if (!problem) return <main className="page">Loading…</main>;
@@ -523,19 +727,21 @@ export function ProblemPage() {
   const askAiPanel = (
     <section
       className={`workspace-ai-panel${aiConfigured ? '' : ' is-locked'}`}
-      aria-label="Ask AI"
+      aria-label={isOwnCode ? 'Help with my code' : 'Ask AI'}
     >
       <p className="workspace-ai-panel-desc muted">
-        {aiConfigured
-          ? 'Optional guidance · creates a separate AI chip'
-          : 'Add an OpenAI API key to unlock'}
+        {!aiConfigured
+          ? 'Add an OpenAI API key to unlock'
+          : isOwnCode
+            ? 'Ask about your code — coaching only, won’t replace it'
+            : 'Optional guidance · creates a separate AI chip'}
       </p>
       <form
         className="solution-ai-bar"
         onSubmit={(e) => {
           e.preventDefault();
           if (!aiConfigured || aiBusy) return;
-          void askAi('full');
+          void askAi(isOwnCode ? 'coach' : 'full');
         }}
       >
         <input
@@ -545,51 +751,81 @@ export function ProblemPage() {
           maxLength={2000}
           disabled={!aiConfigured || aiBusy}
           placeholder={
-            aiConfigured
-              ? 'Optional: two pointers, O(1) space…'
-              : 'Add an OpenAI API key to unlock'
+            !aiConfigured
+              ? 'Add an OpenAI API key to unlock'
+              : isOwnCode
+                ? 'Optional: what’s stuck? failing case, complexity…'
+                : 'Optional: two pointers, O(1) space…'
           }
           value={aiGuidance}
           onChange={(e) => setAiGuidance(e.target.value)}
-          aria-label="Guidance for Ask AI"
+          aria-label={isOwnCode ? 'Question about your code' : 'Guidance for Ask AI'}
         />
-        <button
-          type="button"
-          className="solution-ai-btn solution-ai-btn-hint"
-          disabled={!aiConfigured || aiBusy}
-          title={
-            aiConfigured
-              ? 'Ask AI for a hint using this guidance'
-              : 'Ask AI hint (locked — add an OpenAI API key to unlock)'
-          }
-          aria-label={
-            aiConfigured
-              ? 'Ask AI for a hint using this guidance'
-              : 'Ask AI hint (locked — add an OpenAI API key to unlock)'
-          }
-          onClick={() => askAi('hint')}
-        >
-          {aiBusyMode === 'hint' ? '…' : 'Hint'}
-        </button>
-        <button
-          type="submit"
-          className="solution-ai-btn solution-ai-btn-ask"
-          disabled={!aiConfigured || aiBusy}
-          title={
-            aiConfigured
-              ? `Ask AI for a full ${LANGUAGE_LABELS[language]} solution`
-              : 'Ask AI solution (locked — add an OpenAI API key to unlock)'
-          }
-          aria-label={
-            aiConfigured
-              ? `Ask AI for a full ${LANGUAGE_LABELS[language]} solution`
-              : 'Ask AI solution (locked — add an OpenAI API key to unlock)'
-          }
-        >
-          {aiBusyMode === 'full' ? 'Working…' : 'Ask AI'}
-        </button>
+        {isOwnCode ? (
+          <button
+            type="submit"
+            className="solution-ai-btn solution-ai-btn-ask"
+            disabled={!aiConfigured || aiBusy}
+            title={
+              aiConfigured
+                ? 'Get coaching on your current code'
+                : 'Help with my code (locked — add an OpenAI API key to unlock)'
+            }
+            aria-label={
+              aiConfigured
+                ? 'Get coaching on your current code'
+                : 'Help with my code (locked — add an OpenAI API key to unlock)'
+            }
+          >
+            {aiBusyMode === 'coach' ? 'Helping…' : 'Help with my code'}
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="solution-ai-btn solution-ai-btn-hint"
+              disabled={!aiConfigured || aiBusy}
+              title={
+                aiConfigured
+                  ? 'Ask AI for a hint using this guidance'
+                  : 'Ask AI hint (locked — add an OpenAI API key to unlock)'
+              }
+              aria-label={
+                aiConfigured
+                  ? 'Ask AI for a hint using this guidance'
+                  : 'Ask AI hint (locked — add an OpenAI API key to unlock)'
+              }
+              onClick={() => askAi('hint')}
+            >
+              {aiBusyMode === 'hint' ? '…' : 'Hint'}
+            </button>
+            <button
+              type="submit"
+              className="solution-ai-btn solution-ai-btn-ask"
+              disabled={!aiConfigured || aiBusy}
+              title={
+                aiConfigured
+                  ? `Ask AI for a full ${LANGUAGE_LABELS[language]} solution`
+                  : 'Ask AI solution (locked — add an OpenAI API key to unlock)'
+              }
+              aria-label={
+                aiConfigured
+                  ? `Ask AI for a full ${LANGUAGE_LABELS[language]} solution`
+                  : 'Ask AI solution (locked — add an OpenAI API key to unlock)'
+              }
+            >
+              {aiBusyMode === 'full' ? 'Working…' : 'Ask AI'}
+            </button>
+          </>
+        )}
       </form>
       {aiError && <p className="solution-ai-error">{aiError}</p>}
+      {isOwnCode && coachNotes && (
+        <div className="solution-ai-coach" aria-live="polite">
+          <p className="solution-ai-coach-label">Coach</p>
+          <Markdown source={coachNotes} />
+        </div>
+      )}
     </section>
   );
 
@@ -649,8 +885,17 @@ export function ProblemPage() {
             role="tablist"
             aria-label={`${chipTabs.find((t) => t.key === activeChipTab)?.label ?? 'Approach'} solutions`}
           >
+            {activeChipTab === 'repo' && activeChipItems.length === 0 && (
+              <button
+                type="button"
+                className="chip chip-own-code"
+                onClick={() => openOwnCodeDraft()}
+              >
+                Your code
+              </button>
+            )}
             {activeChipItems.map((s) => {
-              const removable = s.source === 'ai' || s.source === 'hint' || s.source === 'local';
+              const removable = s.source === 'ai' || s.source === 'hint';
               const label = chipLabel(s);
               const groupLabel = chipTabs.find((t) => t.key === activeChipTab)?.label ?? 'Approach';
               return (
@@ -751,6 +996,18 @@ export function ProblemPage() {
                 </Link>
                 <span className={`badge ${problem.difficulty}`}>{problem.difficulty}</span>
                 {problem.leetcodeId != null && <span className="muted">LC {problem.leetcodeId}</span>}
+                {progressStatus && (
+                  <span
+                    className={`status-dot ${progressStatus === 'passed' ? 'ok' : 'attempted'}`}
+                    title={
+                      progressStatus === 'passed'
+                        ? 'Submitted successfully'
+                        : 'Attempted — submit a passing solution to mark as passed'
+                    }
+                  >
+                    {progressStatus === 'passed' ? 'Passed' : 'Attempted'}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -796,7 +1053,6 @@ export function ProblemPage() {
           <div
             className={[
               'solution-block',
-              canEditCode || !solution?.code ? '' : 'is-locked',
               isHintView ? 'is-hint-only' : '',
             ]
               .filter(Boolean)
@@ -805,6 +1061,14 @@ export function ProblemPage() {
             <div className="solution-meta">
               <strong>Code</strong>
               <div className="solution-meta-actions">
+                <button
+                  type="button"
+                  className={`judge-btn judge-btn-ghost${isOwnCode ? ' is-active-own' : ''}`}
+                  onClick={() => openOwnCodeDraft()}
+                  title="Write your own TypeScript solution"
+                >
+                  Your code
+                </button>
                 <div className="language-switch" role="tablist" aria-label="Code language">
                   {CODE_LANGUAGES.map((lang) => (
                     <button
@@ -820,32 +1084,18 @@ export function ProblemPage() {
                   ))}
                 </div>
                 <div className="judge-actions">
-                  {selectedLocal && language === 'typescript' && canEditCode && (
-                    <button
-                      type="button"
-                      className="judge-btn judge-btn-ghost"
-                      disabled={judgeBusy || !codeBuffer.trim()}
-                      onClick={saveBufferToLocalChip}
-                    >
-                      Save
-                    </button>
-                  )}
                   <button
                     type="button"
                     className="judge-btn"
-                    disabled={
-                      judgeBusy ||
-                      !canEditCode ||
-                      language !== 'typescript' ||
-                      !codeBuffer.trim() ||
-                      !problem.hasTests
-                    }
+                    disabled={judgeBusy || !canJudge}
                     title={
                       language !== 'typescript'
                         ? 'Judging is TypeScript-only for now'
                         : !problem.hasTests
                           ? 'No I/O cases for this problem'
-                          : 'Run against example cases'
+                          : !runnableCode
+                            ? 'No TypeScript code to run for this selection'
+                            : 'Run against example cases'
                     }
                     onClick={() => runJudge('run')}
                   >
@@ -854,29 +1104,23 @@ export function ProblemPage() {
                   <button
                     type="button"
                     className="judge-btn judge-btn-submit"
-                    disabled={
-                      judgeBusy ||
-                      !canEditCode ||
-                      language !== 'typescript' ||
-                      !codeBuffer.trim() ||
-                      !problem.hasTests
-                    }
+                    disabled={judgeBusy || !canJudge}
                     title={
                       language !== 'typescript'
                         ? 'Judging is TypeScript-only for now'
                         : !problem.hasTests
                           ? 'No I/O cases for this problem'
-                          : 'Submit against examples + edge cases'
+                          : !runnableCode
+                            ? 'No TypeScript code to submit for this selection'
+                            : canEditCode
+                              ? 'Submit against examples + edge cases'
+                              : 'Submit this approach against examples + edge cases'
                     }
                     onClick={() => runJudge('submit')}
                   >
                     {judgeBusy && judgeMode === 'submit' ? 'Submitting…' : 'Submit'}
                   </button>
                 </div>
-                <SolutionRevealToggle
-                  revealed={codeUnlocked}
-                  onToggle={() => setCodeUnlocked((open) => !open)}
-                />
               </div>
             </div>
             <div className="solution-code-wrap">
@@ -891,7 +1135,10 @@ export function ProblemPage() {
                   }}
                   aria-label="Solution code console"
                 />
-              ) : selectedLocal && languageAvailableForSelection && !selectedLocal.code ? (
+              ) : selectedLocal &&
+                selectedLocal.source !== 'local' &&
+                languageAvailableForSelection &&
+                !selectedLocal.code ? (
                 <pre className="solution-code">
                   <code>Hint only — no code for this chip.</code>
                 </pre>
@@ -903,13 +1150,8 @@ export function ProblemPage() {
                       : `No ${missingLangLabel} yet for this approach — Ask AI to generate one, or add solution${language === 'python' ? '.py' : '.ts'}.`}
                   </code>
                 </pre>
-              ) : language === 'typescript' &&
-                languageAvailableForSelection &&
-                Boolean(solution?.code) &&
-                !codeUnlocked ? (
-                <pre className="solution-code solution-code-locked-placeholder" aria-hidden="true">
-                  <code>{solution?.code}</code>
-                </pre>
+              ) : solution?.code ? (
+                <CodeBlock className="solution-code" language={language} code={solution.code} />
               ) : languageAvailableForSelection &&
                 (problem.hasSolution || Boolean(selectedLocal)) &&
                 language === 'typescript' ? (
@@ -918,13 +1160,8 @@ export function ProblemPage() {
                 </pre>
               ) : (
                 <pre className="solution-code">
-                  <code>No code yet.</code>
+                  <code>No code yet — pick an Approach chip or open Your code.</code>
                 </pre>
-              )}
-              {!codeUnlocked && Boolean(solution?.code) && !canEditCode && (
-                <div className="solution-code-lock">
-                  <span>Code is locked — unlock to read it</span>
-                </div>
               )}
             </div>
             {(judgeError || judgeResult || judgeBusy) && (
