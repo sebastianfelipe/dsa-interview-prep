@@ -109,6 +109,7 @@ export function ProblemPage() {
   const aiGuidanceRef = useRef(aiGuidance);
   aiGuidanceRef.current = aiGuidance;
   const [coachNotes, setCoachNotes] = useState<string | null>(null);
+  const [coachOpen, setCoachOpen] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [codeBuffer, setCodeBuffer] = useState('');
   const codeBufferRef = useRef(codeBuffer);
@@ -499,6 +500,7 @@ export function ProblemPage() {
       );
       const nextNotes = result.description.trim();
       setCoachNotes(nextNotes);
+      setCoachOpen(true);
       saveLocalSolution(topic, slug, {
         ...draft,
         id: OWN_CODE_ID,
@@ -914,9 +916,22 @@ export function ProblemPage() {
       </form>
       {aiError && <p className="solution-ai-error">{aiError}</p>}
       {isOwnCode && coachNotes && (
-        <div className="solution-ai-coach" aria-live="polite">
-          <p className="solution-ai-coach-label">Coach</p>
-          <Markdown source={coachNotes} />
+        <div
+          className={`solution-ai-coach${coachOpen ? '' : ' is-collapsed'}`}
+          aria-live="polite"
+        >
+          <button
+            type="button"
+            className="solution-ai-coach-toggle"
+            aria-expanded={coachOpen}
+            onClick={() => setCoachOpen((open) => !open)}
+          >
+            <span className="solution-ai-coach-label">Coach</span>
+            <span className="section-chevron" aria-hidden="true">
+              {coachOpen ? '▾' : '▸'}
+            </span>
+          </button>
+          {coachOpen && <Markdown source={coachNotes} />}
         </div>
       )}
     </section>
