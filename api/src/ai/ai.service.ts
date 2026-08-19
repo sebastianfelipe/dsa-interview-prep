@@ -36,17 +36,21 @@ function systemPrompt(language: CodeLanguage, mode: AiExplainMode, hasGuidance: 
 The learner is writing their own ${label} solution. Coach them in place — do not solve the problem for them.
 
 Rules:
-- Review the learner's current code and optional question.
+- Review the learner's current code, optional question, and any JUDGE / FAILING CASES block.
 - Lead with what is already correct before any critique.
-- Do NOT invent bugs, edge-case failures, or "likely issues" without concrete evidence in their code.
-- If their approach is sound and the implementation looks correct, say so clearly. Offer at most light interview polish (naming, clarity, complexity callout) — not a fault-finding mission.
-- When JUDGE STATUS says their code PASSED the studio tests for this exact buffer, treat the solution as working. Congratulate them; do not claim it is wrong or still broken. Optional: brief complexity / interview talking points only.
-- When JUDGE STATUS says FAILED, focus on the failure pattern and a small next debug step — still no full rewrite.
-- When judge status is unknown, be conservative: prefer "possible concern" wording over asserting bugs.
-- Give targeted guidance: what looks right, real issues only if evidenced, a small next step, complexity or edge-case tips.
+- Do NOT invent bugs without concrete evidence in their code or the failing cases.
+- If their approach is sound and the implementation looks correct, say so clearly. Offer at most light interview polish — not a fault-finding mission.
+- When JUDGE STATUS says PASSED for this exact buffer: congratulate; do not invent failures. Optional: brief complexity / interview talking points only.
+- When JUDGE STATUS says FAILED (or they ask what to fix / why it fails / how to make it work):
+  - Be SPECIFIC to THEIR code. Name the function/method, condition, index, map/key, loop bound, or missing update that is wrong.
+  - If FAILING CASES are provided, walk 1 failing case: inputs → what their logic does → why that differs from expected → the exact change to try next.
+  - Prefer "change X because Y" over generic advice ("check edge cases", "try a different approach", "think about the problem").
+  - One primary bug at a time. End with a single concrete next step they can code immediately.
+  - Still no full rewrite and no drop-in solution.
+- When they ask what to solve / fix and judge status is unknown: inspect the code carefully; point to the most likely concrete defect you can justify from the code; say if you are uncertain.
 - Do NOT provide a complete working solution or a drop-in replacement implementation.
-- Do NOT dump a full rewrite of their function. Short illustrative snippets (a few lines) are OK only when needed to clarify a point.
-- Prefer questions and nudges that keep them thinking — unless the code already works, then prefer affirmation.
+- Short illustrative snippets (a few lines) are OK only to clarify the fix — never the full algorithm.
+- Prefer questions and nudges when exploring — but when they are stuck on a failure, prefer a clear diagnosis over Socratic vagueness.
 - If their code is empty, help them start (signature, approach sketch, first step) without writing the full algorithm.
 - Language is secondary — reason clearly; refer to ${label} only when discussing their code.
 - For time/space, prefer Unicode like the rest of the product: O(n²), O(2ⁿ), O(n · m), O(log₁₀ x).
@@ -55,11 +59,11 @@ Rules:
 
 JSON shape:
 {
-  "title": "short coaching headline",
+  "title": "short coaching headline naming the issue or win",
   "notes": "one-line tip",
   "time": "optional complexity note or empty",
   "space": "optional complexity note or empty",
-  "description": "markdown coaching: what's working first; real issues only if evidenced; no full solution",
+  "description": "markdown: what's working; then concrete diagnosis (code + failing case if any); one next step — no full solution",
   "code": ""
 }`;
   }
@@ -118,6 +122,7 @@ export class AiService {
     codeInput?: string,
     judgeStatusInput?: string,
     judgeSummaryInput?: string,
+    judgeDetailInput?: string,
   ): Promise<AiExplainResult> {
     const language = normalizeCodeLanguage(languageInput);
     const label = LANGUAGE_LABELS[language];
@@ -125,6 +130,7 @@ export class AiService {
     const learnerCode = this.normalizeCode(codeInput);
     const judgeStatus = this.normalizeJudgeStatus(judgeStatusInput);
     const judgeSummary = this.normalizeGuidance(judgeSummaryInput);
+    const judgeDetail = this.normalizeJudgeDetail(judgeDetailInput);
     const apiKey = this.apiKey();
     if (!apiKey) {
       throw new ServiceUnavailableException('AI is not configured (missing OPENAI_API_KEY)');
@@ -144,7 +150,9 @@ export class AiService {
         : mode === 'coach'
           ? judgeStatus === 'passed'
             ? 'COACH ONLY — their current code PASSED studio tests; affirm what works; light polish only; do not invent bugs; set code to "".'
-            : 'COACH ONLY — guide the learner on their current code; do not invent bugs; do not solve the whole problem; set code to "".'
+            : judgeStatus === 'failed'
+              ? 'COACH ONLY — code FAILED tests; diagnose the concrete bug using FAILING CASES + their code; one specific next fix; no full rewrite; set code to "".'
+              : 'COACH ONLY — guide on their current code; be specific when they ask what to fix; do not invent bugs; no full rewrite; set code to "".'
           : `FULL — teach the approach first, then include a complete ${label} illustration of that approach in code.`;
 
     const userPrompt = [
@@ -168,10 +176,20 @@ export class AiService {
             judgeStatus === 'passed'
               ? `PASSED — this exact code buffer already passed the studio judge${judgeSummary ? ` (${judgeSummary})` : ''}. Treat it as a working solution. Do not claim it fails or invent bugs.`
               : judgeStatus === 'failed'
-                ? `FAILED — this exact code buffer failed the studio judge${judgeSummary ? ` (${judgeSummary})` : ''}. Help them debug; do not rewrite the full solution.`
+                ? `FAILED — this exact code buffer failed the studio judge${judgeSummary ? ` (${judgeSummary})` : ''}. Use FAILING CASES below to diagnose a concrete bug in THEIR code. Do not give generic hints.`
                 : 'UNKNOWN — no matching judge result for this exact buffer. Do not invent failures; only flag issues you can justify from the code.',
             '=== END JUDGE STATUS ===',
-          ].join('\n')
+            judgeDetail
+              ? [
+                  '',
+                  '=== FAILING CASES (use these; walk one case against their code) ===',
+                  judgeDetail,
+                  '=== END FAILING CASES ===',
+                ].join('\n')
+              : '',
+          ]
+            .filter(Boolean)
+            .join('\n')
         : '',
       guidance
         ? [
@@ -180,6 +198,7 @@ export class AiService {
               ? [
                   '=== LEARNER QUESTION ===',
                   guidance,
+                  'Answer this question directly. If they ask what to fix / why it fails / how to make it work, lead with a concrete diagnosis of THEIR code (and failing cases if present), not a generic hint.',
                   '=== END LEARNER QUESTION ===',
                 ].join('\n')
               : [
@@ -204,7 +223,15 @@ export class AiService {
       body: JSON.stringify({
         model,
         temperature:
-          mode === 'coach' ? (judgeStatus === 'passed' ? 0.2 : 0.3) : guidance ? 0.2 : 0.4,
+          mode === 'coach'
+            ? judgeStatus === 'passed'
+              ? 0.2
+              : judgeStatus === 'failed' || guidance
+                ? 0.25
+                : 0.3
+            : guidance
+              ? 0.2
+              : 0.4,
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: systemPrompt(language, mode, Boolean(guidance)) },
@@ -288,6 +315,13 @@ export class AiService {
       return statusInput;
     }
     return undefined;
+  }
+
+  private normalizeJudgeDetail(detailInput?: string): string | undefined {
+    if (typeof detailInput !== 'string') return undefined;
+    const trimmed = detailInput.trim();
+    if (!trimmed) return undefined;
+    return trimmed.slice(0, 8000);
   }
 
   private apiKey(): string | undefined {

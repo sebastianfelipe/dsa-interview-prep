@@ -89,6 +89,32 @@ function parseEditorSessionKey(
   return { topic: parts[0], slug: parts[1], chipId: parts[2] };
 }
 
+function formatJsonCompact(value: unknown): string {
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+/** Compact failing-case dump for the coach (inputs / expected / actual / error). */
+function formatJudgeFailDetail(result: RunResult, maxCases = 3): string {
+  const fails = result.cases.filter((c) => c.status !== 'passed').slice(0, maxCases);
+  if (fails.length === 0) return '';
+  return fails
+    .map((c, i) => {
+      const lines = [
+        `Case ${i + 1}: ${c.id} (${c.status})`,
+        `  inputs:   ${formatJsonCompact(c.inputs)}`,
+        `  expected: ${formatJsonCompact(c.expected)}`,
+      ];
+      if (c.actual !== undefined) lines.push(`  actual:   ${formatJsonCompact(c.actual)}`);
+      if (c.error) lines.push(`  error:    ${c.error}`);
+      return lines.join('\n');
+    })
+    .join('\n\n');
+}
+
 export function ProblemPage() {
   const { topic = '', slug = '' } = useParams();
   const [searchParams] = useSearchParams();
@@ -129,6 +155,7 @@ export function ProblemPage() {
     code: string;
     passed: boolean;
     summary: string;
+    detail?: string;
   } | null>(null);
   const [problemOpen, setProblemOpen] = useState(
     () => readWorkspacePanesForProblem(topic, slug).problemOpen,
@@ -482,6 +509,7 @@ export function ProblemPage() {
       ? {
           status: (judged.passed ? 'passed' : 'failed') as 'passed' | 'failed',
           summary: judged.summary,
+          detail: judged.detail,
         }
       : { status: 'unknown' as const };
     setAiBusy(true);
@@ -725,6 +753,7 @@ export function ProblemPage() {
         summary: `${result.summary.passed}/${result.summary.total} cases ${
           result.passed ? 'passed' : 'failed'
         }`,
+        detail: result.passed ? undefined : formatJudgeFailDetail(result),
       };
       // Progress tracks your own work only — not curated/read-only approaches.
       if (canEditCode) {
@@ -849,7 +878,7 @@ export function ProblemPage() {
             !aiConfigured
               ? 'Add an OpenAI API key to unlock'
               : isOwnCode
-                ? 'Optional: what’s stuck? failing case, complexity…'
+                ? 'Optional: what’s broken? e.g. fails example 2 — what should I change?'
                 : 'Optional: two pointers, O(1) space…'
           }
           value={aiGuidance}

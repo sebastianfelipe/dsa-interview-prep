@@ -194,7 +194,7 @@ export const api = {
     language: CodeLanguage = 'typescript',
     guidance?: string,
     code?: string,
-    judge?: { status: 'passed' | 'failed' | 'unknown'; summary?: string },
+    judge?: { status: 'passed' | 'failed' | 'unknown'; summary?: string; detail?: string },
   ) =>
     post<AiExplainResult>('/api/ai/explain', {
       topic,
@@ -205,5 +205,6 @@ export const api = {
       ...(typeof code === 'string' ? { code } : {}),
       ...(judge?.status ? { judgeStatus: judge.status } : {}),
       ...(judge?.summary?.trim() ? { judgeSummary: judge.summary.trim() } : {}),
+      ...(judge?.detail?.trim() ? { judgeDetail: judge.detail.trim() } : {}),
     }),
 };

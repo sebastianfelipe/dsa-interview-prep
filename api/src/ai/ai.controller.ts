@@ -15,6 +15,8 @@ class ExplainBodyDto {
   judgeStatus?: 'passed' | 'failed' | 'unknown';
   /** Optional short judge summary, e.g. "3/3 cases". */
   judgeSummary?: string;
+  /** Optional failing-case dump for concrete coaching. */
+  judgeDetail?: string;
 }
 
 function normalizeMode(mode?: string): AiExplainMode {
@@ -72,6 +74,10 @@ export class AiController {
           description: 'Optional short judge summary for the coach prompt',
           example: '3/3 cases passed',
         },
+        judgeDetail: {
+          type: 'string',
+          description: 'Optional failing case details (inputs/expected/actual) for coach mode',
+        },
       },
     },
   })
@@ -86,6 +92,7 @@ export class AiController {
       body.code,
       body.judgeStatus,
       body.judgeSummary,
+      body.judgeDetail,
     );
   }
 }
