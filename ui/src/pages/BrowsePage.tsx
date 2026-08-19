@@ -6,6 +6,7 @@ import {
   subscribeProblemProgress,
   type ProblemProgress,
 } from '../problem-progress';
+import { readLastBrowse, writeLastBrowse } from '../studio-nav';
 
 const ALL: Difficulty | 'All' = 'All';
 
@@ -25,6 +26,26 @@ export function BrowsePage() {
       .then(setCatalog)
       .catch((e) => setError(String(e)));
   }, []);
+
+  useEffect(() => {
+    if (!catalog || topicId) return;
+    const topicsWithProblems = catalog.topics.filter((t) => t.problems.length > 0);
+    const last = readLastBrowse();
+    const next =
+      last && topicsWithProblems.some((t) => t.id === last.topic) ? last.topic : topicsWithProblems[0]?.id;
+    if (!next) return;
+    const nextParams = new URLSearchParams(params);
+    nextParams.set('topic', next);
+    if (last?.difficulty && !params.get('difficulty')) {
+      nextParams.set('difficulty', last.difficulty);
+    }
+    setParams(nextParams, { replace: true });
+  }, [catalog, topicId, params, setParams]);
+
+  useEffect(() => {
+    if (!topicId) return;
+    writeLastBrowse(topicId, difficulty);
+  }, [topicId, difficulty]);
 
   useEffect(() => subscribeProblemProgress(() => setProgress(listProblemProgress())), []);
 
@@ -93,6 +114,12 @@ export function BrowsePage() {
           <p className="muted">
             {problems.length} problem{problems.length === 1 ? '' : 's'}
             {difficulty ? ` · ${difficulty}` : ''}
+            {activeTopic.id === '17-sql' ? (
+              <>
+                {' · '}
+                <Link to="/reference/resources/sql/README">How to build queries</Link>
+              </>
+            ) : null}
           </p>
 
           <div className="problem-list" style={{ marginTop: '1.25rem' }}>
@@ -132,8 +159,15 @@ export function BrowsePage() {
           {activeTopic.patterns.length > 0 && (
             <div style={{ marginTop: '2rem' }}>
               <h2 className="topic-title" style={{ fontSize: '1.25rem' }}>
-                Patterns
+                {activeTopic.id === '17-sql' ? 'Study notes' : 'Patterns'}
               </h2>
+              {activeTopic.id === '17-sql' && (
+                <p className="muted" style={{ margin: '0.5rem 0 0' }}>
+                  Start with{' '}
+                  <Link to="/reference/resources/sql/README">how to build queries</Link> (layers, nested
+                  queries, CTEs), then the recognition patterns below.
+                </p>
+              )}
               <div className="problem-list" style={{ marginTop: '0.75rem' }}>
                 {activeTopic.patterns.map((p) => (
                   <Link

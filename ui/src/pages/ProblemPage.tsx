@@ -49,6 +49,14 @@ import {
   flattenListProblems,
 } from '../problem-sequence';
 import {
+  browsePath,
+  listsPath,
+  preferSqlReference,
+  readLastBrowse,
+  writeLastBrowse,
+  writeLastListId,
+} from '../studio-nav';
+import {
   readWorkspacePanesForProblem,
   releaseProblemVisit,
   rememberProblemVisit,
@@ -249,8 +257,13 @@ export function ProblemPage() {
   }, [problem, problemKind, language]);
 
   useEffect(() => {
-    setChipTab('repo');
-  }, [topic, slug]);
+    if (listId) writeLastListId(listId);
+    if (topic) {
+      const last = readLastBrowse();
+      writeLastBrowse(topic, last?.topic === topic ? last.difficulty : undefined);
+    }
+    if (topic === '17-sql') preferSqlReference();
+  }, [listId, topic]);
 
   useEffect(() => {
     const sync = () => setProgressStatus(getProblemProgress(topic, slug)?.status ?? null);
@@ -838,8 +851,13 @@ export function ProblemPage() {
   const space = formatComplexity(solution?.space ?? selected?.space ?? selectedRepo?.space);
   const showSolutionPane = true;
   const backTo = list
-    ? { to: '/lists', label: list.title }
-    : { to: `/browse?topic=${problem.topic}`, label: problem.topicTitle };
+    ? { to: listsPath(list.id), label: list.title }
+    : {
+        to: browsePath(problem.topic, readLastBrowse()?.topic === problem.topic
+          ? readLastBrowse()?.difficulty
+          : undefined),
+        label: problem.topicTitle,
+      };
 
   const navProps = {
     previous: neighbors.previous,
@@ -1159,6 +1177,11 @@ export function ProblemPage() {
                 </Link>
                 <span className={`badge ${problem.difficulty}`}>{problem.difficulty}</span>
                 {problem.leetcodeId != null && <span className="muted">LC {problem.leetcodeId}</span>}
+                {problem.kind === 'sql' && (
+                  <Link className="muted" to="/reference/resources/sql/README">
+                    Study notes
+                  </Link>
+                )}
                 {progressStatus && (
                   <span
                     className={`status-dot ${progressStatus === 'passed' ? 'ok' : 'attempted'}`}

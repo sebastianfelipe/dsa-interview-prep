@@ -5,10 +5,10 @@ import { CatalogService } from '../catalog/catalog.service';
 
 const RESOURCE_PREFIXES = [
   'resources/study-plans',
+  'resources/sql',
   'resources/cheat-sheets',
   'resources/patterns',
   'resources/templates',
-  'resources/sql',
 ];
 
 @Injectable()
@@ -102,7 +102,7 @@ export class DocsService {
   }
 
   private pretty(id: string) {
-    if (id === 'sql') return 'SQL';
+    if (id === 'sql') return 'SQL · how to query';
     return id
       .replace(/^\d+-/, '')
       .split('-')

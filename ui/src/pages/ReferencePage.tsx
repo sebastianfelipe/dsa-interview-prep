@@ -2,30 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api';
 import { Markdown } from '../components/Markdown';
-
-const LAST_REFERENCE_KEY = 'dsa-studio-last-reference';
+import { readLastReference, writeLastReference } from '../studio-nav';
 
 type DocIndexSection = {
   id: string;
   title: string;
   docs: { path: string; title: string }[];
 };
-
-function readLastReference(): string | null {
-  try {
-    return sessionStorage.getItem(LAST_REFERENCE_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function writeLastReference(path: string) {
-  try {
-    sessionStorage.setItem(LAST_REFERENCE_KEY, path);
-  } catch {
-    /* ignore */
-  }
-}
 
 function flattenDocs(sections: DocIndexSection[]) {
   return sections.flatMap((section) => section.docs);
@@ -46,12 +29,10 @@ export function ReferencePage() {
       .catch((e) => setError(String(e)));
   }, []);
 
-  // Remember the current doc for this browser session (survives leaving for an exercise).
   useEffect(() => {
     if (docPath) writeLastReference(docPath);
   }, [docPath]);
 
-  // Empty /reference → restore last session pick, else open the first doc.
   useEffect(() => {
     if (!index || docPath) return;
 
@@ -81,6 +62,11 @@ export function ReferencePage() {
       cancelled = true;
     };
   }, [docPath]);
+
+  useEffect(() => {
+    const el = document.querySelector<HTMLElement>('.sidebar a.active');
+    el?.scrollIntoView({ block: 'nearest' });
+  }, [docPath, index]);
 
   if (error) return <main className="page">{error}</main>;
   if (!index) return <main className="page">Loading…</main>;

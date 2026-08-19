@@ -1,8 +1,14 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { ThemeToggle } from './ThemeToggle';
 import { PaletteToggle } from './PaletteToggle';
+import { lastBrowsePath, lastListsPath, lastReferencePath } from '../studio-nav';
 
 export function AppShell() {
+  const { pathname } = useLocation();
+  const browseTo = lastBrowsePath();
+  const listsTo = lastListsPath();
+  const referenceTo = lastReferencePath();
+
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -14,13 +20,22 @@ export function AppShell() {
         </NavLink>
         <div className="topbar-right">
           <nav className="nav">
-            <NavLink to="/browse" className={({ isActive }) => (isActive ? 'active' : '')}>
+            <NavLink
+              to={browseTo}
+              className={() => (pathname === '/browse' ? 'active' : '')}
+            >
               Browse
             </NavLink>
-            <NavLink to="/lists" className={({ isActive }) => (isActive ? 'active' : '')}>
+            <NavLink
+              to={listsTo}
+              className={() => (pathname === '/lists' ? 'active' : '')}
+            >
               Lists
             </NavLink>
-            <NavLink to="/reference" className={({ isActive }) => (isActive ? 'active' : '')}>
+            <NavLink
+              to={referenceTo}
+              className={() => (pathname.startsWith('/reference') ? 'active' : '')}
+            >
               Reference
             </NavLink>
           </nav>

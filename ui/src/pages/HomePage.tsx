@@ -26,6 +26,9 @@ export function HomePage() {
           <Link className="btn btn-ghost" to="/lists">
             Prep lists
           </Link>
+          <Link className="btn btn-ghost" to="/reference/resources/sql/README">
+            SQL notes
+          </Link>
         </div>
       </section>
     </main>

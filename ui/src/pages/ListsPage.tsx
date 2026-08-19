@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { api, type ListDetail, type ListSummary } from '../api';
 import {
   listProblemProgress,
@@ -7,6 +7,7 @@ import {
   type ProblemProgress,
   type ProblemProgressStatus,
 } from '../problem-progress';
+import { readLastListId, writeLastListId } from '../studio-nav';
 
 function progressStatusFor(
   progress: Record<string, ProblemProgress>,
@@ -38,6 +39,8 @@ function statusClass(status: ProblemProgressStatus | undefined, covered: boolean
 }
 
 export function ListsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const listParam = searchParams.get('list');
   const [lists, setLists] = useState<ListSummary[]>([]);
   const [selected, setSelected] = useState<ListDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -48,12 +51,36 @@ export function ListsPage() {
   useEffect(() => {
     api
       .lists()
-      .then(async (ls) => {
-        setLists(ls);
-        if (ls[0]) setSelected(await api.list(ls[0].id));
-      })
+      .then(setLists)
       .catch((e) => setError(String(e)));
   }, []);
+
+  useEffect(() => {
+    if (lists.length === 0) return;
+    const known = (id: string | null) => Boolean(id && lists.some((l) => l.id === id));
+    const id = known(listParam)
+      ? listParam!
+      : known(readLastListId())
+        ? readLastListId()!
+        : lists[0].id;
+    if (listParam !== id) {
+      setSearchParams({ list: id }, { replace: true });
+      return;
+    }
+    writeLastListId(id);
+    let cancelled = false;
+    api
+      .list(id)
+      .then((detail) => {
+        if (!cancelled) setSelected(detail);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(String(e));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [lists, listParam, setSearchParams]);
 
   useEffect(() => {
     const sync = () => setProgress(listProblemProgress());
@@ -72,8 +99,8 @@ export function ListsPage() {
     };
   }, []);
 
-  async function pick(id: string) {
-    setSelected(await api.list(id));
+  function pick(id: string) {
+    setSearchParams({ list: id });
     setProgress(listProblemProgress());
   }
 
@@ -126,6 +153,12 @@ export function ListsPage() {
               {learnerStats.passed} passed · {learnerStats.attempted} attempted ·{' '}
               {learnerStats.notStarted} not started
               {learnerStats.missing > 0 ? ` · ${learnerStats.missing} missing` : ''}
+              {selected.id === 'sql-dpmjh4yr' ? (
+                <>
+                  {' · '}
+                  <Link to="/reference/resources/sql/README">SQL study notes</Link>
+                </>
+              ) : null}
               {' · '}
               <a href={selected.url} target="_blank" rel="noreferrer">
                 Open on LeetCode
