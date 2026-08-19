@@ -4,11 +4,15 @@ import * as path from 'path';
 
 export type Difficulty = 'Easy' | 'Medium' | 'Hard';
 
+/** dsa = function/class judged in TypeScript; sql = one query judged against Postgres. */
+export type ProblemKind = 'dsa' | 'sql';
+
 export interface ProblemMeta {
   title: string;
   slug: string;
   leetcodeId?: number;
   difficulty: Difficulty;
+  kind?: ProblemKind;
   tags?: string[];
 }
 
@@ -82,7 +86,9 @@ export class CatalogService {
             ...meta,
             topic: topicId,
             topicTitle: this.titleFromReadme(topicPath),
-            hasSolution: fs.existsSync(path.join(problemPath, 'solution.ts')),
+            hasSolution:
+              fs.existsSync(path.join(problemPath, 'solution.ts')) ||
+              fs.existsSync(path.join(problemPath, 'solution.sql')),
             hasTests:
               fs.existsSync(path.join(problemPath, 'cases.json')) ||
               fs.existsSync(path.join(problemPath, 'solution.test.ts')),

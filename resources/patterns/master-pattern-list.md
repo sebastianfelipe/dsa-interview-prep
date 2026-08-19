@@ -35,6 +35,13 @@ Use this as a **recognition map**. Match problem signals → pattern → folder.
 | Intervals | Merge, insert, meeting rooms | [14](../14-intervals/) |
 | Trie | Prefix search, word dictionary | [15](../15-tries/) |
 | Bit tricks | Single number, subsets mask | [12](../12-bit-manipulation/) |
+| SQL CASE / projection | Conditional output column | [17](/reference/topics/17-sql/patterns/case-when) |
+| SQL LEFT JOIN (keep zeros) | Every entity appears even with 0 events | [17](/reference/topics/17-sql/patterns/left-join) |
+| SQL anti-join | In A but not in B | [17](/reference/topics/17-sql/patterns/anti-join) |
+| SQL GROUP BY / HAVING | Filter groups ("at least N") | [17](/reference/topics/17-sql/patterns/group-by-having) |
+| SQL self-join on dates | Yesterday / next calendar day | [17](/reference/topics/17-sql/patterns/self-join-dates) |
+| SQL first event | Min date/year, then matching rows | [17](/reference/topics/17-sql/patterns/first-event) |
+| SQL window functions | Rank, running total, moving average | [17](/reference/topics/17-sql/patterns/window-functions) |
 
 ## Decision tree (first 60 seconds)
 
@@ -68,6 +75,13 @@ Local choice never hurts global?
 
 Next greater / histogram / span?
   └─ Monotonic stack
+
+SQL / result table?
+  └─ Must keep unmatched → LEFT JOIN (filter in ON)
+  └─ Must drop matched → anti-join
+  └─ Filter on a count → GROUP BY + HAVING
+  └─ Compare to yesterday → self-join on date + 1
+  └─ Rank / moving average → window
 ```
 
 ## Key Extract

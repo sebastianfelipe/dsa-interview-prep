@@ -174,6 +174,7 @@ export function createOwnCodeDraft(
   topic: string,
   slug: string,
   starterCode = '',
+  language = 'typescript',
 ): LocalSolution {
   const seed = starterCode.trim() ? starterCode.replace(/\s*$/, '') + '\n' : '';
   const store = readStore();
@@ -191,8 +192,12 @@ export function createOwnCodeDraft(
     const contaminatedByAi = Boolean(
       draft.code.trim() && aiCodes.has(normalizeCode(draft.code)),
     );
-    const contaminatedByOtherProblem = isForeignDraft(draft.code, seed, store, key);
+    // The stub heuristics below are TypeScript-shaped; a plain SQL SELECT would
+    // false-positive as "emptyish", so only apply them to TS drafts.
+    const contaminatedByOtherProblem =
+      language === 'typescript' && isForeignDraft(draft.code, seed, store, key);
     const staleEmptyStub =
+      language === 'typescript' &&
       Boolean(seed) &&
       isEmptyishStub(draft.code) &&
       normalizeCode(draft.code) !== normalizeCode(seed);
@@ -204,7 +209,7 @@ export function createOwnCodeDraft(
       id: OWN_CODE_ID,
       title: 'Your code',
       source: 'local',
-      language: 'typescript',
+      language,
       code: reset ? seed : empty && seed ? seed : draft.code,
       ...(reset ? { coachNotes: undefined } : {}),
     };
@@ -214,7 +219,7 @@ export function createOwnCodeDraft(
       title: 'Your code',
       source: 'local',
       code: seed,
-      language: 'typescript',
+      language,
       createdAt: new Date().toISOString(),
     };
   }

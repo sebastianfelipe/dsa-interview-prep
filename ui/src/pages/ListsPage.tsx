@@ -103,7 +103,7 @@ export function ListsPage() {
   return (
     <main className="page">
       <h1 className="topic-title">Prep lists</h1>
-      <p className="muted">Track passed and attempted problems on your Easy and Medium lists.</p>
+      <p className="muted">Track passed and attempted problems on your prep lists.</p>
 
       <div className="filters" style={{ marginTop: '1.25rem' }}>
         {lists.map((l) => (

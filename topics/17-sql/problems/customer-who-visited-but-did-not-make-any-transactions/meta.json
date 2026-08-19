@@ -1,0 +1,8 @@
+{
+  "title": "Customer Who Visited but Did Not Make Any Transactions",
+  "slug": "customer-who-visited-but-did-not-make-any-transactions",
+  "leetcodeId": 1581,
+  "difficulty": "Easy",
+  "kind": "sql",
+  "tags": ["sql", "left-join", "anti-join", "aggregation"]
+}

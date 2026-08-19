@@ -104,6 +104,7 @@ export function BrowsePage() {
                   <span>
                     <strong>{p.title}</strong>
                     {p.leetcodeId != null && <span className="muted"> · LC {p.leetcodeId}</span>}
+                    {p.kind === 'sql' && <span className="muted"> · SQL</span>}
                   </span>
                   <span
                     className={

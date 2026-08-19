@@ -47,8 +47,8 @@ export class ProblemsController {
   @ApiQuery({
     name: 'language',
     required: false,
-    description: 'Code language (typescript | python). Falls back to an available implementation.',
-    example: 'python',
+    description: 'Code language (typescript | python | sql). Falls back to an available implementation.',
+    example: 'sql',
   })
   getSolution(
     @Param('topic') topic: string,
@@ -61,7 +61,7 @@ export class ProblemsController {
 
   @Post(':topic/:slug/run')
   @ApiOperation({
-    summary: 'Run chip TypeScript against example I/O cases (LeetCode-style Run)',
+    summary: 'Run learner code against example cases (TypeScript I/O or SQL query)',
   })
   @ApiParam({ name: 'topic', example: '02-hashing' })
   @ApiParam({ name: 'slug', example: 'two-sum' })
@@ -86,7 +86,7 @@ export class ProblemsController {
 
   @Post(':topic/:slug/submit')
   @ApiOperation({
-    summary: 'Submit chip TypeScript against examples + edge cases (LeetCode-style Submit)',
+    summary: 'Submit learner code against examples + edge cases (TypeScript I/O or SQL query)',
   })
   @ApiParam({ name: 'topic', example: '02-hashing' })
   @ApiParam({ name: 'slug', example: 'two-sum' })

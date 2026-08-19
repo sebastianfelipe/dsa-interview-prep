@@ -1,0 +1,37 @@
+{
+  "type": "sql",
+  "dialect": "postgres",
+  "schemaFile": "schema.sql",
+  "solutionFile": "solution.sql",
+  "tables": ["Users", "Rides"],
+  "ordered": true,
+  "examples": [
+    {
+      "id": "example-1",
+      "seed": [
+        "INSERT INTO Users (id, name) VALUES",
+        "(1, 'Alice'), (2, 'Bob'), (3, 'Alex'), (4, 'Donald'),",
+        "(7, 'Lee'), (13, 'Jonathan'), (19, 'Elvis');",
+        "INSERT INTO Rides (id, user_id, distance) VALUES",
+        "(1, 1, 120), (2, 2, 317), (3, 3, 222), (4, 7, 100), (5, 13, 312),",
+        "(6, 19, 50), (7, 7, 120), (8, 19, 400), (9, 7, 230);"
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "no-rides-at-all",
+      "seed": [
+        "INSERT INTO Users (id, name) VALUES (1, 'Ana'), (2, 'Bruno');"
+      ]
+    },
+    {
+      "id": "tie-broken-by-name",
+      "seed": [
+        "INSERT INTO Users (id, name) VALUES (1, 'Zoe'), (2, 'Adam'), (3, 'Mia');",
+        "INSERT INTO Rides (id, user_id, distance) VALUES",
+        "(1, 1, 200), (2, 2, 200), (3, 3, 50);"
+      ]
+    }
+  ]
+}

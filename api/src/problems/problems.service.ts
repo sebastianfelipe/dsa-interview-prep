@@ -17,7 +17,8 @@ import {
   swapLanguageExtension,
 } from '../code-language';
 import type { RunBody, RunMode, RunResultDto } from './run-dto';
-import { buildTypescriptStarter } from './starter-code';
+import { buildSqlStarter, buildTypescriptStarter } from './starter-code';
+import type { ProblemKind } from '../catalog/catalog.service';
 
 /** Parse judge CLI stdout. npm noise goes to stderr; never slice from the last `{`. */
 function parseJudgeStdout(stdout: string, stderr: string): unknown {
@@ -108,17 +109,49 @@ export class ProblemsService {
     const summary = this.catalog.findProblem(topic, slug);
     if (!summary) throw new NotFoundException(`Problem ${topic}/${slug} not found`);
     const dir = this.catalog.problemDir(topic, slug);
+    const kind = this.problemKind(topic, slug);
     const readmePath = path.join(dir, 'README.md');
     const readme = fs.existsSync(readmePath) ? fs.readFileSync(readmePath, 'utf8') : '';
     const solutions = this.listSolutions(topic, slug);
-    const languages = this.collectLanguages(solutions);
+    const languages = this.collectLanguages(solutions, kind);
+    const schemaPath = path.join(dir, 'schema.sql');
     return {
       ...summary,
+      kind,
       readme,
       solutions,
       languages,
-      starterCode: this.buildStarterCode(dir),
+      starterCode:
+        kind === 'sql' ? this.buildSqlStarterCode(dir) : this.buildStarterCode(dir),
+      schemaSql:
+        kind === 'sql' && fs.existsSync(schemaPath)
+          ? fs.readFileSync(schemaPath, 'utf8')
+          : undefined,
     };
+  }
+
+  /** sql when meta.json says so or cases.json is a SQL case file; dsa otherwise. */
+  problemKind(topic: string, slug: string): ProblemKind {
+    const summary = this.catalog.findProblem(topic, slug);
+    if (summary?.kind === 'sql') return 'sql';
+    const casesPath = path.join(this.catalog.problemDir(topic, slug), 'cases.json');
+    if (fs.existsSync(casesPath)) {
+      try {
+        const file = JSON.parse(fs.readFileSync(casesPath, 'utf8')) as { type?: string };
+        if (file.type === 'sql') return 'sql';
+      } catch {
+        /* ignore malformed cases */
+      }
+    }
+    return 'dsa';
+  }
+
+  private buildSqlStarterCode(dir: string): string {
+    const schemaPath = path.join(dir, 'schema.sql');
+    const schemaSql = fs.existsSync(schemaPath)
+      ? fs.readFileSync(schemaPath, 'utf8')
+      : undefined;
+    return buildSqlStarter({ schemaSql });
   }
 
   private buildStarterCode(dir: string): string {
@@ -162,9 +195,11 @@ export class ProblemsService {
 
     const resolved = normalizeCodeLanguage(
       language,
-      entry.implementations.typescript
-        ? 'typescript'
-        : entry.languages[0] ?? 'typescript',
+      entry.implementations.sql
+        ? 'sql'
+        : entry.implementations.typescript
+          ? 'typescript'
+          : entry.languages[0] ?? 'typescript',
     );
     const relative = entry.implementations[resolved];
     const dir = this.catalog.problemDir(topic, slug);
@@ -193,11 +228,22 @@ export class ProblemsService {
     if (!fs.existsSync(casesPath)) throw new NotFoundException('No cases for this problem');
     const file = JSON.parse(fs.readFileSync(casesPath, 'utf8')) as {
       type: string;
-      exportName: string;
+      exportName?: string;
       argNames?: string[];
+      tables?: string[];
+      ordered?: boolean;
       examples: unknown[];
       edgeCases: unknown[];
     };
+    if (file.type === 'sql') {
+      return {
+        type: file.type,
+        tables: file.tables ?? [],
+        ordered: Boolean(file.ordered),
+        examples: file.examples,
+        edgeCaseCount: Array.isArray(file.edgeCases) ? file.edgeCases.length : 0,
+      };
+    }
     return {
       type: file.type,
       exportName: file.exportName,
@@ -210,7 +256,12 @@ export class ProblemsService {
   async runTests(topic: string, slug: string, body: RunBody): Promise<RunResultDto> {
     const mode: RunMode = body.mode === 'submit' ? 'submit' : 'run';
     const language = normalizeCodeLanguage(body.language, 'typescript');
-    if (language !== 'typescript') {
+    const kind = this.problemKind(topic, slug);
+    if (kind === 'sql') {
+      if (language !== 'sql') {
+        throw new BadRequestException('This problem is judged as a SQL query');
+      }
+    } else if (language !== 'typescript') {
       throw new BadRequestException('Only TypeScript can be judged right now');
     }
     if (typeof body.code !== 'string' || !body.code.trim()) {
@@ -223,12 +274,18 @@ export class ProblemsService {
     if (!fs.existsSync(casesPath)) throw new NotFoundException('No cases for this problem');
 
     const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dsa-judge-'));
-    const solutionPath = path.join(dir, '.judge-solution.ts');
+    const solutionPath = path.join(
+      dir,
+      kind === 'sql' ? '.judge-solution.sql' : '.judge-solution.ts',
+    );
     const started = Date.now();
 
     try {
       fs.writeFileSync(solutionPath, body.code, 'utf8');
-      const scriptPath = path.join(this.catalog.root, 'scripts/run-io-cases.ts');
+      const scriptPath = path.join(
+        this.catalog.root,
+        kind === 'sql' ? 'scripts/run-sql-cases.ts' : 'scripts/run-io-cases.ts',
+      );
       const raw = await this.spawnJson(scriptPath, solutionPath, casesPath, mode);
       if (raw && typeof raw === 'object' && 'summary' in raw) {
         return { ...(raw as RunResultDto), durationMs: Date.now() - started };
@@ -379,6 +436,7 @@ export class ProblemsService {
     const implementations: Partial<Record<CodeLanguage, string>> = {};
     if (fs.existsSync(path.join(dir, 'solution.ts'))) implementations.typescript = 'solution.ts';
     if (fs.existsSync(path.join(dir, 'solution.py'))) implementations.python = 'solution.py';
+    if (fs.existsSync(path.join(dir, 'solution.sql'))) implementations.sql = 'solution.sql';
     const languages = CODE_LANGUAGES.filter((lang) => Boolean(implementations[lang]));
     if (languages.length === 0) return [];
 
@@ -386,7 +444,11 @@ export class ProblemsService {
       {
         id: 'recommended',
         title: 'Recommended',
-        file: implementations.typescript ?? implementations.python ?? 'solution.ts',
+        file:
+          implementations.typescript ??
+          implementations.python ??
+          implementations.sql ??
+          'solution.ts',
         languages,
         implementations,
         source: 'repo',
@@ -394,13 +456,18 @@ export class ProblemsService {
     ];
   }
 
-  private collectLanguages(solutions: SolutionEntry[]): CodeLanguage[] {
+  private collectLanguages(solutions: SolutionEntry[], kind: ProblemKind): CodeLanguage[] {
+    // SQL problems are single-language: the learner writes one query.
+    if (kind === 'sql') return ['sql'];
+
     const set = new Set<CodeLanguage>();
     for (const s of solutions) {
       for (const lang of s.languages) set.add(lang);
     }
-    // Always advertise supported studio languages so the picker stays stable.
-    for (const lang of CODE_LANGUAGES) set.add(lang);
+    // Always advertise the DSA studio languages so the picker stays stable.
+    set.add('typescript');
+    set.add('python');
+    set.delete('sql');
     return CODE_LANGUAGES.filter((lang) => set.has(lang));
   }
 }

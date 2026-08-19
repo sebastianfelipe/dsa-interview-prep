@@ -1,0 +1,45 @@
+{
+  "type": "sql",
+  "dialect": "postgres",
+  "schemaFile": "schema.sql",
+  "solutionFile": "solution.sql",
+  "tables": ["Customer"],
+  "ordered": true,
+  "examples": [
+    {
+      "id": "example-1",
+      "seed": [
+        "INSERT INTO Customer (customer_id, name, visited_on, amount) VALUES",
+        "(1, 'Jhon', '2019-01-01', 100), (2, 'Daniel', '2019-01-02', 110),",
+        "(3, 'Jade', '2019-01-03', 120), (4, 'Khaled', '2019-01-04', 130),",
+        "(5, 'Winston', '2019-01-05', 110), (6, 'Elvis', '2019-01-06', 140),",
+        "(7, 'Anna', '2019-01-07', 150), (8, 'Maria', '2019-01-08', 80),",
+        "(9, 'Jaze', '2019-01-09', 110), (1, 'Jhon', '2019-01-10', 130),",
+        "(3, 'Jade', '2019-01-10', 150);"
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "exactly-seven-days",
+      "seed": [
+        "INSERT INTO Customer (customer_id, name, visited_on, amount) VALUES",
+        "(1, 'Ana', '2021-03-01', 70), (2, 'Ben', '2021-03-02', 70),",
+        "(3, 'Cai', '2021-03-03', 70), (4, 'Dan', '2021-03-04', 70),",
+        "(5, 'Eve', '2021-03-05', 70), (6, 'Fay', '2021-03-06', 70),",
+        "(7, 'Gus', '2021-03-07', 70);"
+      ]
+    },
+    {
+      "id": "multiple-customers-per-day",
+      "seed": [
+        "INSERT INTO Customer (customer_id, name, visited_on, amount) VALUES",
+        "(1, 'Ana', '2022-05-01', 50), (2, 'Ben', '2022-05-01', 30),",
+        "(1, 'Ana', '2022-05-02', 40), (3, 'Cai', '2022-05-03', 60),",
+        "(2, 'Ben', '2022-05-04', 20), (4, 'Dan', '2022-05-05', 90),",
+        "(5, 'Eve', '2022-05-06', 10), (6, 'Fay', '2022-05-07', 45),",
+        "(7, 'Gus', '2022-05-08', 55);"
+      ]
+    }
+  ]
+}

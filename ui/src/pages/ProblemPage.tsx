@@ -18,8 +18,9 @@ import { JudgePanel } from '../components/JudgePanel';
 import { Markdown } from '../components/Markdown';
 import { ProblemNav } from '../components/ProblemNav';
 import {
-  CODE_LANGUAGES,
+  DSA_LANGUAGES,
   LANGUAGE_LABELS,
+  normalizeCodeLanguage,
   type CodeLanguage,
   readCodeLanguage,
   writeCodeLanguage,
@@ -227,8 +228,25 @@ export function ProblemPage() {
 
   const setPreferredLanguage = useCallback((next: CodeLanguage) => {
     setLanguage(next);
-    writeCodeLanguage(next);
+    // SQL is per-problem (database problems only), not a global preference.
+    if (next !== 'sql') writeCodeLanguage(next);
   }, []);
+
+  // SQL problems take a single query; everything else drafts in TypeScript.
+  const problemKind = problem?.kind === 'sql' ? 'sql' : 'dsa';
+  const draftLanguage: CodeLanguage = problemKind === 'sql' ? 'sql' : 'typescript';
+  const availableLanguages: CodeLanguage[] =
+    problemKind === 'sql' ? ['sql'] : DSA_LANGUAGES;
+
+  // Clamp the language picker to what this problem supports.
+  useEffect(() => {
+    if (!problem) return;
+    if (problemKind === 'sql') {
+      if (language !== 'sql') setLanguage('sql');
+    } else if (language === 'sql') {
+      setLanguage('typescript');
+    }
+  }, [problem, problemKind, language]);
 
   useEffect(() => {
     setChipTab('repo');
@@ -289,11 +307,12 @@ export function ProblemPage() {
         if (cancelled) return;
         setProblem(p);
         // Default workspace: Your code first. Dig into solutions via Approach chips.
-        const draft = createOwnCodeDraft(topic, slug, p.starterCode ?? '');
+        const lang: CodeLanguage = p.kind === 'sql' ? 'sql' : 'typescript';
+        const draft = createOwnCodeDraft(topic, slug, p.starterCode ?? '', lang);
         refreshLocals();
         setSelectedId(OWN_CODE_ID);
         setChipTab('repo');
-        const key = `${topic}/${slug}/${OWN_CODE_ID}/typescript/local-draft`;
+        const key = `${topic}/${slug}/${OWN_CODE_ID}/${lang}/local-draft`;
         setCodeBuffer(draft.code);
         setCodeSourceKey(key);
         codeSourceKeyRef.current = key;
@@ -314,7 +333,7 @@ export function ProblemPage() {
       id: s.id,
       title: s.title,
       file: '',
-      languages: [s.language === 'python' ? 'python' : 'typescript'],
+      languages: [normalizeCodeLanguage(s.language)],
       source,
       notes: s.notes,
       description: s.description,
@@ -396,7 +415,7 @@ export function ProblemPage() {
     }
 
     if (selectedLocal) {
-      const localLang = selectedLocal.language === 'python' ? 'python' : 'typescript';
+      const localLang = normalizeCodeLanguage(selectedLocal.language);
       if (localLang !== language) {
         setSolution(null);
         return;
@@ -464,7 +483,7 @@ export function ProblemPage() {
     setAiGuidance('');
     try {
       const result = await api.aiExplain(topic, slug, mode, language, guidance || undefined);
-      const codeLang = result.language === 'python' ? 'python' : 'typescript';
+      const codeLang = normalizeCodeLanguage(result.language);
       const entry: LocalSolution = {
         id: createAiSolutionId(),
         title: result.title,
@@ -521,7 +540,7 @@ export function ProblemPage() {
         topic,
         slug,
         'coach',
-        'typescript',
+        draftLanguage,
         guidance || undefined,
         code,
         judge,
@@ -535,7 +554,7 @@ export function ProblemPage() {
         title: 'Your code',
         source: 'local',
         code,
-        language: 'typescript',
+        language: draftLanguage,
         coachNotes: nextNotes,
         notes: result.notes ?? draft.notes,
       });
@@ -557,7 +576,7 @@ export function ProblemPage() {
     const remaining = listLocalSolutions(topic, slug);
     setLocalSolutions(remaining);
     if (selectedId !== id) return;
-    const draft = createOwnCodeDraft(topic, slug, problem?.starterCode ?? '');
+    const draft = createOwnCodeDraft(topic, slug, problem?.starterCode ?? '', draftLanguage);
     setLocalSolutions(listLocalSolutions(topic, slug));
     setSelectedId(draft.id);
     setChipTab('repo');
@@ -567,7 +586,7 @@ export function ProblemPage() {
 
   // Your code + AI chips are editable. Curated Approach solutions are read-only when selected.
   const canEditCode =
-    language === 'typescript' &&
+    language === draftLanguage &&
     (isOwnCode ||
       (selectedLocal != null && Boolean(selectedLocal.code)) ||
       selectedRepo?.source === 'yours');
@@ -577,7 +596,7 @@ export function ProblemPage() {
     canEditCode ? codeBuffer : solution?.code ?? ''
   ).trim();
   const canJudge =
-    language === 'typescript' && Boolean(runnableCode) && Boolean(problem?.hasTests);
+    language === draftLanguage && Boolean(runnableCode) && Boolean(problem?.hasTests);
 
   const editableSessionRef = useRef<{ chipId: string; key: string } | null>(null);
 
@@ -592,7 +611,7 @@ export function ProblemPage() {
         ...current,
         id: current.source === 'local' ? OWN_CODE_ID : current.id,
         code,
-        language: 'typescript',
+        language: current.language || 'typescript',
       });
     },
     [topic, slug],
@@ -617,7 +636,7 @@ export function ProblemPage() {
 
   // Seed the editor before paint so autosave never sees a mismatched chip/buffer pair.
   useLayoutEffect(() => {
-    if (language !== 'typescript') return;
+    if (language !== draftLanguage) return;
 
     // Read chips from storage for the active problem only — React state can briefly
     // still hold the previous problem's locals (shared OWN_CODE_ID makes that easy).
@@ -694,6 +713,7 @@ export function ProblemPage() {
   }, [
     solution,
     language,
+    draftLanguage,
     canEditCode,
     selectedLocal,
     selectedRepo,
@@ -709,32 +729,33 @@ export function ProblemPage() {
   }, [isOwnCode, selectedLocal?.id, selectedLocal?.coachNotes]);
 
   function openOwnCodeDraft() {
-    const entry = createOwnCodeDraft(topic, slug, problem?.starterCode ?? '');
+    const entry = createOwnCodeDraft(topic, slug, problem?.starterCode ?? '', draftLanguage);
     refreshLocals();
     setSelectedId(OWN_CODE_ID);
     setChipTab('repo');
-    setPreferredLanguage('typescript');
+    setPreferredLanguage(draftLanguage);
     // Force the editor to pick up the stored draft (or repaired stub).
     setCodeBuffer(entry.code);
-    setCodeSourceKey(`${topic}/${slug}/${OWN_CODE_ID}/typescript/local-draft`);
+    setCodeSourceKey(`${topic}/${slug}/${OWN_CODE_ID}/${draftLanguage}/local-draft`);
     editableSessionRef.current = {
       chipId: OWN_CODE_ID,
-      key: `${topic}/${slug}/${OWN_CODE_ID}/typescript/local-draft`,
+      key: `${topic}/${slug}/${OWN_CODE_ID}/${draftLanguage}/local-draft`,
     };
     applyWorkspacePanes(panesRef.current.problemOpen, true);
   }
 
   async function runJudge(mode: RunMode) {
-    if (language !== 'typescript') {
-      setJudgeError('Only TypeScript can be judged right now');
+    const judgeLabel = LANGUAGE_LABELS[draftLanguage];
+    if (language !== draftLanguage) {
+      setJudgeError(`This problem is judged in ${judgeLabel} — switch language first`);
       return;
     }
     const code = (canEditCode ? codeBuffer : solution?.code ?? '').trim();
     if (!code) {
       setJudgeError(
         canEditCode
-          ? 'Add TypeScript code in the console first'
-          : 'No TypeScript code available for this approach',
+          ? `Add ${judgeLabel} code in the console first`
+          : `No ${judgeLabel} code available for this approach`,
       );
       return;
     }
@@ -744,8 +765,8 @@ export function ProblemPage() {
     try {
       const result =
         mode === 'submit'
-          ? await api.submit(topic, slug, code)
-          : await api.run(topic, slug, code, 'run');
+          ? await api.submit(topic, slug, code, draftLanguage)
+          : await api.run(topic, slug, code, 'run', draftLanguage);
       setJudgeResult(result);
       lastJudgedRef.current = {
         code,
@@ -778,7 +799,7 @@ export function ProblemPage() {
 
   // Autosave editable local chips (Your code / AI drafts) while typing.
   useEffect(() => {
-    if (!selectedLocal || !canEditCode || language !== 'typescript') return;
+    if (!selectedLocal || !canEditCode || language !== draftLanguage) return;
     if (selectedLocal.code === codeBuffer) return;
     const chipId = selectedLocal.source === 'local' ? OWN_CODE_ID : selectedLocal.id;
     const expectedKey =
@@ -800,6 +821,7 @@ export function ProblemPage() {
     selectedLocal,
     canEditCode,
     language,
+    draftLanguage,
     topic,
     slug,
     refreshLocals,
@@ -878,8 +900,12 @@ export function ProblemPage() {
             !aiConfigured
               ? 'Add an OpenAI API key to unlock'
               : isOwnCode
-                ? 'Optional: what’s broken? e.g. fails example 2 — what should I change?'
-                : 'Optional: two pointers, O(1) space…'
+                ? problemKind === 'sql'
+                  ? 'Optional: e.g. why are users with 0 orders missing from my result?'
+                  : 'Optional: what’s broken? e.g. fails example 2 — what should I change?'
+                : problemKind === 'sql'
+                  ? 'Optional: use a window function, no subqueries…'
+                  : 'Optional: two pointers, O(1) space…'
           }
           value={aiGuidance}
           onChange={(e) => setAiGuidance(e.target.value)}
@@ -1202,12 +1228,16 @@ export function ProblemPage() {
                   type="button"
                   className={`judge-btn judge-btn-ghost${isOwnCode ? ' is-active-own' : ''}`}
                   onClick={() => openOwnCodeDraft()}
-                  title="Write your own TypeScript solution"
+                  title={
+                    problemKind === 'sql'
+                      ? 'Write your own SQL query'
+                      : 'Write your own TypeScript solution'
+                  }
                 >
                   Your code
                 </button>
                 <div className="language-switch" role="tablist" aria-label="Code language">
-                  {CODE_LANGUAGES.map((lang) => (
+                  {availableLanguages.map((lang) => (
                     <button
                       key={lang}
                       type="button"
@@ -1226,12 +1256,12 @@ export function ProblemPage() {
                     className="judge-btn"
                     disabled={judgeBusy || !canJudge}
                     title={
-                      language !== 'typescript'
-                        ? 'Judging is TypeScript-only for now'
+                      language !== draftLanguage
+                        ? `Judging is ${LANGUAGE_LABELS[draftLanguage]}-only for this problem`
                         : !problem.hasTests
-                          ? 'No I/O cases for this problem'
+                          ? 'No test cases for this problem'
                           : !runnableCode
-                            ? 'No TypeScript code to run for this selection'
+                            ? `No ${LANGUAGE_LABELS[draftLanguage]} code to run for this selection`
                             : 'Run against example cases'
                     }
                     onClick={() => runJudge('run')}
@@ -1243,12 +1273,12 @@ export function ProblemPage() {
                     className="judge-btn judge-btn-submit"
                     disabled={judgeBusy || !canJudge}
                     title={
-                      language !== 'typescript'
-                        ? 'Judging is TypeScript-only for now'
+                      language !== draftLanguage
+                        ? `Judging is ${LANGUAGE_LABELS[draftLanguage]}-only for this problem`
                         : !problem.hasTests
-                          ? 'No I/O cases for this problem'
+                          ? 'No test cases for this problem'
                           : !runnableCode
-                            ? 'No TypeScript code to submit for this selection'
+                            ? `No ${LANGUAGE_LABELS[draftLanguage]} code to submit for this selection`
                             : canEditCode
                               ? 'Submit against examples + edge cases'
                               : 'Submit this approach against examples + edge cases'
@@ -1283,15 +1313,17 @@ export function ProblemPage() {
                 <pre className="solution-code">
                   <code>
                     {selectedLocal
-                      ? `This AI chip is ${LANGUAGE_LABELS[selectedLocal.language === 'python' ? 'python' : 'typescript']} — switch language or Ask AI for ${missingLangLabel}.`
-                      : `No ${missingLangLabel} yet for this approach — Ask AI to generate one, or add solution${language === 'python' ? '.py' : '.ts'}.`}
+                      ? `This AI chip is ${LANGUAGE_LABELS[normalizeCodeLanguage(selectedLocal.language)]} — switch language or Ask AI for ${missingLangLabel}.`
+                      : `No ${missingLangLabel} yet for this approach — Ask AI to generate one, or add solution${
+                          language === 'python' ? '.py' : language === 'sql' ? '.sql' : '.ts'
+                        }.`}
                   </code>
                 </pre>
               ) : solution?.code ? (
                 <CodeBlock className="solution-code" language={language} code={solution.code} />
               ) : languageAvailableForSelection &&
                 (problem.hasSolution || Boolean(selectedLocal)) &&
-                language === 'typescript' ? (
+                language === draftLanguage ? (
                 <pre className="solution-code">
                   <code>Loading…</code>
                 </pre>

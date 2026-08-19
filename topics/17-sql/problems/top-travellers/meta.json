@@ -1,0 +1,8 @@
+{
+  "title": "Top Travellers",
+  "slug": "top-travellers",
+  "leetcodeId": 1407,
+  "difficulty": "Easy",
+  "kind": "sql",
+  "tags": ["sql", "left-join", "aggregation", "ordering"]
+}

@@ -53,3 +53,12 @@ Print or keep open during practice.
 ## Intervals
 - Overlaps → **sort + merge**
 - Rooms needed → **sweep / heap of ends**
+
+## SQL
+- Conditional column → **CASE WHEN**
+- Keep zeros → **LEFT JOIN** (filter in `ON`)
+- "Did not" → **anti-join** (`IS NULL` / `NOT EXISTS`)
+- At least N per group → **GROUP BY + HAVING**
+- Yesterday → **self-join on `date + 1`**
+- First year/login → **MIN, then join/IN**
+- Rank / 7-day avg → **window (`DENSE_RANK`, `RANGE`)**

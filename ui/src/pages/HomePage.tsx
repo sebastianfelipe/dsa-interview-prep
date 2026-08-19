@@ -24,7 +24,7 @@ export function HomePage() {
             Start studying
           </Link>
           <Link className="btn btn-ghost" to="/lists">
-            Easy & Medium lists
+            Prep lists
           </Link>
         </div>
       </section>

@@ -23,5 +23,6 @@ ui/.env.local
 
 # Ephemeral judge scratch files
 **/.judge-solution.ts
+**/.judge-solution.sql
 **/.judge-prepared-*.ts
 **/.judge-work/

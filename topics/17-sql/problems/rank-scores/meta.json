@@ -1,0 +1,8 @@
+{
+  "title": "Rank Scores",
+  "slug": "rank-scores",
+  "leetcodeId": 178,
+  "difficulty": "Medium",
+  "kind": "sql",
+  "tags": ["sql", "window-functions", "dense-rank"]
+}

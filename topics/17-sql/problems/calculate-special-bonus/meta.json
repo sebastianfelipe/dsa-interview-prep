@@ -1,0 +1,8 @@
+{
+  "title": "Calculate Special Bonus",
+  "slug": "calculate-special-bonus",
+  "leetcodeId": 1873,
+  "difficulty": "Easy",
+  "kind": "sql",
+  "tags": ["sql", "case-when", "filtering"]
+}

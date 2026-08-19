@@ -50,9 +50,10 @@ export class AiController {
         mode: { type: 'string', enum: ['hint', 'full', 'coach'], default: 'full' },
         language: {
           type: 'string',
-          enum: ['typescript', 'python'],
+          enum: ['typescript', 'python', 'sql'],
           default: 'typescript',
-          description: 'Language for code illustrations (hint/coach omit solution code)',
+          description:
+            'Language for code illustrations (hint/coach omit solution code); use sql for database problems',
         },
         guidance: {
           type: 'string',

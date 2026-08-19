@@ -1,0 +1,36 @@
+{
+  "type": "sql",
+  "dialect": "postgres",
+  "schemaFile": "schema.sql",
+  "solutionFile": "solution.sql",
+  "tables": ["Courses"],
+  "ordered": false,
+  "examples": [
+    {
+      "id": "example-1",
+      "seed": [
+        "INSERT INTO Courses (student, class) VALUES",
+        "('A', 'Math'), ('B', 'English'), ('C', 'Math'), ('D', 'Biology'),",
+        "('E', 'Math'), ('F', 'Computer'), ('G', 'Math'), ('H', 'Math'), ('I', 'Math');"
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "exactly-five",
+      "seed": [
+        "INSERT INTO Courses (student, class) VALUES",
+        "('A', 'Physics'), ('B', 'Physics'), ('C', 'Physics'),",
+        "('D', 'Physics'), ('E', 'Physics'),",
+        "('A', 'Art'), ('B', 'Art'), ('C', 'Art'), ('D', 'Art');"
+      ]
+    },
+    {
+      "id": "no-qualifying-class",
+      "seed": [
+        "INSERT INTO Courses (student, class) VALUES",
+        "('A', 'Music'), ('B', 'Music'), ('C', 'Drama');"
+      ]
+    }
+  ]
+}

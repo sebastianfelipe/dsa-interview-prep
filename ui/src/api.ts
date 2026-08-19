@@ -1,10 +1,14 @@
 export type Difficulty = 'Easy' | 'Medium' | 'Hard';
 
+/** dsa = function/class judged in TypeScript; sql = one query judged against Postgres. */
+export type ProblemKind = 'dsa' | 'sql';
+
 export interface ProblemSummary {
   title: string;
   slug: string;
   leetcodeId?: number;
   difficulty: Difficulty;
+  kind?: ProblemKind;
   tags?: string[];
   topic: string;
   topicTitle: string;
@@ -25,7 +29,7 @@ export interface Catalog {
   difficulties: Difficulty[];
 }
 
-export type CodeLanguage = 'typescript' | 'python';
+export type CodeLanguage = 'typescript' | 'python' | 'sql';
 
 export interface SolutionEntry {
   id: string;
@@ -44,7 +48,7 @@ export interface ProblemDetail extends ProblemSummary {
   readme: string;
   solutions: SolutionEntry[];
   languages?: CodeLanguage[];
-  /** Empty TypeScript function/class stub for "Your code" drafts. */
+  /** Empty TypeScript function/class stub (or SQL header) for "Your code" drafts. */
   starterCode?: string;
 }
 
@@ -168,16 +172,22 @@ export const api = {
       `/api/problems/${topic}/${slug}/solution${qs ? `?${qs}` : ''}`,
     );
   },
-  run: (topic: string, slug: string, code: string, mode: RunMode = 'run') =>
+  run: (
+    topic: string,
+    slug: string,
+    code: string,
+    mode: RunMode = 'run',
+    language: CodeLanguage = 'typescript',
+  ) =>
     post<RunResult>(`/api/problems/${topic}/${slug}/run`, {
       code,
-      language: 'typescript',
+      language,
       mode,
     }),
-  submit: (topic: string, slug: string, code: string) =>
+  submit: (topic: string, slug: string, code: string, language: CodeLanguage = 'typescript') =>
     post<RunResult>(`/api/problems/${topic}/${slug}/submit`, {
       code,
-      language: 'typescript',
+      language,
     }),
   lists: () => get<ListSummary[]>('/api/lists'),
   list: (id: string) => get<ListDetail>(`/api/lists/${id}`),

@@ -8,6 +8,7 @@ const RESOURCE_PREFIXES = [
   'resources/cheat-sheets',
   'resources/patterns',
   'resources/templates',
+  'resources/sql',
 ];
 
 @Injectable()
@@ -101,6 +102,7 @@ export class DocsService {
   }
 
   private pretty(id: string) {
+    if (id === 'sql') return 'SQL';
     return id
       .replace(/^\d+-/, '')
       .split('-')

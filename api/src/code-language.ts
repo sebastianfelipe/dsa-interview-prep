@@ -1,4 +1,4 @@
-export const CODE_LANGUAGES = ['typescript', 'python'] as const;
+export const CODE_LANGUAGES = ['typescript', 'python', 'sql'] as const;
 export type CodeLanguage = (typeof CODE_LANGUAGES)[number];
 
 const EXT_TO_LANGUAGE: Record<string, CodeLanguage> = {
@@ -7,20 +7,23 @@ const EXT_TO_LANGUAGE: Record<string, CodeLanguage> = {
   '.js': 'typescript',
   '.jsx': 'typescript',
   '.py': 'python',
+  '.sql': 'sql',
 };
 
 const LANGUAGE_TO_EXT: Record<CodeLanguage, string> = {
   typescript: '.ts',
   python: '.py',
+  sql: '.sql',
 };
 
 export const LANGUAGE_LABELS: Record<CodeLanguage, string> = {
   typescript: 'TypeScript',
   python: 'Python',
+  sql: 'SQL',
 };
 
 export function isCodeLanguage(value: string | null | undefined): value is CodeLanguage {
-  return value === 'typescript' || value === 'python';
+  return value === 'typescript' || value === 'python' || value === 'sql';
 }
 
 export function languageFromFilename(file: string): CodeLanguage | null {

@@ -1,0 +1,19 @@
+{
+  "id": "sql-dpmjh4yr",
+  "title": "SQL Prep List",
+  "leetcodeSlug": "dpmjh4yr",
+  "url": "https://leetcode.com/problem-list/dpmjh4yr/",
+  "difficulty": "Mixed",
+  "problems": [
+    { "leetcodeId": 1873, "slug": "calculate-special-bonus", "title": "Calculate Special Bonus" },
+    { "leetcodeId": 1407, "slug": "top-travellers", "title": "Top Travellers" },
+    { "leetcodeId": 550, "slug": "game-play-analysis-iv", "title": "Game Play Analysis IV" },
+    { "leetcodeId": 1581, "slug": "customer-who-visited-but-did-not-make-any-transactions", "title": "Customer Who Visited but Did Not Make Any Transactions" },
+    { "leetcodeId": 1158, "slug": "market-analysis-i", "title": "Market Analysis I" },
+    { "leetcodeId": 596, "slug": "classes-with-at-least-5-students", "title": "Classes With at Least 5 Students" },
+    { "leetcodeId": 178, "slug": "rank-scores", "title": "Rank Scores" },
+    { "leetcodeId": 197, "slug": "rising-temperature", "title": "Rising Temperature" },
+    { "leetcodeId": 1321, "slug": "restaurant-growth", "title": "Restaurant Growth" },
+    { "leetcodeId": 1070, "slug": "product-sales-analysis-iii", "title": "Product Sales Analysis III" }
+  ]
+}

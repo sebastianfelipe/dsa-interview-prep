@@ -1,0 +1,8 @@
+{
+  "title": "Rising Temperature",
+  "slug": "rising-temperature",
+  "leetcodeId": 197,
+  "difficulty": "Easy",
+  "kind": "sql",
+  "tags": ["sql", "self-join", "dates"]
+}

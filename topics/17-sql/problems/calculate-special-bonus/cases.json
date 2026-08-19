@@ -1,0 +1,39 @@
+{
+  "type": "sql",
+  "dialect": "postgres",
+  "schemaFile": "schema.sql",
+  "solutionFile": "solution.sql",
+  "tables": ["Employees"],
+  "ordered": true,
+  "examples": [
+    {
+      "id": "example-1",
+      "seed": [
+        "INSERT INTO Employees (employee_id, name, salary) VALUES",
+        "(2, 'Meir', 3000),",
+        "(3, 'Michael', 3800),",
+        "(7, 'Addilyn', 7400),",
+        "(8, 'Juan', 6100),",
+        "(9, 'Kannon', 7700);"
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "all-disqualified",
+      "seed": [
+        "INSERT INTO Employees (employee_id, name, salary) VALUES",
+        "(1, 'Maria', 5000),",
+        "(2, 'Alice', 4200),",
+        "(4, 'Mark', 3100);"
+      ]
+    },
+    {
+      "id": "single-qualifier",
+      "seed": [
+        "INSERT INTO Employees (employee_id, name, salary) VALUES",
+        "(5, 'Zoe', 100);"
+      ]
+    }
+  ]
+}

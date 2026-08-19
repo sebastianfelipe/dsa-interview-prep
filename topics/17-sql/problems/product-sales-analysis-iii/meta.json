@@ -1,0 +1,8 @@
+{
+  "title": "Product Sales Analysis III",
+  "slug": "product-sales-analysis-iii",
+  "leetcodeId": 1070,
+  "difficulty": "Medium",
+  "kind": "sql",
+  "tags": ["sql", "subquery", "group-by", "tuple-in"]
+}

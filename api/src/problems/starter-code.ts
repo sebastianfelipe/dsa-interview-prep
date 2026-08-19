@@ -101,6 +101,31 @@ function extractClassStub(code: string, exportName: string): string | null {
   return `export class ${exportName} {\n${methods.join('\n\n')}\n}\n`;
 }
 
+/**
+ * SQL starter: comment header listing each table with its columns
+ * (parsed from the problem's schema.sql), ready for the learner's query.
+ */
+export function buildSqlStarter(opts: { schemaSql?: string; title?: string }): string {
+  const lines: string[] = ['-- Write one PostgreSQL query that returns the result table.'];
+
+  const schema = opts.schemaSql ?? '';
+  const tableRe = /CREATE\s+TABLE\s+([A-Za-z_][\w]*)\s*\(([\s\S]*?)\);/gi;
+  let match: RegExpExecArray | null;
+  while ((match = tableRe.exec(schema)) !== null) {
+    const table = match[1];
+    const columns: string[] = [];
+    for (const rawLine of match[2].split(',')) {
+      const line = rawLine.trim();
+      if (!line || /^(PRIMARY|FOREIGN|UNIQUE|CONSTRAINT|CHECK)\b/i.test(line)) continue;
+      const col = line.match(/^"?([A-Za-z_][\w]*)"?\s/);
+      if (col) columns.push(col[1]);
+    }
+    lines.push(`-- Table ${table}(${columns.join(', ')})`);
+  }
+
+  return `${lines.join('\n')}\n\n`;
+}
+
 export function buildTypescriptStarter(opts: {
   solutionCode?: string;
   exportName?: string;

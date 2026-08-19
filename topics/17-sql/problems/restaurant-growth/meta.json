@@ -1,0 +1,8 @@
+{
+  "title": "Restaurant Growth",
+  "slug": "restaurant-growth",
+  "leetcodeId": 1321,
+  "difficulty": "Medium",
+  "kind": "sql",
+  "tags": ["sql", "window-functions", "moving-average", "dates"]
+}

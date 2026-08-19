@@ -2309,6 +2309,54 @@ html[data-theme='light'] .theme-toggle-icon {
   white-space: pre-wrap;
 }
 
+/* SQL judge: tabular result sets. */
+.judge-table-wrap {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.judge-table {
+  border-collapse: collapse;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: var(--code-fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.judge-table th,
+.judge-table td {
+  padding: 0.16rem 0.55rem;
+  text-align: left;
+  border: 1px solid color-mix(in srgb, var(--code-fg) 16%, transparent);
+  white-space: nowrap;
+}
+
+.judge-table th {
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  background: color-mix(in srgb, var(--code-fg) 8%, transparent);
+}
+
+.judge-table-empty {
+  margin: 0;
+  font-size: 0.74rem;
+  color: color-mix(in srgb, var(--code-fg) 55%, transparent);
+}
+
+.judge-table-group {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.judge-table-name {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: color-mix(in srgb, var(--code-fg) 60%, transparent);
+  margin-bottom: 0.1rem;
+}
+
 .solution-meta .muted {
   color: color-mix(in srgb, var(--code-fg) 70%, transparent);
 }

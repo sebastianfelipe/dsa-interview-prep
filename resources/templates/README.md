@@ -18,6 +18,7 @@ Copy these skeletons into a scratchpad. Prefer clear types over cleverness.
 | [binary-search.ts](./binary-search.ts) | Index search + search-on-answer |
 | [union-find.ts](./union-find.ts) | Disjoint set |
 | [trie.ts](./trie.ts) | Prefix tree |
+| [sql.md](/reference/resources/templates/sql) | PostgreSQL query skeletons (CASE, joins, windows) |
 
 ## Interview TypeScript tips
 

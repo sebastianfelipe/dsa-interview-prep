@@ -1,0 +1,41 @@
+{
+  "type": "sql",
+  "dialect": "postgres",
+  "schemaFile": "schema.sql",
+  "solutionFile": "solution.sql",
+  "tables": ["Weather"],
+  "ordered": false,
+  "examples": [
+    {
+      "id": "example-1",
+      "seed": [
+        "INSERT INTO Weather (id, recordDate, temperature) VALUES",
+        "(1, '2015-01-01', 10), (2, '2015-01-02', 25),",
+        "(3, '2015-01-03', 20), (4, '2015-01-04', 30);"
+      ]
+    }
+  ],
+  "edgeCases": [
+    {
+      "id": "date-gap-does-not-count",
+      "seed": [
+        "INSERT INTO Weather (id, recordDate, temperature) VALUES",
+        "(1, '2020-01-01', 5), (2, '2020-01-03', 20), (3, '2020-01-04', 25);"
+      ]
+    },
+    {
+      "id": "month-boundary",
+      "seed": [
+        "INSERT INTO Weather (id, recordDate, temperature) VALUES",
+        "(1, '2021-01-31', 8), (2, '2021-02-01', 12);"
+      ]
+    },
+    {
+      "id": "never-rising",
+      "seed": [
+        "INSERT INTO Weather (id, recordDate, temperature) VALUES",
+        "(1, '2019-07-01', 30), (2, '2019-07-02', 30), (3, '2019-07-03', 22);"
+      ]
+    }
+  ]
+}

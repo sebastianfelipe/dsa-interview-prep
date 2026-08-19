@@ -11,6 +11,76 @@ function formatJson(value: unknown): string {
   }
 }
 
+/** SQL judge payloads: a result set ({columns, rows}) or a map of table name → result set. */
+interface TableShape {
+  columns: string[];
+  rows: unknown[][];
+}
+
+function isTableShape(value: unknown): value is TableShape {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const v = value as { columns?: unknown; rows?: unknown };
+  return Array.isArray(v.columns) && Array.isArray(v.rows);
+}
+
+function isTableMap(value: unknown): value is Record<string, TableShape> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const entries = Object.values(value as Record<string, unknown>);
+  return entries.length > 0 && entries.every(isTableShape);
+}
+
+function cellText(value: unknown): string {
+  if (value === null || value === undefined) return 'NULL';
+  if (typeof value === 'string') return value;
+  return formatJson(value);
+}
+
+function ResultTable({ table }: { table: TableShape }) {
+  if (table.rows.length === 0) {
+    return <pre className="judge-table-empty">(no rows)</pre>;
+  }
+  return (
+    <div className="judge-table-wrap">
+      <table className="judge-table">
+        <thead>
+          <tr>
+            {table.columns.map((col) => (
+              <th key={col}>{col}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {table.rows.map((row, i) => (
+            <tr key={i}>
+              {row.map((cell, j) => (
+                <td key={j}>{cellText(cell)}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** Renders SQL result sets as tables; anything else as compact JSON. */
+function ResultValue({ value }: { value: unknown }) {
+  if (isTableShape(value)) return <ResultTable table={value} />;
+  if (isTableMap(value)) {
+    return (
+      <div className="judge-table-group">
+        {Object.entries(value).map(([name, table]) => (
+          <div key={name}>
+            <div className="judge-table-name">{name}</div>
+            <ResultTable table={table} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return <pre>{formatJson(value)}</pre>;
+}
+
 function headline(result: RunResult): string {
   if (result.passed) return 'Accepted';
   if (result.cases.some((c) => c.status === 'error')) return 'Runtime Error';
@@ -138,15 +208,15 @@ export function JudgePanel({
                 <div className="judge-case-body judge-case-body-inline">
                   <div>
                     <div className="judge-io-label">Input</div>
-                    <pre>{formatJson(firstFail.inputs)}</pre>
+                    <ResultValue value={firstFail.inputs} />
                   </div>
                   <div>
                     <div className="judge-io-label">Expected</div>
-                    <pre>{formatJson(firstFail.expected)}</pre>
+                    <ResultValue value={firstFail.expected} />
                   </div>
                   <div>
                     <div className="judge-io-label">Output</div>
-                    <pre>{formatJson(firstFail.actual)}</pre>
+                    <ResultValue value={firstFail.actual} />
                   </div>
                 </div>
                 {firstFail.error && <pre className="judge-error">{firstFail.error}</pre>}
@@ -184,15 +254,15 @@ function CaseRow({
         <div className="judge-case-body">
           <div>
             <div className="judge-io-label">Input</div>
-            <pre>{formatJson(caseResult.inputs)}</pre>
+            <ResultValue value={caseResult.inputs} />
           </div>
           <div>
             <div className="judge-io-label">Expected</div>
-            <pre>{formatJson(caseResult.expected)}</pre>
+            <ResultValue value={caseResult.expected} />
           </div>
           <div>
             <div className="judge-io-label">Output</div>
-            <pre>{formatJson(caseResult.actual)}</pre>
+            <ResultValue value={caseResult.actual} />
           </div>
           {caseResult.error && (
             <div>

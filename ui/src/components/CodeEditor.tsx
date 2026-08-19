@@ -3,6 +3,7 @@ import hljs from 'highlight.js/lib/core';
 import typescript from 'highlight.js/lib/languages/typescript';
 import javascript from 'highlight.js/lib/languages/javascript';
 import python from 'highlight.js/lib/languages/python';
+import sql from 'highlight.js/lib/languages/sql';
 
 hljs.registerLanguage('typescript', typescript);
 hljs.registerLanguage('javascript', javascript);
@@ -10,6 +11,7 @@ hljs.registerLanguage('ts', typescript);
 hljs.registerLanguage('js', javascript);
 hljs.registerLanguage('python', python);
 hljs.registerLanguage('py', python);
+hljs.registerLanguage('sql', sql);
 
 const INDENT = '  ';
 

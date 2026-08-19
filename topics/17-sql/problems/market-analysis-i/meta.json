@@ -1,0 +1,8 @@
+{
+  "title": "Market Analysis I",
+  "slug": "market-analysis-i",
+  "leetcodeId": 1158,
+  "difficulty": "Medium",
+  "kind": "sql",
+  "tags": ["sql", "left-join", "join-condition", "aggregation"]
+}

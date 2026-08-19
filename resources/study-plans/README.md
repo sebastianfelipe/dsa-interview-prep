@@ -7,6 +7,7 @@ Pick a plan based on time until interviews.
 | [2 weeks intensive](/reference/resources/study-plans/2-week) | Refresh + high-frequency patterns |
 | [4 weeks solid](/reference/resources/study-plans/4-week) | First serious prep |
 | [8 weeks mastery](/reference/resources/study-plans/8-week) | Deeper coverage + mock interviews |
+| [SQL prep list](/reference/resources/study-plans/sql) | Database interviews — 10 queries, pattern order |
 
 ## Daily session shape (any plan)
 

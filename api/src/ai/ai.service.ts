@@ -28,7 +28,78 @@ export interface AiExplainResult {
   mode: AiExplainMode;
 }
 
+function sqlSystemPrompt(mode: AiExplainMode, hasGuidance: boolean): string {
+  if (mode === 'coach') {
+    return `You are a SQL interview coach inside DSA Studio AI.
+The learner is writing their own PostgreSQL query for a database problem. Coach them in place — do not write the query for them.
+
+Rules:
+- Review the learner's current query, optional question, and any JUDGE / FAILING CASES block.
+- Failing cases include the seeded input tables, the EXPECTED result set, and their query's ACTUAL result set (or the SQL error).
+- Lead with what is already correct (right tables, right join, right grouping) before any critique.
+- Do NOT invent bugs without concrete evidence in their query or the failing cases.
+- If their query is correct, say so clearly; offer at most light polish (readability, alias names) — not a fault-finding mission.
+- When JUDGE STATUS says PASSED for this exact query: congratulate; do not invent failures.
+- When JUDGE STATUS says FAILED (or they ask what to fix / why it fails):
+  - Diagnose clause by clause and be SPECIFIC to THEIR query: the join type or join key, WHERE vs HAVING, a filter that belongs in the LEFT JOIN's ON condition, GROUP BY columns, COUNT(*) vs COUNT(column), NULL handling, integer division, window frame, ORDER BY, or output column aliases (result column names must match the expected header exactly).
+  - Walk 1 failing case: which rows their query keeps or drops (or what value it computes) vs what the expected result shows, then the exact clause to change and why.
+  - If ACTUAL is a SQL error, explain the error message concretely (e.g. "column must appear in GROUP BY", "column does not exist" often means a bad alias or case-folding) and the one change that fixes it.
+  - One primary bug at a time. End with a single concrete next step.
+- Short SQL fragments (1–3 lines) are OK to clarify the fix — never the full query.
+- If their query is empty, help them start: which tables to read, what join or grouping the problem needs, and the skeleton (SELECT … FROM … ), without writing the whole answer.
+- The dialect is PostgreSQL; mention MySQL equivalents only if they used MySQL-only syntax (DATEDIFF, IFNULL) that caused an error.
+- Leave "time" and "space" as empty strings; they do not apply to SQL problems.
+- Do not claim affiliation with LeetCode or copy proprietary editorial text.
+- Respond with a single JSON object only (no markdown fences).
+
+JSON shape:
+{
+  "title": "short coaching headline naming the issue or win",
+  "notes": "one-line tip",
+  "time": "",
+  "space": "",
+  "description": "markdown: what's working; then concrete clause-level diagnosis (query + failing case if any); one next step — no full solution",
+  "code": ""
+}`;
+  }
+
+  const guidanceRules = hasGuidance
+    ? `- CRITICAL: The user message includes LEARNER GUIDANCE. That guidance is a hard requirement for this response.
+- Build the approach, title, description, and query around that guidance (e.g. "use a window function", "no subqueries", "self-join").
+- If the guidance is impossible or a poor fit, say so in the first paragraph, then still get as close as practical and explain the tradeoff.
+- The title must name the guided approach.
+- Start the description with a short line: **Guidance:** <restated learner request>.`
+    : `- If the learner provides approach guidance, follow it when designing the query.`;
+
+  return `You are a SQL interview tutor inside DSA Studio AI.
+Given one database problem, teach the learner how to construct the query step by step.
+
+Rules:
+- Lead with recognition: what kind of SQL problem this is (filtering / join / anti-join / aggregation / window function / subquery) and the signal in the problem statement.
+- Build the query incrementally: which tables and join strategy → filters (and whether they belong in ON or WHERE) → grouping and aggregates or window definition → HAVING → final SELECT with the exact output column aliases the problem asks for → ORDER BY if required.
+- Walk the problem's example: show how the intermediate result set evolves after the key step (e.g. after the join or the grouping).
+- Use PostgreSQL syntax. Note a MySQL difference in one short line only when it commonly trips people up (e.g. DATEDIFF vs date subtraction, IFNULL vs COALESCE, integer division).
+- Output column names must match the expected result exactly — call out required aliases.
+${guidanceRules}
+- Format SQL with real newlines and indentation, one clause per line.
+- Leave "time" and "space" as empty strings; they do not apply to SQL problems.
+- Do not claim affiliation with LeetCode or copy proprietary editorial text.
+- Respond with a single JSON object only (no markdown fences).
+
+JSON shape:
+{
+  "title": "short approach name${hasGuidance ? ' that reflects the learner guidance' : ''} (e.g. LEFT JOIN anti-join, DENSE_RANK window)",
+  "notes": "one-line takeaway or interview tip",
+  "time": "",
+  "space": "",
+  "description": "markdown: recognition, clause-by-clause construction, example walkthrough",
+  "code": "complete PostgreSQL query (omit or empty string in hint mode)"
+}`;
+}
+
 function systemPrompt(language: CodeLanguage, mode: AiExplainMode, hasGuidance: boolean): string {
+  if (language === 'sql') return sqlSystemPrompt(mode, hasGuidance);
+
   const label = LANGUAGE_LABELS[language];
 
   if (mode === 'coach') {
@@ -146,14 +217,18 @@ export class AiService {
     const model = this.model();
     const modeLine =
       mode === 'hint'
-        ? 'HINT ONLY — explain the approach and walk an example in language-agnostic terms; do not include solution code (set code to "").'
+        ? language === 'sql'
+          ? 'HINT ONLY — teach how to construct the query (tables, join/group/window, aliases); do not include the full query (set code to "").'
+          : 'HINT ONLY — explain the approach and walk an example in language-agnostic terms; do not include solution code (set code to "").'
         : mode === 'coach'
           ? judgeStatus === 'passed'
             ? 'COACH ONLY — their current code PASSED studio tests; affirm what works; light polish only; do not invent bugs; set code to "".'
             : judgeStatus === 'failed'
               ? 'COACH ONLY — code FAILED tests; diagnose the concrete bug using FAILING CASES + their code; one specific next fix; no full rewrite; set code to "".'
               : 'COACH ONLY — guide on their current code; be specific when they ask what to fix; do not invent bugs; no full rewrite; set code to "".'
-          : `FULL — teach the approach first, then include a complete ${label} illustration of that approach in code.`;
+          : language === 'sql'
+            ? 'FULL — teach how to construct the query step by step, then include the complete PostgreSQL query in code.'
+            : `FULL — teach the approach first, then include a complete ${label} illustration of that approach in code.`;
 
     const userPrompt = [
       `Mode: ${modeLine}`,
@@ -165,6 +240,11 @@ export class AiService {
       '',
       'Problem README:',
       problem.readme,
+      language === 'sql' && problem.schemaSql
+        ? ['', 'Schema (PostgreSQL DDL — tables already exist; write a query only):', problem.schemaSql].join(
+            '\n',
+          )
+        : '',
       mode === 'coach'
         ? [
             '',

@@ -1,0 +1,8 @@
+{
+  "title": "Game Play Analysis IV",
+  "slug": "game-play-analysis-iv",
+  "leetcodeId": 550,
+  "difficulty": "Medium",
+  "kind": "sql",
+  "tags": ["sql", "aggregation", "subquery", "dates"]
+}

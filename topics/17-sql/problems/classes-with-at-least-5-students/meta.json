@@ -1,0 +1,8 @@
+{
+  "title": "Classes With at Least 5 Students",
+  "slug": "classes-with-at-least-5-students",
+  "leetcodeId": 596,
+  "difficulty": "Easy",
+  "kind": "sql",
+  "tags": ["sql", "group-by", "having"]
+}
