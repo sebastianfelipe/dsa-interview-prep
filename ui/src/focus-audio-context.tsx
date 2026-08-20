@@ -28,9 +28,15 @@ type FocusAudioContextValue = {
 
 const FocusAudioContext = createContext<FocusAudioContextValue | null>(null);
 
+function trackUrl(src: string): string {
+  return new URL(src, window.location.origin).href;
+}
+
 export function FocusAudioProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const prefsRef = useRef(readFocusAudioPrefs());
+  /** User intent — keep playing through route/view changes unless they pause. */
+  const wantPlayingRef = useRef(false);
   const [trackId, setTrackIdState] = useState(prefsRef.current.trackId);
   const [volume, setVolumeState] = useState(prefsRef.current.volume);
   const [playing, setPlaying] = useState(false);
@@ -43,37 +49,37 @@ export function FocusAudioProvider({ children }: { children: ReactNode }) {
     prefsRef.current = { trackId: nextTrackId, volume: nextVolume };
   }, []);
 
-  const applyTrackToAudio = useCallback(
-    (audio: HTMLAudioElement, nextTrack: FocusTrack) => {
-      if (audio.src !== new URL(nextTrack.src, window.location.origin).href) {
-        audio.src = nextTrack.src;
-        audio.load();
-      }
-      audio.loop = nextTrack.kind === 'file';
-      audio.volume = volume;
-    },
-    [volume],
-  );
+  const assignTrack = useCallback((audio: HTMLAudioElement, nextTrack: FocusTrack) => {
+    const nextSrc = trackUrl(nextTrack.src);
+    if (audio.src !== nextSrc) {
+      audio.src = nextSrc;
+    }
+    audio.loop = nextTrack.kind === 'file';
+  }, []);
 
   const play = useCallback(async () => {
     const audio = audioRef.current;
     if (!audio) return;
-    applyTrackToAudio(audio, track);
+    wantPlayingRef.current = true;
+    assignTrack(audio, track);
+    audio.volume = volume;
     try {
       await audio.play();
       setPlaying(true);
     } catch {
+      wantPlayingRef.current = false;
       setPlaying(false);
     }
-  }, [applyTrackToAudio, track]);
+  }, [assignTrack, track, volume]);
 
   const pause = useCallback(() => {
+    wantPlayingRef.current = false;
     audioRef.current?.pause();
     setPlaying(false);
   }, []);
 
   const toggle = useCallback(() => {
-    if (playing) pause();
+    if (wantPlayingRef.current || playing) pause();
     else void play();
   }, [pause, play, playing]);
 
@@ -85,12 +91,16 @@ export function FocusAudioProvider({ children }: { children: ReactNode }) {
       persist(nextId, volume);
       const audio = audioRef.current;
       if (!audio) return;
-      const wasPlaying = playing;
-      audio.pause();
-      applyTrackToAudio(audio, nextTrack);
-      if (wasPlaying) void audio.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+      assignTrack(audio, nextTrack);
+      audio.volume = volume;
+      if (wantPlayingRef.current) {
+        void audio.play().then(() => setPlaying(true)).catch(() => {
+          wantPlayingRef.current = false;
+          setPlaying(false);
+        });
+      }
     },
-    [applyTrackToAudio, persist, playing, volume],
+    [assignTrack, persist, volume],
   );
 
   const setVolume = useCallback(
@@ -113,14 +123,30 @@ export function FocusAudioProvider({ children }: { children: ReactNode }) {
     audioRef.current = audio;
 
     const onPlay = () => setPlaying(true);
-    const onPause = () => setPlaying(false);
-    const onEnded = () => setPlaying(false);
+    const onPause = () => {
+      if (wantPlayingRef.current) {
+        void audio.play().catch(() => {
+          wantPlayingRef.current = false;
+          setPlaying(false);
+        });
+        return;
+      }
+      setPlaying(false);
+    };
+    const onEnded = () => {
+      if (wantPlayingRef.current && audio.loop) {
+        void audio.play().catch(() => setPlaying(false));
+        return;
+      }
+      if (!audio.loop) setPlaying(wantPlayingRef.current);
+    };
 
     audio.addEventListener('play', onPlay);
     audio.addEventListener('pause', onPause);
     audio.addEventListener('ended', onEnded);
 
     return () => {
+      wantPlayingRef.current = false;
       audio.pause();
       audio.removeEventListener('play', onPlay);
       audio.removeEventListener('pause', onPause);
@@ -132,19 +158,9 @@ export function FocusAudioProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    applyTrackToAudio(audio, track);
-  }, [applyTrackToAudio, track]);
-
-  useEffect(() => {
-    const onVisibility = () => {
-      const audio = audioRef.current;
-      if (!audio || !playing) return;
-      if (document.hidden) audio.pause();
-      else void audio.play().catch(() => undefined);
-    };
-    document.addEventListener('visibilitychange', onVisibility);
-    return () => document.removeEventListener('visibilitychange', onVisibility);
-  }, [playing]);
+    assignTrack(audio, track);
+    audio.volume = volume;
+  }, [assignTrack, track, volume]);
 
   const value = useMemo(
     () => ({
