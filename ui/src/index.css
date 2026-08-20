@@ -649,7 +649,8 @@ html[data-theme='light'] .theme-toggle-icon {
   padding: 0.75rem;
   border-radius: 14px;
   border: 1px solid var(--line);
-  background: var(--surface-strong);
+  background: var(--paper-top);
+  color: var(--ink);
   box-shadow: var(--shadow);
 }
 
@@ -685,7 +686,7 @@ html[data-theme='light'] .theme-toggle-icon {
 
 .focus-audio-play {
   border: 1px solid var(--line);
-  background: var(--surface);
+  background: var(--paper);
   color: var(--ink);
   border-radius: 999px;
   padding: 0.35rem 0.85rem;
@@ -730,7 +731,7 @@ html[data-theme='light'] .theme-toggle-icon {
   align-items: flex-start;
   gap: 0.1rem;
   border: 1px solid var(--line);
-  background: var(--surface);
+  background: var(--paper);
   border-radius: 10px;
   padding: 0.45rem 0.6rem;
   cursor: pointer;
