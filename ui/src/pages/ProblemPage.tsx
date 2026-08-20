@@ -498,7 +498,13 @@ export function ProblemPage() {
     setAiError(null);
     setAiGuidance('');
     try {
-      const result = await api.aiExplain(topic, slug, mode, language, guidance || undefined);
+      const result = await api.aiExplain(
+        topic,
+        slug,
+        mode,
+        draftLanguage,
+        guidance || undefined,
+      );
       const codeLang = normalizeCodeLanguage(result.language);
       const entry: LocalSolution = {
         id: createAiSolutionId(),

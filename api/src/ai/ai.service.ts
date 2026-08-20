@@ -41,6 +41,51 @@ function formatJsonCompact(value: unknown): string {
   }
 }
 
+function stripSqlFences(raw: string): string {
+  return raw
+    .trim()
+    .replace(/^```(?:sql)?\s*/i, '')
+    .replace(/\s*```$/, '')
+    .trim();
+}
+
+function looksLikeSql(value: string): boolean {
+  return /\b(with|select)\b/i.test(value) && value.trim().length >= 24;
+}
+
+function extractSqlFromMarkdown(markdown: string): string | undefined {
+  const blocks = [...markdown.matchAll(/```(?:sql)?[ \t]*\n([\s\S]*?)```/gi)].map((m) =>
+    m[1].trim(),
+  );
+  const sqlBlocks = blocks.filter(looksLikeSql).sort((a, b) => b.length - a.length);
+  return sqlBlocks[0];
+}
+
+function extractSqlFromAi(parsed: { code?: string; description?: string }): string | undefined {
+  const fromCode = stripSqlFences(parsed.code ?? '');
+  if (looksLikeSql(fromCode)) return fromCode;
+  return extractSqlFromMarkdown(parsed.description ?? '');
+}
+
+function sqlFullMissingCodeRetry(): string {
+  return `RETRY — JSON "code" was empty or was not a query.
+Put the COMPLETE runnable PostgreSQL query in "code" (WITH/SELECT … ORDER BY). No markdown fences, no commentary. Column aliases must match the README output exactly.`;
+}
+
+function sqlFullJudgeRetry(failDetail: string, previousSql: string): string {
+  return `RETRY — this query failed the studio judge. Fix it.
+
+=== PREVIOUS CODE ===
+${previousSql}
+=== END PREVIOUS CODE ===
+
+=== FAILING CASES ===
+${failDetail || '(no case dump)'}
+=== END FAILING CASES ===
+
+Return JSON with a complete corrected PostgreSQL query in "code" (no markdown fences). Keep output column names identical to the README.`;
+}
+
 function formatJudgeFailDetail(result: RunResultDto, maxCases = 3): string {
   const fails = result.cases.filter((c) => c.status !== 'passed').slice(0, maxCases);
   if (fails.length === 0) return '';
@@ -124,10 +169,9 @@ function sqlCoachQuestionDirective(intent: CoachIntent): string {
       return `HOW-TO / SHOW ME THE CODE — English-only is invalid.
 You must go deeper than "add a WHERE / check min date + 6".
 Required structure in description:
-1. 2–4 sentences: which alias/column in LEARNER CODE (e.g. c1.visited_on) and WHERE vs HAVING vs ON, and why.
+1. 2–4 sentences: which alias/column in LEARNER CODE and WHERE vs HAVING vs ON, and why.
 2. A \`\`\`sql fence with the exact filled-in predicate (real functions, their names, no "…").
-3. A second \`\`\`sql fence: LEARNER CODE with that clause inserted so they can paste it.
-Not a from-scratch rewrite unless their query cannot work.`;
+3. A second \`\`\`sql fence: a COMPLETE pasteable query (their buffer with the clause, or a working rewrite if their shape cannot pass).`;
     case 'debug':
       return 'DEBUG: walk one failing case against THEIR query, then a sql fence for the specific clause to change.';
     default:
@@ -243,15 +287,16 @@ function sqlCoachIntentRules(hasGuidance: boolean): string {
    - Start from LEARNER CODE. Name the exact clause in *their* query.
    - You MUST include at least one markdown sql fence: their query (or that clause) with the missing predicate filled in using THEIR CTE/alias names.
    - Naming HAVING / WHERE / a window without showing the actual predicate is a failure.
-   - Do not dump a from-scratch full rewrite unless they asked for the full query.
+   - If their current query cannot pass (wrong grain, wrong join, HAVING vs WHERE), give a COMPLETE working query in a sql fence — do not stay stuck on a doomed clause.
+   - Prefer a one-clause patch on THEIR query when that is enough.
 
 4. **Debug / fix** ("why does it fail?", "what's wrong?", failed judge):
-   - One failing case → cause → the specific clause to change, with a filled-in sql snippet for that clause.
+   - One failing case → cause → filled-in sql for the fix. If a one-line patch is not enough, give the complete working query.
 
-5. **Full solution** ("write the query", "give me the solution", "what's the full answer"):
-   - Step-by-step with fragments, or the complete query in description sql blocks. Still set JSON "code" to "".
+5. **Full solution** ("write the query", "give me the solution", "what's the full answer", "show me that code"):
+   - Give a complete, pasteable PostgreSQL query in description sql fences. Still set JSON "code" to "".
 
-If their question is validation (#1), answering with an alternative implementation is WRONG.
+If their question is validation (#1) and PASSED, answering with an alternative implementation is WRONG.
 If their question is #3–#5, answering with English-only advice (e.g. "add a HAVING clause") and no sql fence is WRONG.`;
 }
 
@@ -270,7 +315,7 @@ Hard rules:
 - SQL snippets are required for how-to, finish-this, condition-fix, and debug requests — not for "does it work?" unless they also asked how something works.
 - When you show SQL, use THIS problem's table/column names (from README/schema) and the learner's CTE/aliases when present. Real predicates only — never "add a HAVING to filter days" without writing the HAVING/WHERE line.
 - Never placeholder "…" examples.
-- Do not dump the entire finished query unless category #5 above.
+- If their query cannot pass the spec, give a complete working PostgreSQL query in a sql fence.
 - Leave "time" and "space" as empty strings.
 - Respond with a single JSON object only (no markdown fences wrapping the JSON).
 
@@ -296,8 +341,10 @@ JSON shape:
     mode === 'hint'
       ? `- HINT: do not put the complete solution query in "code" (leave code "").
 - You MUST still show filled-in clause examples in the description (joins, windows, CASE, CTEs) using this problem's tables — never name DENSE_RANK / LEFT JOIN / etc. without a real snippet.`
-      : `- FULL: teach construction step by step, then put the complete PostgreSQL query in "code".
-- Each step in the description should include a filled-in fragment, not only English.`;
+      : `- FULL: JSON "code" MUST be a complete, executable PostgreSQL query for THIS problem (WITH/SELECT …). No markdown fences inside "code". No empty code.
+- Output column aliases must match the README result table exactly (quote identifiers like "rank" when required).
+- PostgreSQL only (INTERVAL, DENSE_RANK, COALESCE, ::numeric). Do not emit MySQL-only functions unless translating.
+- Description: short walkthrough, then the same query in a sql fence.`;
 
   return `You are a hands-on PostgreSQL tutor inside DSA Studio AI.
 Teach how to construct the query. Naming a function without a copy-pasteable example is a failure.
@@ -512,7 +559,7 @@ export class AiService {
                   ? 'COACH ONLY — code FAILED tests; diagnose the concrete bug using FAILING CASES + their code; one specific next fix; no full rewrite; set code to "".'
                   : 'COACH ONLY — guide on their current code; be specific when they ask what to fix; do not invent bugs; no full rewrite; set code to "".'
           : language === 'sql'
-            ? 'FULL — teach how to construct the query step by step with filled-in fragments, then include the complete PostgreSQL query in code.'
+            ? 'FULL — JSON code MUST be a complete executable PostgreSQL query that solves THIS problem (aliases match README). Description is a short walkthrough plus a sql fence of the same query.'
             : `FULL — teach the approach first, then include a complete ${label} illustration of that approach in code.`;
 
     const userPrompt = [
@@ -596,9 +643,11 @@ export class AiService {
           : judgeStatus === 'passed'
             ? 0.2
             : 0.25
-        : guidance
-          ? 0.2
-          : 0.4;
+        : language === 'sql'
+          ? 0.15
+          : guidance
+            ? 0.2
+            : 0.4;
 
     let parsed = await this.completeJsonChat(apiKey, model, temperature, messages);
 
@@ -613,6 +662,19 @@ export class AiService {
         content: sqlSnippetRetryPrompt(),
       });
       parsed = await this.completeJsonChat(apiKey, model, 0.05, messages);
+    }
+
+    if (language === 'sql' && mode === 'full') {
+      return this.finalizeSqlFullResult({
+        parsed,
+        messages,
+        apiKey,
+        model,
+        topic,
+        slug,
+        hasTests: Boolean(problem.hasTests),
+        guidance,
+      });
     }
 
     const title =
@@ -641,6 +703,74 @@ export class AiService {
       model,
       mode,
       guidance: mode === 'coach' ? guidance : undefined,
+    };
+  }
+
+  private async finalizeSqlFullResult(args: {
+    parsed: {
+      title?: string;
+      notes?: string;
+      time?: string;
+      space?: string;
+      description?: string;
+      code?: string;
+    };
+    messages: { role: 'system' | 'user'; content: string }[];
+    apiKey: string;
+    model: string;
+    topic: string;
+    slug: string;
+    hasTests: boolean;
+    guidance?: string;
+  }): Promise<AiExplainResult> {
+    let parsed = args.parsed;
+    let sql = extractSqlFromAi(parsed);
+
+    if (!sql) {
+      args.messages.push({ role: 'user', content: sqlFullMissingCodeRetry() });
+      parsed = await this.completeJsonChat(args.apiKey, args.model, 0.05, args.messages);
+      sql = extractSqlFromAi(parsed);
+    }
+    if (!sql) {
+      throw new BadGatewayException('OpenAI response missing SQL query');
+    }
+
+    if (args.hasTests) {
+      try {
+        const judged = await this.problems.runTests(args.topic, args.slug, {
+          code: sql,
+          language: 'sql',
+          mode: 'submit',
+        });
+        if (!judged.passed) {
+          args.messages.push({
+            role: 'user',
+            content: sqlFullJudgeRetry(formatJudgeFailDetail(judged), sql),
+          });
+          parsed = await this.completeJsonChat(args.apiKey, args.model, 0.05, args.messages);
+          sql = extractSqlFromAi(parsed) ?? sql;
+        }
+      } catch {
+        /* keep the generated query if the judge cannot run */
+      }
+    }
+
+    const description = (parsed.description ?? '').trim();
+    if (!description) {
+      throw new BadGatewayException('OpenAI response missing description');
+    }
+
+    return {
+      title: (parsed.title ?? 'SQL approach').trim() || 'SQL approach',
+      notes: parsed.notes?.trim() || undefined,
+      time: formatComplexity(parsed.time),
+      space: formatComplexity(parsed.space),
+      description,
+      code: formatSourceCode(sql, 'sql'),
+      language: 'sql',
+      model: args.model,
+      mode: 'full',
+      guidance: args.guidance,
     };
   }
 
