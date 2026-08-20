@@ -64,6 +64,14 @@ function classifyCoachIntent(guidance?: string): CoachIntent {
   const q = guidance.toLowerCase();
 
   if (
+    /\b(show me|show that|that code|the code|write it out|paste (it|the)|give me (the )?code)\b/.test(
+      q,
+    )
+  ) {
+    return 'how-to';
+  }
+
+  if (
     /\b(finish|complete this|help me (write|fix|finish)|can'?t choose|cannot choose|stuck on|what'?s missing|what is missing|fill in|the right (one|ones|condition)|condition (is|was|with) (wrong|issues|broken|incorrect)|wrong condition)\b/.test(
       q,
     )
@@ -113,7 +121,13 @@ function sqlCoachQuestionDirective(intent: CoachIntent): string {
 - MUST include a \`\`\`sql fence with that clause filled in using THEIR CTE/alias/table names — not a textbook rewrite.
 - Prefer showing THEIR query with only that part completed. Do not invent a new shape unless their query cannot work.`;
     case 'how-to':
-      return 'HOW-TO: filled-in sql fence on THIS schema / their aliases for the one thing they asked. Not English-only. Not a full rewrite unless they asked for the full query.';
+      return `HOW-TO / SHOW ME THE CODE — English-only is invalid.
+You must go deeper than "add a WHERE / check min date + 6".
+Required structure in description:
+1. 2–4 sentences: which alias/column in LEARNER CODE (e.g. c1.visited_on) and WHERE vs HAVING vs ON, and why.
+2. A \`\`\`sql fence with the exact filled-in predicate (real functions, their names, no "…").
+3. A second \`\`\`sql fence: LEARNER CODE with that clause inserted so they can paste it.
+Not a from-scratch rewrite unless their query cannot work.`;
     case 'debug':
       return 'DEBUG: walk one failing case against THEIR query, then a sql fence for the specific clause to change.';
     default:
@@ -132,12 +146,35 @@ function dsaCoachQuestionDirective(intent: CoachIntent): string {
 - Point to the exact if/loop/index in LEARNER CODE.
 - Show a short snippet of THAT piece filled in (a few lines), not a new solution from scratch.`;
     case 'how-to':
-      return 'HOW-TO: show the specific change in THEIR function (few lines). No full rewrite.';
+      return `HOW-TO / SHOW ME THE CODE — English-only is invalid.
+Show the exact lines to add in THEIR function (filled in), then those lines in context.`;
     case 'debug':
       return 'DEBUG: failing case → what THEIR code does → the exact line to change, with a short snippet.';
     default:
       return 'Stay on THEIR code. Be specific. No drop-in full solution unless they asked for it.';
   }
+}
+
+function descriptionHasCodeFence(description: string): boolean {
+  return /```(?:sql|ts|typescript|js|javascript|python|text)?[ \t]*\n[\s\S]+?```/i.test(
+    description,
+  );
+}
+
+function sqlCoachNeedsSnippet(intent: CoachIntent): boolean {
+  return intent === 'finish' || intent === 'how-to' || intent === 'debug';
+}
+
+function sqlSnippetRetryPrompt(): string {
+  return `RETRY — your previous JSON was rejected because description had no markdown sql fence.
+The learner asked to SEE the code. "Add a WHERE for min(date)+6" is not enough.
+
+description MUST include:
+1. 2–4 sentences naming THEIR aliases from LEARNER CODE.
+2. \`\`\`sql with the exact WHERE/HAVING/ON (or window) predicate filled in.
+3. \`\`\`sql of LEARNER CODE with that clause inserted (pasteable).
+
+Keep JSON "code" as "".`;
 }
 
 function learnerCodeGrounding(hasCode: boolean, language: CodeLanguage): string {
@@ -243,7 +280,7 @@ JSON shape:
   "notes": "one-line takeaway or empty",
   "time": "",
   "space": "",
-  "description": "markdown: direct answer first; optional snippet only if their question called for it",
+  "description": "markdown: answer first; for how-to/finish/show-me you MUST include filled-in sql fences (predicate + their query with it inserted)",
   "code": ""
 }`;
   }
@@ -546,56 +583,36 @@ export class AiService {
       .filter(Boolean)
       .join('\n');
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model,
-        temperature:
-          mode === 'coach'
-            ? intent === 'finish' || intent === 'how-to' || intent === 'debug'
-              ? 0.15
-              : judgeStatus === 'passed'
-                ? 0.2
-                : 0.25
-            : guidance
-              ? 0.2
-              : 0.4,
-        response_format: { type: 'json_object' },
-        messages: [
-          { role: 'system', content: systemPrompt(language, mode, Boolean(guidance)) },
-          { role: 'user', content: userPrompt },
-        ],
-      }),
-    });
+    const systemContent = systemPrompt(language, mode, Boolean(guidance));
+    const messages: { role: 'system' | 'user'; content: string }[] = [
+      { role: 'system', content: systemContent },
+      { role: 'user', content: userPrompt },
+    ];
 
-    if (!response.ok) {
-      throw new BadGatewayException(await this.openAiFailureMessage(response));
-    }
+    const temperature =
+      mode === 'coach'
+        ? intent === 'finish' || intent === 'how-to' || intent === 'debug'
+          ? 0.1
+          : judgeStatus === 'passed'
+            ? 0.2
+            : 0.25
+        : guidance
+          ? 0.2
+          : 0.4;
 
-    const payload = (await response.json()) as {
-      choices?: { message?: { content?: string } }[];
-    };
-    const content = payload.choices?.[0]?.message?.content;
-    if (!content) {
-      throw new BadGatewayException('OpenAI returned an empty response');
-    }
+    let parsed = await this.completeJsonChat(apiKey, model, temperature, messages);
 
-    let parsed: {
-      title?: string;
-      notes?: string;
-      time?: string;
-      space?: string;
-      description?: string;
-      code?: string;
-    };
-    try {
-      parsed = JSON.parse(content) as typeof parsed;
-    } catch {
-      throw new BadGatewayException('OpenAI returned invalid JSON');
+    if (
+      mode === 'coach' &&
+      language === 'sql' &&
+      sqlCoachNeedsSnippet(intent) &&
+      !descriptionHasCodeFence((parsed.description ?? '').trim())
+    ) {
+      messages.push({
+        role: 'user',
+        content: sqlSnippetRetryPrompt(),
+      });
+      parsed = await this.completeJsonChat(apiKey, model, 0.05, messages);
     }
 
     const title =
@@ -625,6 +642,59 @@ export class AiService {
       mode,
       guidance: mode === 'coach' ? guidance : undefined,
     };
+  }
+
+  private async completeJsonChat(
+    apiKey: string,
+    model: string,
+    temperature: number,
+    messages: { role: 'system' | 'user'; content: string }[],
+  ): Promise<{
+    title?: string;
+    notes?: string;
+    time?: string;
+    space?: string;
+    description?: string;
+    code?: string;
+  }> {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        temperature,
+        response_format: { type: 'json_object' },
+        messages,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new BadGatewayException(await this.openAiFailureMessage(response));
+    }
+
+    const payload = (await response.json()) as {
+      choices?: { message?: { content?: string } }[];
+    };
+    const content = payload.choices?.[0]?.message?.content;
+    if (!content) {
+      throw new BadGatewayException('OpenAI returned an empty response');
+    }
+
+    try {
+      return JSON.parse(content) as {
+        title?: string;
+        notes?: string;
+        time?: string;
+        space?: string;
+        description?: string;
+        code?: string;
+      };
+    } catch {
+      throw new BadGatewayException('OpenAI returned invalid JSON');
+    }
   }
 
   private normalizeGuidance(guidanceInput?: string): string | undefined {
