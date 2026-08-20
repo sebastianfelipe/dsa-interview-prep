@@ -126,17 +126,20 @@ function sqlCoachIntentRules(hasGuidance: boolean): string {
    - Explain in prose, tied to this problem if relevant.
    - Include a small sql example **only if** they asked how to use it or asked for an example. Otherwise prose only.
 
-3. **How-to / one clause** ("how do I rank?", "how do I keep users with zero rides?", "what goes in ON vs WHERE?"):
-   - Teach that one piece with a filled-in snippet on THIS problem's tables (5–15 lines max for that clause).
-   - Do not give the full query unless they asked for the full query.
+3. **How-to / finish / stuck on a clause** ("finish this", "help me finish", "the condition is wrong", "I can't choose the right WHERE/HAVING/ON", "how do I rank?", "how do I keep users with zero rides?"):
+   - You MUST include at least one markdown sql fence with a **filled-in** PostgreSQL snippet using THIS problem's tables/columns (and their aliases if they already wrote a CTE).
+   - Naming HAVING / WHERE / a window without showing the actual predicate is a failure.
+   - Scope: the missing or broken clause (5–20 lines). You may show that clause in the context of their current query.
+   - Do not dump a from-scratch full rewrite unless they asked for the full query.
 
 4. **Debug / fix** ("why does it fail?", "what's wrong?", failed judge):
-   - One failing case → cause → the specific clause to change, with a snippet for that clause only.
+   - One failing case → cause → the specific clause to change, with a filled-in sql snippet for that clause.
 
 5. **Full solution** ("write the query", "give me the solution", "what's the full answer"):
    - Step-by-step with fragments, or the complete query in description sql blocks. Still set JSON "code" to "".
 
-If their question is validation (#1), answering with an alternative implementation is WRONG.`;
+If their question is validation (#1), answering with an alternative implementation is WRONG.
+If their question is #3–#5, answering with English-only advice (e.g. "add a HAVING clause") and no sql fence is WRONG.`;
 }
 
 function sqlSystemPrompt(mode: AiExplainMode, hasGuidance: boolean): string {
@@ -151,8 +154,9 @@ Hard rules:
 - Do NOT "correct" a working query for efficiency, idiomatic style, or a different pattern they did not ask about.
 - Do NOT swap ROW_NUMBER for DENSE_RANK (or similar) unless they asked about ranking functions, asked why it fails, or asked how to fix a tie/rank bug.
 - When JUDGE STATUS is PASSED and they ask if it works: the answer is yes. No unsolicited improvements.
-- SQL snippets are for how-to and debug requests — not for "does it work?" unless they also asked how something works.
-- When you do show SQL, use THIS problem's table/column names (from README/schema), in markdown sql fences inside "description". Never placeholder "…" examples.
+- SQL snippets are required for how-to, finish-this, condition-fix, and debug requests — not for "does it work?" unless they also asked how something works.
+- When you show SQL, use THIS problem's table/column names (from README/schema) and the learner's CTE/aliases when present. Real predicates only — never "add a HAVING to filter days" without writing the HAVING/WHERE line.
+- Never placeholder "…" examples.
 - Do not dump the entire finished query unless category #5 above.
 - Leave "time" and "space" as empty strings.
 - Respond with a single JSON object only (no markdown fences wrapping the JSON).
@@ -377,7 +381,7 @@ export class AiService {
         : mode === 'coach'
           ? language === 'sql'
             ? guidance
-              ? 'SQL COACH — Answer ONLY the LEARNER QUESTION. Classify it (validation / concept / how-to / debug / full solution). If they ask "does it work?" and judge PASSED: say yes, stop — no alternatives, no code. Set code to "".'
+              ? 'SQL COACH — Answer ONLY the LEARNER QUESTION. Validation + PASSED → yes, stop, no code. Finish/fix/condition/how-to → MUST include a filled-in sql fence on this schema (not English-only). Set JSON code to "".'
               : judgeStatus === 'passed'
                 ? 'SQL COACH — query PASSED; no question typed — say it works; do not suggest changes. Set code to "".'
                 : judgeStatus === 'failed'
@@ -441,7 +445,7 @@ export class AiService {
                   '=== LEARNER QUESTION ===',
                   guidance,
                   language === 'sql'
-                    ? 'Answer ONLY this question. Match depth to intent: validation → yes/no (no code, no alternatives if PASSED); concept → prose; how-to/debug → snippet for that piece only. Do not rewrite their query unless they asked to fix it or for the full solution.'
+                    ? 'Answer ONLY this question. Validation + PASSED → yes/no, no code. If they asked to finish the query, fix a condition, or how to write a clause: put a filled-in sql snippet in description using their tables/aliases — do not describe HAVING/WHERE without writing it.'
                     : 'Answer this question directly. If they ask what to fix / why it fails / how to make it work, lead with a concrete diagnosis of THEIR code (and failing cases if present), not a generic hint.',
                   '=== END LEARNER QUESTION ===',
                 ].join('\n')
