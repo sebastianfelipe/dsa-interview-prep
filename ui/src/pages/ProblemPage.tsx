@@ -942,7 +942,7 @@ export function ProblemPage() {
               ? 'Add an OpenAI API key to unlock'
               : isOwnCode
                 ? problemKind === 'sql'
-                  ? 'e.g. Does this work? · How do I use DENSE_RANK here? · Why did submit fail?'
+                  ? 'e.g. Finish this WHERE · Does this work? · Why did submit fail?'
                   : 'Optional: what’s broken? e.g. fails example 2 — what should I change?'
                 : problemKind === 'sql'
                   ? 'Optional: use a window function, no subqueries…'

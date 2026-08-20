@@ -31,7 +31,7 @@ export interface AiExplainResult {
   guidance?: string;
 }
 
-type CoachQuestionKind = 'validation' | 'other';
+type CoachIntent = 'validation' | 'finish' | 'how-to' | 'debug' | 'concept' | 'other';
 
 function formatJsonCompact(value: unknown): string {
   try {
@@ -58,23 +58,99 @@ function formatJudgeFailDetail(result: RunResultDto, maxCases = 3): string {
     .join('\n\n');
 }
 
-/** True when the learner only wants to know if their code works — not how to rewrite it. */
-function coachQuestionKind(guidance?: string): CoachQuestionKind {
+/** Classify the coach question so the model matches depth and stays on their buffer. */
+function classifyCoachIntent(guidance?: string): CoachIntent {
   if (!guidance) return 'other';
   const q = guidance.toLowerCase();
-  const asksRewrite =
-    /\b(should i use|instead of|rewrite|change to|switch to|dense_rank|row_number|rank\(\)|vs\.?|versus|difference between|how do i use|show me|example)\b/.test(
-      q,
-    );
-  if (asksRewrite) return 'other';
+
   if (
-    /\b(does it work|will it work|is this correct|is my code|how'?s my code|how is my code|will this pass|does this pass|is it right|is this right|did i get it|anything wrong|any issues|is it good|look(?:s)? (?:ok|good|right))\b/.test(
+    /\b(finish|complete this|help me (write|fix|finish)|can'?t choose|cannot choose|stuck on|what'?s missing|what is missing|fill in|the right (one|ones|condition)|condition (is|was|with) (wrong|issues|broken|incorrect)|wrong condition)\b/.test(
+      q,
+    )
+  ) {
+    return 'finish';
+  }
+  if (
+    /\b(why (does|did|is) (it|this|my)|what'?s wrong|what is wrong|failing|failed|doesn'?t pass|does not pass|fix (this|my|the)|the bug)\b/.test(
+      q,
+    )
+  ) {
+    return 'debug';
+  }
+  if (
+    /\b(how do i|how to|show me|give me (the|a) (clause|condition|snippet|example)|write the (where|having|join|window|condition))\b/.test(
+      q,
+    )
+  ) {
+    return 'how-to';
+  }
+  if (
+    /\b(what is|what'?s the difference|difference between|\bvs\.?\b|versus|why (?:do we|does|use)\b)/.test(
+      q,
+    )
+  ) {
+    return 'concept';
+  }
+  if (
+    /\b(does it work|will it work|is this correct|is my code|how'?s my code|how is my code|will this pass|does this pass|is it right|is this right|did i get it|is it good|look(?:s)? (?:ok|good|right))\b/.test(
       q,
     )
   ) {
     return 'validation';
   }
   return 'other';
+}
+
+function sqlCoachQuestionDirective(intent: CoachIntent): string {
+  switch (intent) {
+    case 'validation':
+      return 'VALIDATION: yes/no first. If PASSED, stop — no rewrite, no sql. If FAILED, one sentence why, then only the failing clause.';
+    case 'concept':
+      return 'CONCEPT: explain in prose. sql snippet only if they asked for syntax or an example.';
+    case 'finish':
+      return `FINISH THEIR BUFFER: they are stuck on a condition/clause in LEARNER CODE.
+- Name the exact clause in THEIR query that is missing or wrong (WHERE vs HAVING vs ON vs window frame).
+- MUST include a \`\`\`sql fence with that clause filled in using THEIR CTE/alias/table names — not a textbook rewrite.
+- Prefer showing THEIR query with only that part completed. Do not invent a new shape unless their query cannot work.`;
+    case 'how-to':
+      return 'HOW-TO: filled-in sql fence on THIS schema / their aliases for the one thing they asked. Not English-only. Not a full rewrite unless they asked for the full query.';
+    case 'debug':
+      return 'DEBUG: walk one failing case against THEIR query, then a sql fence for the specific clause to change.';
+    default:
+      return 'Answer only what they asked. If they need a clause, show filled-in sql on their buffer.';
+  }
+}
+
+function dsaCoachQuestionDirective(intent: CoachIntent): string {
+  switch (intent) {
+    case 'validation':
+      return 'VALIDATION: yes/no first. If PASSED, stop. If FAILED, name the exact condition/line in THEIR code.';
+    case 'concept':
+      return 'CONCEPT: explain in prose; short snippet only if they asked for an example.';
+    case 'finish':
+      return `FINISH THEIR BUFFER: they cannot choose the right condition/branch.
+- Point to the exact if/loop/index in LEARNER CODE.
+- Show a short snippet of THAT piece filled in (a few lines), not a new solution from scratch.`;
+    case 'how-to':
+      return 'HOW-TO: show the specific change in THEIR function (few lines). No full rewrite.';
+    case 'debug':
+      return 'DEBUG: failing case → what THEIR code does → the exact line to change, with a short snippet.';
+    default:
+      return 'Stay on THEIR code. Be specific. No drop-in full solution unless they asked for it.';
+  }
+}
+
+function learnerCodeGrounding(hasCode: boolean, language: CodeLanguage): string {
+  if (!hasCode) {
+    return language === 'sql'
+      ? 'LEARNER CODE is empty — give a FROM/JOIN skeleton with real table names, then the next clause filled in.'
+      : 'LEARNER CODE is empty — help them start (signature, first step) without the full algorithm.';
+  }
+  return `CODE GROUNDING (mandatory):
+- LEARNER CODE is the source of truth. Reuse their names (CTEs, aliases, functions, variables).
+- Do not replace a working shape with a "more typical" solution they did not ask for.
+- When showing code, edit their buffer: the snippet should drop into what they already wrote.
+- Quote the broken/missing clause in words first ("your WHERE on visited_on", "the if at i === 0"), then the snippet.`;
 }
 
 function validationPassedCoachResult(
@@ -127,9 +203,9 @@ function sqlCoachIntentRules(hasGuidance: boolean): string {
    - Include a small sql example **only if** they asked how to use it or asked for an example. Otherwise prose only.
 
 3. **How-to / finish / stuck on a clause** ("finish this", "help me finish", "the condition is wrong", "I can't choose the right WHERE/HAVING/ON", "how do I rank?", "how do I keep users with zero rides?"):
-   - You MUST include at least one markdown sql fence with a **filled-in** PostgreSQL snippet using THIS problem's tables/columns (and their aliases if they already wrote a CTE).
+   - Start from LEARNER CODE. Name the exact clause in *their* query.
+   - You MUST include at least one markdown sql fence: their query (or that clause) with the missing predicate filled in using THEIR CTE/alias names.
    - Naming HAVING / WHERE / a window without showing the actual predicate is a failure.
-   - Scope: the missing or broken clause (5–20 lines). You may show that clause in the context of their current query.
    - Do not dump a from-scratch full rewrite unless they asked for the full query.
 
 4. **Debug / fix** ("why does it fail?", "what's wrong?", failed judge):
@@ -146,7 +222,7 @@ function sqlSystemPrompt(mode: AiExplainMode, hasGuidance: boolean): string {
   if (mode === 'coach') {
     return `You are a PostgreSQL tutor inside DSA Studio AI. The learner is on **Your code** with an optional question.
 
-Your job is to answer **only what they asked** — not what you think they should learn next.
+Your job is to answer **only what they asked**, using **their current query** as the starting point.
 
 ${sqlCoachIntentRules(hasGuidance)}
 
@@ -223,6 +299,7 @@ The learner is writing their own ${label} solution. Coach them in place — do n
 
 Rules:
 - Review the learner's current code, optional question, and any JUDGE / FAILING CASES block.
+- Stay on THEIR buffer: name their functions, conditions, and variables. Do not coach a different solution they did not write.
 - Lead with what is already correct before any critique.
 - Do NOT invent bugs without concrete evidence in their code or the failing cases.
 - If their approach is sound and the implementation looks correct, say so clearly. Offer at most light interview polish — not a fault-finding mission.
@@ -342,9 +419,12 @@ export class AiService {
       }
     }
 
+    const intent = mode === 'coach' ? classifyCoachIntent(guidance) : 'other';
+    const hasLearnerCode = Boolean(learnerCode?.trim());
+
     if (
       mode === 'coach' &&
-      coachQuestionKind(guidance) === 'validation' &&
+      intent === 'validation' &&
       judgeStatus === 'passed'
     ) {
       return validationPassedCoachResult(
@@ -356,7 +436,7 @@ export class AiService {
 
     if (
       mode === 'coach' &&
-      coachQuestionKind(guidance) === 'validation' &&
+      intent === 'validation' &&
       judgeStatus === 'failed'
     ) {
       return validationFailedCoachResult(
@@ -381,17 +461,19 @@ export class AiService {
         : mode === 'coach'
           ? language === 'sql'
             ? guidance
-              ? 'SQL COACH — Answer ONLY the LEARNER QUESTION. Validation + PASSED → yes, stop, no code. Finish/fix/condition/how-to → MUST include a filled-in sql fence on this schema (not English-only). Set JSON code to "".'
+              ? `SQL COACH — ${sqlCoachQuestionDirective(intent)} Set JSON code to "".`
               : judgeStatus === 'passed'
                 ? 'SQL COACH — query PASSED; no question typed — say it works; do not suggest changes. Set code to "".'
                 : judgeStatus === 'failed'
-                  ? 'SQL COACH — FAILED; explain why from failing cases; fix only what failed. Set code to "".'
+                  ? 'SQL COACH — FAILED; diagnose from failing cases against THEIR query; show the filled-in clause to change. Set code to "".'
                   : 'SQL COACH — no specific question; ask what they need or one minimal hint if query empty. Set code to "".'
-            : judgeStatus === 'passed'
-              ? 'COACH ONLY — their current code PASSED studio tests; affirm what works; light polish only; do not invent bugs; set code to "".'
-              : judgeStatus === 'failed'
-                ? 'COACH ONLY — code FAILED tests; diagnose the concrete bug using FAILING CASES + their code; one specific next fix; no full rewrite; set code to "".'
-                : 'COACH ONLY — guide on their current code; be specific when they ask what to fix; do not invent bugs; no full rewrite; set code to "".'
+            : guidance
+              ? `COACH ONLY — ${dsaCoachQuestionDirective(intent)} Set JSON code to "".`
+              : judgeStatus === 'passed'
+                ? 'COACH ONLY — their current code PASSED studio tests; affirm what works; light polish only; do not invent bugs; set code to "".'
+                : judgeStatus === 'failed'
+                  ? 'COACH ONLY — code FAILED tests; diagnose the concrete bug using FAILING CASES + their code; one specific next fix; no full rewrite; set code to "".'
+                  : 'COACH ONLY — guide on their current code; be specific when they ask what to fix; do not invent bugs; no full rewrite; set code to "".'
           : language === 'sql'
             ? 'FULL — teach how to construct the query step by step with filled-in fragments, then include the complete PostgreSQL query in code.'
             : `FULL — teach the approach first, then include a complete ${label} illustration of that approach in code.`;
@@ -417,6 +499,8 @@ export class AiService {
             '=== LEARNER CODE (coach on this; do not replace it) ===',
             learnerCode?.trim() ? learnerCode : '(empty — help them get started)',
             '=== END LEARNER CODE ===',
+            '',
+            learnerCodeGrounding(hasLearnerCode, language),
             '',
             '=== JUDGE STATUS ===',
             judgeStatus === 'passed'
@@ -445,8 +529,8 @@ export class AiService {
                   '=== LEARNER QUESTION ===',
                   guidance,
                   language === 'sql'
-                    ? 'Answer ONLY this question. Validation + PASSED → yes/no, no code. If they asked to finish the query, fix a condition, or how to write a clause: put a filled-in sql snippet in description using their tables/aliases — do not describe HAVING/WHERE without writing it.'
-                    : 'Answer this question directly. If they ask what to fix / why it fails / how to make it work, lead with a concrete diagnosis of THEIR code (and failing cases if present), not a generic hint.',
+                    ? sqlCoachQuestionDirective(intent)
+                    : dsaCoachQuestionDirective(intent),
                   '=== END LEARNER QUESTION ===',
                 ].join('\n')
               : [
@@ -472,11 +556,11 @@ export class AiService {
         model,
         temperature:
           mode === 'coach'
-            ? judgeStatus === 'passed'
-              ? 0.2
-              : judgeStatus === 'failed' || guidance
-                ? 0.25
-                : 0.3
+            ? intent === 'finish' || intent === 'how-to' || intent === 'debug'
+              ? 0.15
+              : judgeStatus === 'passed'
+                ? 0.2
+                : 0.25
             : guidance
               ? 0.2
               : 0.4,
