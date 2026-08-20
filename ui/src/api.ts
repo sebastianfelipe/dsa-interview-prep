@@ -131,6 +131,7 @@ export interface AiExplainResult {
   language: string;
   model: string;
   mode: AiExplainMode;
+  guidance?: string;
 }
 
 async function get<T>(url: string): Promise<T> {

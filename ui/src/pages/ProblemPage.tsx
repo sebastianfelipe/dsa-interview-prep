@@ -144,6 +144,7 @@ export function ProblemPage() {
   const aiGuidanceRef = useRef(aiGuidance);
   aiGuidanceRef.current = aiGuidance;
   const [coachNotes, setCoachNotes] = useState<string | null>(null);
+  const [coachQuestion, setCoachQuestion] = useState<string | null>(null);
   const [coachOpen, setCoachOpen] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [codeBuffer, setCodeBuffer] = useState('');
@@ -310,6 +311,7 @@ export function ProblemPage() {
     setJudgeError(null);
     setAiGuidance('');
     setCoachNotes(null);
+    setCoachQuestion(null);
     lastJudgedRef.current = null;
     setSelectedId(OWN_CODE_ID);
     setChipTab('repo');
@@ -331,6 +333,7 @@ export function ProblemPage() {
         codeSourceKeyRef.current = key;
         editableSessionRef.current = { chipId: OWN_CODE_ID, key };
         setCoachNotes(draft.coachNotes ?? null);
+        setCoachQuestion(draft.coachQuestion ?? null);
       })
       .catch((e) => {
         if (!cancelled) setError(String(e));
@@ -559,7 +562,9 @@ export function ProblemPage() {
         judge,
       );
       const nextNotes = result.description.trim();
+      const asked = (result.guidance ?? guidance).trim() || null;
       setCoachNotes(nextNotes);
+      setCoachQuestion(asked);
       setCoachOpen(true);
       saveLocalSolution(topic, slug, {
         ...draft,
@@ -569,6 +574,7 @@ export function ProblemPage() {
         code,
         language: draftLanguage,
         coachNotes: nextNotes,
+        coachQuestion: asked ?? undefined,
         notes: result.notes ?? draft.notes,
       });
       refreshLocals();
@@ -657,8 +663,13 @@ export function ProblemPage() {
     const ownDraft = localsForProblem.find((s) => s.source === 'local') ?? null;
     const activeLocal = localsForProblem.find((s) => s.id === selectedId) ?? null;
 
-    let next: { chipId: string; key: string; code: string; coachNotes: string | null } | null =
-      null;
+    let next: {
+      chipId: string;
+      key: string;
+      code: string;
+      coachNotes: string | null;
+      coachQuestion: string | null;
+    } | null = null;
     if (selectedId === OWN_CODE_ID || activeLocal?.source === 'local') {
       if (ownDraft) {
         next = {
@@ -666,6 +677,7 @@ export function ProblemPage() {
           key: `${topic}/${slug}/${OWN_CODE_ID}/${language}/local-draft`,
           code: ownDraft.code || '',
           coachNotes: ownDraft.coachNotes ?? null,
+          coachQuestion: ownDraft.coachQuestion ?? null,
         };
       }
     } else if (activeLocal && activeLocal.code && canEditCode) {
@@ -674,6 +686,7 @@ export function ProblemPage() {
         key: `${topic}/${slug}/${activeLocal.id}/${language}/local`,
         code: activeLocal.code,
         coachNotes: null,
+        coachQuestion: null,
       };
     } else if (selectedRepo?.source === 'yours' && solution?.code && canEditCode) {
       next = {
@@ -681,6 +694,7 @@ export function ProblemPage() {
         key: `${topic}/${slug}/${selectedId}/${language}/${solution.path ?? 'yours'}`,
         code: solution.code,
         coachNotes: null,
+        coachQuestion: null,
       };
     }
 
@@ -713,6 +727,7 @@ export function ProblemPage() {
       ) {
         setCodeBuffer(next.code);
         setCoachNotes(next.coachNotes);
+        setCoachQuestion(next.coachQuestion);
       }
       return;
     }
@@ -721,6 +736,7 @@ export function ProblemPage() {
     setCodeSourceKey(next.key);
     codeSourceKeyRef.current = next.key;
     setCoachNotes(next.coachNotes);
+    setCoachQuestion(next.coachQuestion);
     setJudgeResult(null);
     setJudgeError(null);
   }, [
@@ -737,9 +753,14 @@ export function ProblemPage() {
   ]);
 
   useEffect(() => {
-    if (!isOwnCode) setCoachNotes(null);
-    else setCoachNotes(selectedLocal?.coachNotes ?? null);
-  }, [isOwnCode, selectedLocal?.id, selectedLocal?.coachNotes]);
+    if (!isOwnCode) {
+      setCoachNotes(null);
+      setCoachQuestion(null);
+    } else {
+      setCoachNotes(selectedLocal?.coachNotes ?? null);
+      setCoachQuestion(selectedLocal?.coachQuestion ?? null);
+    }
+  }, [isOwnCode, selectedLocal?.id, selectedLocal?.coachNotes, selectedLocal?.coachQuestion]);
 
   function openOwnCodeDraft() {
     const entry = createOwnCodeDraft(topic, slug, problem?.starterCode ?? '', draftLanguage);
@@ -896,8 +917,10 @@ export function ProblemPage() {
       <p className="workspace-ai-panel-desc muted">
         {!aiConfigured
           ? 'Add an OpenAI API key to unlock'
-          : isOwnCode
-            ? 'Ask about your code — coaching only, won’t replace it'
+            : isOwnCode
+            ? problemKind === 'sql'
+              ? 'Ask a specific question — you’ll get only what you asked for'
+              : 'Ask about your code — coaching only, won’t replace it'
             : 'Optional guidance · creates a separate AI chip'}
       </p>
       <form
@@ -919,7 +942,7 @@ export function ProblemPage() {
               ? 'Add an OpenAI API key to unlock'
               : isOwnCode
                 ? problemKind === 'sql'
-                  ? 'Optional: e.g. why are users with 0 orders missing from my result?'
+                  ? 'e.g. Does this work? · How do I use DENSE_RANK here? · Why did submit fail?'
                   : 'Optional: what’s broken? e.g. fails example 2 — what should I change?'
                 : problemKind === 'sql'
                   ? 'Optional: use a window function, no subqueries…'
@@ -936,12 +959,16 @@ export function ProblemPage() {
             disabled={!aiConfigured || aiBusy}
             title={
               aiConfigured
-                ? 'Get coaching on your current code'
+                ? problemKind === 'sql'
+                  ? 'Answer your question about this query'
+                  : 'Get coaching on your current code'
                 : 'Help with my code (locked — add an OpenAI API key to unlock)'
             }
             aria-label={
               aiConfigured
-                ? 'Get coaching on your current code'
+                ? problemKind === 'sql'
+                  ? 'Answer your question about this query'
+                  : 'Get coaching on your current code'
                 : 'Help with my code (locked — add an OpenAI API key to unlock)'
             }
           >
@@ -1004,7 +1031,16 @@ export function ProblemPage() {
               {coachOpen ? '▾' : '▸'}
             </span>
           </button>
-          {coachOpen && <Markdown source={coachNotes} />}
+          {coachOpen && (
+            <>
+              {coachQuestion && (
+                <p className="solution-ai-coach-question">
+                  <span className="solution-ai-coach-question-label">Asked</span> {coachQuestion}
+                </p>
+              )}
+              <Markdown source={coachNotes} />
+            </>
+          )}
         </div>
       )}
     </section>

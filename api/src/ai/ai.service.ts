@@ -13,6 +13,7 @@ import {
 import { formatSourceCode } from '../format-code';
 import { formatComplexity } from '../format-complexity';
 import { ProblemsService } from '../problems/problems.service';
+import type { RunResultDto } from '../problems/run-dto';
 
 export type AiExplainMode = 'hint' | 'full' | 'coach'; // coach = in-place guidance on learner code
 
@@ -26,74 +27,184 @@ export interface AiExplainResult {
   language: CodeLanguage;
   model: string;
   mode: AiExplainMode;
+  /** Echo of the learner question (coach mode). */
+  guidance?: string;
+}
+
+type CoachQuestionKind = 'validation' | 'other';
+
+function formatJsonCompact(value: unknown): string {
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function formatJudgeFailDetail(result: RunResultDto, maxCases = 3): string {
+  const fails = result.cases.filter((c) => c.status !== 'passed').slice(0, maxCases);
+  if (fails.length === 0) return '';
+  return fails
+    .map((c, i) => {
+      const lines = [
+        `Case ${i + 1}: ${c.id} (${c.status})`,
+        `  inputs:   ${formatJsonCompact(c.inputs)}`,
+        `  expected: ${formatJsonCompact(c.expected)}`,
+      ];
+      if (c.actual !== undefined) lines.push(`  actual:   ${formatJsonCompact(c.actual)}`);
+      if (c.error) lines.push(`  error:    ${c.error}`);
+      return lines.join('\n');
+    })
+    .join('\n\n');
+}
+
+/** True when the learner only wants to know if their code works — not how to rewrite it. */
+function coachQuestionKind(guidance?: string): CoachQuestionKind {
+  if (!guidance) return 'other';
+  const q = guidance.toLowerCase();
+  const asksRewrite =
+    /\b(should i use|instead of|rewrite|change to|switch to|dense_rank|row_number|rank\(\)|vs\.?|versus|difference between|how do i use|show me|example)\b/.test(
+      q,
+    );
+  if (asksRewrite) return 'other';
+  if (
+    /\b(does it work|will it work|is this correct|is my code|how'?s my code|how is my code|will this pass|does this pass|is it right|is this right|did i get it|anything wrong|any issues|is it good|look(?:s)? (?:ok|good|right))\b/.test(
+      q,
+    )
+  ) {
+    return 'validation';
+  }
+  return 'other';
+}
+
+function validationPassedCoachResult(
+  language: CodeLanguage,
+  judgeSummary: string,
+  guidance?: string,
+): AiExplainResult {
+  return {
+    title: 'Yes — it passes',
+    description: `Yes — your query passes the studio tests (${judgeSummary}). No changes needed.`,
+    language,
+    model: 'studio-judge',
+    mode: 'coach',
+    guidance,
+  };
+}
+
+function validationFailedCoachResult(
+  language: CodeLanguage,
+  judgeSummary: string,
+  judgeDetail: string | undefined,
+  guidance?: string,
+): AiExplainResult {
+  const detail = judgeDetail ? `\n\n${judgeDetail}` : '';
+  return {
+    title: 'Not yet — tests failing',
+    description: `No — your query does not pass all studio tests (${judgeSummary}).${detail}`,
+    language,
+    model: 'studio-judge',
+    mode: 'coach',
+    guidance,
+  };
+}
+
+function sqlCoachIntentRules(hasGuidance: boolean): string {
+  if (!hasGuidance) {
+    return `They did not ask a specific question. Give ONE useful next step only if their query is empty or clearly incomplete; otherwise ask what they want help with (do not volunteer a rewrite).`;
+  }
+  return `Match the LEARNER QUESTION exactly — no more, no less:
+
+1. **Validation** ("does it work?", "how's my code?", "is this correct?", "will this pass?"):
+   - Answer yes or no first, in plain language.
+   - If JUDGE STATUS is PASSED: say it works / passes studio tests. STOP. Do not suggest a different function, a "better" approach, efficiency, or style changes. Do not mention alternatives (e.g. DENSE_RANK vs ROW_NUMBER) unless they asked about that comparison.
+   - If FAILED: say it does not pass yet; one sentence on why (from failing cases). Only then offer a fix — and only for the actual failure.
+   - If UNKNOWN: say whether the query looks plausible for the spec; do not invent test failures. Do not rewrite unprompted.
+   - Usually **no SQL code block** — a direct answer is enough.
+
+2. **Concept / difference** ("what is DENSE_RANK?", "ROW_NUMBER vs DENSE_RANK?", "why LEFT JOIN?"):
+   - Explain in prose, tied to this problem if relevant.
+   - Include a small sql example **only if** they asked how to use it or asked for an example. Otherwise prose only.
+
+3. **How-to / one clause** ("how do I rank?", "how do I keep users with zero rides?", "what goes in ON vs WHERE?"):
+   - Teach that one piece with a filled-in snippet on THIS problem's tables (5–15 lines max for that clause).
+   - Do not give the full query unless they asked for the full query.
+
+4. **Debug / fix** ("why does it fail?", "what's wrong?", failed judge):
+   - One failing case → cause → the specific clause to change, with a snippet for that clause only.
+
+5. **Full solution** ("write the query", "give me the solution", "what's the full answer"):
+   - Step-by-step with fragments, or the complete query in description sql blocks. Still set JSON "code" to "".
+
+If their question is validation (#1), answering with an alternative implementation is WRONG.`;
 }
 
 function sqlSystemPrompt(mode: AiExplainMode, hasGuidance: boolean): string {
   if (mode === 'coach') {
-    return `You are a SQL interview coach inside DSA Studio AI.
-The learner is writing their own PostgreSQL query for a database problem. Coach them in place — do not write the query for them.
+    return `You are a PostgreSQL tutor inside DSA Studio AI. The learner is on **Your code** with an optional question.
 
-Rules:
-- Review the learner's current query, optional question, and any JUDGE / FAILING CASES block.
-- Failing cases include the seeded input tables, the EXPECTED result set, and their query's ACTUAL result set (or the SQL error).
-- Lead with what is already correct (right tables, right join, right grouping) before any critique.
-- Do NOT invent bugs without concrete evidence in their query or the failing cases.
-- If their query is correct, say so clearly; offer at most light polish (readability, alias names) — not a fault-finding mission.
-- When JUDGE STATUS says PASSED for this exact query: congratulate; do not invent failures.
-- When JUDGE STATUS says FAILED (or they ask what to fix / why it fails):
-  - Diagnose clause by clause and be SPECIFIC to THEIR query: the join type or join key, WHERE vs HAVING, a filter that belongs in the LEFT JOIN's ON condition, GROUP BY columns, COUNT(*) vs COUNT(column), NULL handling, integer division, window frame, ORDER BY, or output column aliases (result column names must match the expected header exactly).
-  - Walk 1 failing case: which rows their query keeps or drops (or what value it computes) vs what the expected result shows, then the exact clause to change and why.
-  - If ACTUAL is a SQL error, explain the error message concretely (e.g. "column must appear in GROUP BY", "column does not exist" often means a bad alias or case-folding) and the one change that fixes it.
-  - One primary bug at a time. End with a single concrete next step.
-- Short SQL fragments (1–3 lines) are OK to clarify the fix — never the full query.
-- If their query is empty, help them start: which tables to read, what join or grouping the problem needs, and the skeleton (SELECT … FROM … ), without writing the whole answer.
-- The dialect is PostgreSQL; mention MySQL equivalents only if they used MySQL-only syntax (DATEDIFF, IFNULL) that caused an error.
-- Leave "time" and "space" as empty strings; they do not apply to SQL problems.
-- Do not claim affiliation with LeetCode or copy proprietary editorial text.
-- Respond with a single JSON object only (no markdown fences).
+Your job is to answer **only what they asked** — not what you think they should learn next.
+
+${sqlCoachIntentRules(hasGuidance)}
+
+Hard rules:
+- Do NOT "correct" a working query for efficiency, idiomatic style, or a different pattern they did not ask about.
+- Do NOT swap ROW_NUMBER for DENSE_RANK (or similar) unless they asked about ranking functions, asked why it fails, or asked how to fix a tie/rank bug.
+- When JUDGE STATUS is PASSED and they ask if it works: the answer is yes. No unsolicited improvements.
+- SQL snippets are for how-to and debug requests — not for "does it work?" unless they also asked how something works.
+- When you do show SQL, use THIS problem's table/column names (from README/schema), in markdown sql fences inside "description". Never placeholder "…" examples.
+- Do not dump the entire finished query unless category #5 above.
+- Leave "time" and "space" as empty strings.
+- Respond with a single JSON object only (no markdown fences wrapping the JSON).
 
 JSON shape:
 {
-  "title": "short coaching headline naming the issue or win",
-  "notes": "one-line tip",
+  "title": "short headline that matches their question (e.g. Yes — it passes)",
+  "notes": "one-line takeaway or empty",
   "time": "",
   "space": "",
-  "description": "markdown: what's working; then concrete clause-level diagnosis (query + failing case if any); one next step — no full solution",
+  "description": "markdown: direct answer first; optional snippet only if their question called for it",
   "code": ""
 }`;
   }
 
   const guidanceRules = hasGuidance
-    ? `- CRITICAL: The user message includes LEARNER GUIDANCE. That guidance is a hard requirement for this response.
-- Build the approach, title, description, and query around that guidance (e.g. "use a window function", "no subqueries", "self-join").
-- If the guidance is impossible or a poor fit, say so in the first paragraph, then still get as close as practical and explain the tradeoff.
-- The title must name the guided approach.
-- Start the description with a short line: **Guidance:** <restated learner request>.`
-    : `- If the learner provides approach guidance, follow it when designing the query.`;
+    ? `- CRITICAL: LEARNER GUIDANCE is a hard requirement. Title, description, and any query must follow it (e.g. "window function", "no subqueries", "self-join", "explain DENSE_RANK").
+- If they asked how a construct works, teach that construct with a filled-in example on THIS problem — do not switch to a more common default query.
+- If the guidance is impossible, say so in the first paragraph, then get as close as practical.
+- Start the description with **Guidance:** <restated request>.`
+    : `- If the learner provides approach guidance, follow it.`;
 
-  return `You are a SQL interview tutor inside DSA Studio AI.
-Given one database problem, teach the learner how to construct the query step by step.
+  const hintOrFull =
+    mode === 'hint'
+      ? `- HINT: do not put the complete solution query in "code" (leave code "").
+- You MUST still show filled-in clause examples in the description (joins, windows, CASE, CTEs) using this problem's tables — never name DENSE_RANK / LEFT JOIN / etc. without a real snippet.`
+      : `- FULL: teach construction step by step, then put the complete PostgreSQL query in "code".
+- Each step in the description should include a filled-in fragment, not only English.`;
+
+  return `You are a hands-on PostgreSQL tutor inside DSA Studio AI.
+Teach how to construct the query. Naming a function without a copy-pasteable example is a failure.
 
 Rules:
-- Lead with recognition: what kind of SQL problem this is (filtering / join / anti-join / aggregation / window function / subquery) and the signal in the problem statement.
-- Build the query incrementally: which tables and join strategy → filters (and whether they belong in ON or WHERE) → grouping and aggregates or window definition → HAVING → final SELECT with the exact output column aliases the problem asks for → ORDER BY if required.
-- Walk the problem's example: show how the intermediate result set evolves after the key step (e.g. after the join or the grouping).
-- Use PostgreSQL syntax. Note a MySQL difference in one short line only when it commonly trips people up (e.g. DATEDIFF vs date subtraction, IFNULL vs COALESCE, integer division).
-- Output column names must match the expected result exactly — call out required aliases.
+- Recognize the pattern (filter / join / anti-join / aggregation / window / subquery), then build clauses: FROM → JOIN/ON vs WHERE → GROUP/HAVING or OVER → SELECT aliases → ORDER BY if required.
+- Walk an example table through the key step (what rows exist after the join or window).
+${hintOrFull}
+- PostgreSQL syntax. Translate MySQL-only syntax (DATEDIFF, IFNULL) only when relevant.
+- Output aliases must match the expected header exactly.
 ${guidanceRules}
-- Format SQL with real newlines and indentation, one clause per line.
-- Leave "time" and "space" as empty strings; they do not apply to SQL problems.
+- Format SQL with real newlines, one clause per line, in sql fences inside description.
+- Leave "time" and "space" as empty strings.
 - Do not claim affiliation with LeetCode or copy proprietary editorial text.
-- Respond with a single JSON object only (no markdown fences).
+- Respond with a single JSON object only (no markdown fences wrapping the JSON).
 
 JSON shape:
 {
-  "title": "short approach name${hasGuidance ? ' that reflects the learner guidance' : ''} (e.g. LEFT JOIN anti-join, DENSE_RANK window)",
-  "notes": "one-line takeaway or interview tip",
+  "title": "short approach name${hasGuidance ? ' that reflects the learner guidance' : ''}",
+  "notes": "one-line takeaway",
   "time": "",
   "space": "",
-  "description": "markdown: recognition, clause-by-clause construction, example walkthrough",
-  "code": "complete PostgreSQL query (omit or empty string in hint mode)"
+  "description": "markdown: ${mode === 'hint' ? 'the asked topic or next clause, with filled-in sql examples' : 'recognition, clause-by-clause construction with examples, walkthrough'}",
+  "code": "${mode === 'hint' ? '' : 'complete PostgreSQL query'}"
 }`;
 }
 
@@ -199,13 +310,9 @@ export class AiService {
     const label = LANGUAGE_LABELS[language];
     const guidance = this.normalizeGuidance(guidanceInput);
     const learnerCode = this.normalizeCode(codeInput);
-    const judgeStatus = this.normalizeJudgeStatus(judgeStatusInput);
-    const judgeSummary = this.normalizeGuidance(judgeSummaryInput);
-    const judgeDetail = this.normalizeJudgeDetail(judgeDetailInput);
-    const apiKey = this.apiKey();
-    if (!apiKey) {
-      throw new ServiceUnavailableException('AI is not configured (missing OPENAI_API_KEY)');
-    }
+    let judgeStatus = this.normalizeJudgeStatus(judgeStatusInput);
+    let judgeSummary = this.normalizeGuidance(judgeSummaryInput);
+    let judgeDetail = this.normalizeJudgeDetail(judgeDetailInput);
 
     let problem;
     try {
@@ -214,20 +321,75 @@ export class AiService {
       throw new NotFoundException(`Problem ${topic}/${slug} not found`);
     }
 
+    if (mode === 'coach' && learnerCode?.trim() && problem.hasTests) {
+      try {
+        const judged = await this.problems.runTests(topic, slug, {
+          code: learnerCode,
+          language,
+          mode: 'submit',
+        });
+        judgeStatus = judged.passed ? 'passed' : 'failed';
+        judgeSummary = `${judged.summary.passed}/${judged.summary.total} cases ${
+          judged.passed ? 'passed' : 'failed'
+        }`;
+        judgeDetail = judged.passed ? undefined : formatJudgeFailDetail(judged);
+      } catch {
+        /* keep client-provided judge hints if runner unavailable */
+      }
+    }
+
+    if (
+      mode === 'coach' &&
+      coachQuestionKind(guidance) === 'validation' &&
+      judgeStatus === 'passed'
+    ) {
+      return validationPassedCoachResult(
+        language,
+        judgeSummary ?? 'all cases passed',
+        guidance,
+      );
+    }
+
+    if (
+      mode === 'coach' &&
+      coachQuestionKind(guidance) === 'validation' &&
+      judgeStatus === 'failed'
+    ) {
+      return validationFailedCoachResult(
+        language,
+        judgeSummary ?? 'some cases failed',
+        judgeDetail,
+        guidance,
+      );
+    }
+
+    const apiKey = this.apiKey();
+    if (!apiKey) {
+      throw new ServiceUnavailableException('AI is not configured (missing OPENAI_API_KEY)');
+    }
+
     const model = this.model();
     const modeLine =
       mode === 'hint'
         ? language === 'sql'
-          ? 'HINT ONLY — teach how to construct the query (tables, join/group/window, aliases); do not include the full query (set code to "").'
+          ? 'HINT — teach the next clause with filled-in Postgres on this problem’s tables; do not put the complete solution in code (set code to ""). Naming DENSE_RANK/JOIN/etc. without a real snippet is not allowed.'
           : 'HINT ONLY — explain the approach and walk an example in language-agnostic terms; do not include solution code (set code to "").'
         : mode === 'coach'
-          ? judgeStatus === 'passed'
-            ? 'COACH ONLY — their current code PASSED studio tests; affirm what works; light polish only; do not invent bugs; set code to "".'
-            : judgeStatus === 'failed'
-              ? 'COACH ONLY — code FAILED tests; diagnose the concrete bug using FAILING CASES + their code; one specific next fix; no full rewrite; set code to "".'
-              : 'COACH ONLY — guide on their current code; be specific when they ask what to fix; do not invent bugs; no full rewrite; set code to "".'
+          ? language === 'sql'
+            ? guidance
+              ? 'SQL COACH — Answer ONLY the LEARNER QUESTION. Classify it (validation / concept / how-to / debug / full solution). If they ask "does it work?" and judge PASSED: say yes, stop — no alternatives, no code. Set code to "".'
+              : judgeStatus === 'passed'
+                ? 'SQL COACH — query PASSED; no question typed — say it works; do not suggest changes. Set code to "".'
+                : judgeStatus === 'failed'
+                  ? 'SQL COACH — FAILED; explain why from failing cases; fix only what failed. Set code to "".'
+                  : 'SQL COACH — no specific question; ask what they need or one minimal hint if query empty. Set code to "".'
+            : judgeStatus === 'passed'
+              ? 'COACH ONLY — their current code PASSED studio tests; affirm what works; light polish only; do not invent bugs; set code to "".'
+              : judgeStatus === 'failed'
+                ? 'COACH ONLY — code FAILED tests; diagnose the concrete bug using FAILING CASES + their code; one specific next fix; no full rewrite; set code to "".'
+                : 'COACH ONLY — guide on their current code; be specific when they ask what to fix; do not invent bugs; no full rewrite; set code to "".'
           : language === 'sql'
-            ? 'FULL — teach how to construct the query step by step, then include the complete PostgreSQL query in code.'
+            ? 'FULL — teach how to construct the query step by step with filled-in fragments, then include the complete PostgreSQL query in code.'
             : `FULL — teach the approach first, then include a complete ${label} illustration of that approach in code.`;
 
     const userPrompt = [
@@ -254,7 +416,7 @@ export class AiService {
             '',
             '=== JUDGE STATUS ===',
             judgeStatus === 'passed'
-              ? `PASSED — this exact code buffer already passed the studio judge${judgeSummary ? ` (${judgeSummary})` : ''}. Treat it as a working solution. Do not claim it fails or invent bugs.`
+              ? `PASSED — this exact code buffer already passed the studio judge${judgeSummary ? ` (${judgeSummary})` : ''}. If they ask whether it works: answer YES. Do not suggest a different approach, function, or rewrite.`
               : judgeStatus === 'failed'
                 ? `FAILED — this exact code buffer failed the studio judge${judgeSummary ? ` (${judgeSummary})` : ''}. Use FAILING CASES below to diagnose a concrete bug in THEIR code. Do not give generic hints.`
                 : 'UNKNOWN — no matching judge result for this exact buffer. Do not invent failures; only flag issues you can justify from the code.',
@@ -278,7 +440,9 @@ export class AiService {
               ? [
                   '=== LEARNER QUESTION ===',
                   guidance,
-                  'Answer this question directly. If they ask what to fix / why it fails / how to make it work, lead with a concrete diagnosis of THEIR code (and failing cases if present), not a generic hint.',
+                  language === 'sql'
+                    ? 'Answer ONLY this question. Match depth to intent: validation → yes/no (no code, no alternatives if PASSED); concept → prose; how-to/debug → snippet for that piece only. Do not rewrite their query unless they asked to fix it or for the full solution.'
+                    : 'Answer this question directly. If they ask what to fix / why it fails / how to make it work, lead with a concrete diagnosis of THEIR code (and failing cases if present), not a generic hint.',
                   '=== END LEARNER QUESTION ===',
                 ].join('\n')
               : [
@@ -371,6 +535,7 @@ export class AiService {
       language,
       model,
       mode,
+      guidance: mode === 'coach' ? guidance : undefined,
     };
   }
 

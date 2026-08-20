@@ -10,6 +10,8 @@ export interface LocalSolution {
   guidance?: string;
   /** Last in-place coach markdown for local drafts (not a new chip). */
   coachNotes?: string;
+  /** Question typed when coach was last invoked on this draft. */
+  coachQuestion?: string;
   notes?: string;
   description?: string;
   time?: string;
@@ -211,7 +213,7 @@ export function createOwnCodeDraft(
       source: 'local',
       language,
       code: reset ? seed : empty && seed ? seed : draft.code,
-      ...(reset ? { coachNotes: undefined } : {}),
+      ...(reset ? { coachNotes: undefined, coachQuestion: undefined } : {}),
     };
   } else {
     draft = {
