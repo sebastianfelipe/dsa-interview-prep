@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { ThemeToggle } from './ThemeToggle';
 import { PaletteToggle } from './PaletteToggle';
+import { FocusMusicToggle } from './FocusMusicToggle';
 import { lastBrowsePath, lastListsPath, lastReferencePath } from '../studio-nav';
 
 export function AppShell() {
@@ -39,6 +40,7 @@ export function AppShell() {
               Reference
             </NavLink>
           </nav>
+          <FocusMusicToggle />
           <PaletteToggle />
           <ThemeToggle />
         </div>

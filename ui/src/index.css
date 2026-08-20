@@ -544,6 +544,221 @@ html[data-theme='light'] .theme-toggle-icon {
   background: linear-gradient(135deg, #facc15 50%, #111111 50%);
 }
 
+.focus-audio {
+  position: relative;
+}
+
+.focus-audio-toggle-group {
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.focus-audio-toggle {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: 0;
+  max-width: 9.5rem;
+}
+
+.focus-audio-toggle .theme-toggle-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.focus-audio-toggle.is-playing {
+  border-color: color-mix(in srgb, var(--accent-hot) 45%, var(--line));
+  color: var(--accent-hot);
+  background: var(--accent-soft);
+}
+
+.focus-audio-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  border: 1px solid var(--line);
+  border-top-right-radius: 999px;
+  border-bottom-right-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0 0.45rem;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.focus-audio-menu-btn:hover,
+.focus-audio-menu-btn[aria-expanded='true'] {
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  color: var(--accent-hot);
+  background: var(--accent-soft);
+}
+
+.focus-audio-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  display: inline-block;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.focus-audio-icon::before {
+  content: '';
+  position: absolute;
+  inset: 0.05rem 0.15rem;
+  border: 1.5px solid currentColor;
+  border-radius: 999px 999px 0 0;
+  border-bottom: 0;
+}
+
+.focus-audio-icon::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0.05rem;
+  width: 0.35rem;
+  height: 0.35rem;
+  transform: translateX(-50%);
+  border: 1.5px solid currentColor;
+  border-radius: 999px;
+}
+
+.focus-audio-toggle.is-playing .focus-audio-icon::after {
+  animation: focus-audio-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes focus-audio-pulse {
+  0%,
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(-50%) scale(0.82);
+    opacity: 0.65;
+  }
+}
+
+.focus-audio-panel {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  right: 0;
+  z-index: 40;
+  width: min(18rem, calc(100vw - 2rem));
+  padding: 0.75rem;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--surface-strong);
+  box-shadow: var(--shadow);
+}
+
+.focus-audio-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.focus-audio-close {
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0.15rem 0.35rem;
+}
+
+.focus-audio-close:hover {
+  color: var(--accent-hot);
+}
+
+.focus-audio-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 0.85rem;
+  margin-bottom: 0.65rem;
+}
+
+.focus-audio-play {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.focus-audio-play:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  color: var(--accent-hot);
+  background: var(--accent-soft);
+}
+
+.focus-audio-volume {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  flex: 1;
+  min-width: 8rem;
+}
+
+.focus-audio-volume input[type='range'] {
+  flex: 1;
+  accent-color: var(--accent);
+}
+
+.focus-audio-tracks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.focus-audio-track {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 0.45rem 0.6rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.focus-audio-track:hover,
+.focus-audio-track.is-active {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+  background: var(--accent-soft);
+}
+
+.focus-audio-track-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.focus-audio-track-sub {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+
+.focus-audio-credit {
+  margin: 0.55rem 0 0;
+  font-size: 0.72rem;
+}
+
 .page {
   width: min(1120px, calc(100% - 2rem));
   margin: 0 auto;
