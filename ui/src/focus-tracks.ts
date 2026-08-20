@@ -1,11 +1,8 @@
-export type FocusTrackKind = 'file' | 'stream';
-
 export interface FocusTrack {
   id: string;
   title: string;
   subtitle: string;
-  kind: FocusTrackKind;
-  /** Local path under `public/` or an HTTPS stream URL. */
+  /** Local path under `public/`. */
   src: string;
   license?: string;
 }
@@ -15,28 +12,25 @@ export const FOCUS_DEFAULT_VOLUME = 0.35;
 
 export const FOCUS_TRACKS: FocusTrack[] = [
   {
-    id: 'faraway',
-    title: 'Faraway',
-    subtitle: 'Ambient · local',
-    kind: 'file',
+    id: 'space-ambient',
+    title: 'Space Ambient',
+    subtitle: 'Osmic · ~10 min',
     src: '/audio/focus/ambient-01.mp3',
-    license: 'Public domain · Gichco',
+    license: 'CC-BY 3.0 · Osmic',
   },
   {
-    id: 'drone-zone',
-    title: 'Drone Zone',
-    subtitle: 'SomaFM · deep ambient',
-    kind: 'stream',
-    src: 'https://ice1.somafm.com/dronezone-128-mp3',
-    license: 'Stream · somafm.com',
+    id: 'november-snow',
+    title: 'November Snow',
+    subtitle: 'Cynic Project · ~6 min',
+    src: '/audio/focus/ambient-02.mp3',
+    license: 'CC0 · cynicmusic.com / pixelsphere.org',
   },
   {
-    id: 'groove-salad',
-    title: 'Groove Salad',
-    subtitle: 'SomaFM · mellow beats',
-    kind: 'stream',
-    src: 'https://ice1.somafm.com/groovesalad-128-mp3',
-    license: 'Stream · somafm.com',
+    id: 'hypnotic-chill',
+    title: 'Hypnotic Chill',
+    subtitle: 'Cynic Project · ~4 min',
+    src: '/audio/focus/ambient-03.mp3',
+    license: 'cynicmusic.com / pixelsphere.org',
   },
 ];
 

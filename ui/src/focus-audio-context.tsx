@@ -21,6 +21,7 @@ type FocusAudioContextValue = {
   togglePanel: () => void;
   toggle: () => void;
   play: () => void;
+  playTrack: (trackId: string) => void;
   pause: () => void;
   setTrackId: (trackId: string) => void;
   setVolume: (volume: number) => void;
@@ -54,7 +55,7 @@ export function FocusAudioProvider({ children }: { children: ReactNode }) {
     if (audio.src !== nextSrc) {
       audio.src = nextSrc;
     }
-    audio.loop = nextTrack.kind === 'file';
+    audio.loop = true;
   }, []);
 
   const play = useCallback(async () => {
@@ -82,6 +83,28 @@ export function FocusAudioProvider({ children }: { children: ReactNode }) {
     if (wantPlayingRef.current || playing) pause();
     else void play();
   }, [pause, play, playing]);
+
+  const playTrack = useCallback(
+    async (nextId: string) => {
+      const nextTrack = focusTrackById(nextId);
+      if (!nextTrack) return;
+      setTrackIdState(nextId);
+      persist(nextId, volume);
+      const audio = audioRef.current;
+      if (!audio) return;
+      wantPlayingRef.current = true;
+      assignTrack(audio, nextTrack);
+      audio.volume = volume;
+      try {
+        await audio.play();
+        setPlaying(true);
+      } catch {
+        wantPlayingRef.current = false;
+        setPlaying(false);
+      }
+    },
+    [assignTrack, persist, volume],
+  );
 
   const setTrackId = useCallback(
     (nextId: string) => {
@@ -172,6 +195,7 @@ export function FocusAudioProvider({ children }: { children: ReactNode }) {
       togglePanel,
       toggle,
       play,
+      playTrack,
       pause,
       setTrackId,
       setVolume,
@@ -184,6 +208,7 @@ export function FocusAudioProvider({ children }: { children: ReactNode }) {
       togglePanel,
       toggle,
       play,
+      playTrack,
       pause,
       setTrackId,
       setVolume,

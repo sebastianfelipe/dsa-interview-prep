@@ -13,7 +13,8 @@ export function FocusMusicToggle() {
     setPanelOpen,
     togglePanel,
     toggle,
-    setTrackId,
+    pause,
+    playTrack,
     setVolume,
   } = useFocusAudio();
 
@@ -77,9 +78,6 @@ export function FocusMusicToggle() {
           </div>
 
           <div className="focus-audio-controls">
-            <button type="button" className="focus-audio-play" onClick={() => toggle()}>
-              {playing ? 'Pause' : 'Play'}
-            </button>
             <label className="focus-audio-volume">
               <span>Volume</span>
               <input
@@ -94,18 +92,29 @@ export function FocusMusicToggle() {
           </div>
 
           <ul className="focus-audio-tracks">
-            {FOCUS_TRACKS.map((item) => (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  className={`focus-audio-track${item.id === track.id ? ' is-active' : ''}`}
-                  onClick={() => setTrackId(item.id)}
-                >
-                  <span className="focus-audio-track-title">{item.title}</span>
-                  <span className="focus-audio-track-sub">{item.subtitle}</span>
-                </button>
-              </li>
-            ))}
+            {FOCUS_TRACKS.map((item) => {
+              const active = item.id === track.id;
+              const isPlaying = active && playing;
+              return (
+                <li key={item.id} className={`focus-audio-track${active ? ' is-active' : ''}`}>
+                  <div className="focus-audio-track-meta">
+                    <span className="focus-audio-track-title">{item.title}</span>
+                    <span className="focus-audio-track-sub">{item.subtitle}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="focus-audio-track-play"
+                    aria-label={isPlaying ? `Pause ${item.title}` : `Play ${item.title}`}
+                    onClick={() => {
+                      if (isPlaying) pause();
+                      else void playTrack(item.id);
+                    }}
+                  >
+                    {isPlaying ? 'Pause' : 'Play'}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
 
           {track.license && <p className="focus-audio-credit muted">{track.license}</p>}
