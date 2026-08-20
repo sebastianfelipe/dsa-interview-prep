@@ -82,6 +82,20 @@ export function CodeEditor({
     syncScroll();
   }, [value]);
 
+  useEffect(() => {
+    const root = textareaRef.current?.parentElement;
+    if (!root || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => {
+      syncScroll();
+    });
+    ro.observe(root);
+    window.addEventListener('resize', syncScroll);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', syncScroll);
+    };
+  }, []);
+
   function commit(next: string, cursor: number, endCursor = cursor) {
     onChange(next);
     requestAnimationFrame(() => {

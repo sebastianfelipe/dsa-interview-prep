@@ -2260,17 +2260,22 @@ html[data-theme='light'] .theme-toggle-icon {
 
 .code-editor-highlight,
 .code-editor-input {
+  box-sizing: border-box;
   margin: 0;
   padding: 1rem 1.1rem;
   border: 0;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
   font-size: 0.88rem;
+  font-weight: 400;
+  font-variant-ligatures: none;
+  letter-spacing: 0;
   line-height: 1.55;
   tab-size: 2;
   white-space: pre;
   word-wrap: normal;
   overflow-wrap: normal;
   overflow: auto;
+  scrollbar-gutter: stable;
 }
 
 .code-editor-highlight {
@@ -2279,11 +2284,16 @@ html[data-theme='light'] .theme-toggle-icon {
   pointer-events: none;
   background: transparent;
   color: var(--code-fg);
-  scrollbar-width: none;
 }
 
-.code-editor-highlight::-webkit-scrollbar {
-  display: none;
+.code-editor-highlight::-webkit-scrollbar,
+.code-editor-input::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.code-editor-highlight::-webkit-scrollbar-thumb {
+  background: transparent;
 }
 
 .code-editor-highlight code {
@@ -2292,11 +2302,11 @@ html[data-theme='light'] .theme-toggle-icon {
 }
 
 .code-editor-input {
-  position: relative;
+  position: absolute;
+  inset: 0;
   z-index: 1;
-  flex: 1;
-  min-height: 0;
   width: 100%;
+  height: 100%;
   resize: none;
   background: transparent;
   color: transparent;
